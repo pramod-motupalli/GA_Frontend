@@ -97,7 +97,7 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Welcome, Arjune</h1>
+          <h1 className="text-2xl font-semibold">Welcome, Arjun</h1>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
                 <MessageCircle className="w-6 h-6 text-gray-800" />
