@@ -48,7 +48,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel */}
-      <div className="w-1/4 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
+      <div className="w-1/3 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
         <img src="/hands.png" alt="Puzzle Hands" className="w-60 mb-6" />
         <h2 className="text-2xl font-semibold text-center text-blue-900 mb-4">
           Committed to Your Safety with Expertise and Care
@@ -59,7 +59,7 @@ export default function Login() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-3/4 bg-gray-50 flex items-center justify-center px-20">
+      <div className="w-2/3 bg-gray-50 flex items-center justify-center px-20">
         <div className="max-w-md w-full space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">We are glad to see you again!</h2>
