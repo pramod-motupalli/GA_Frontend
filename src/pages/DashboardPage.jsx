@@ -1,6 +1,6 @@
 import React from "react";
 import logo from "../assets/GA.png";
-import { User, LogOut, MessageCircle, Bell, Settings, Users, ClipboardList, Briefcase, CheckSquare, BarChart2, Clipboard, UserCheck } from "lucide-react";
+import { User, LogOut, MessageCircle, Bell, Settings, Users, ClipboardList, Briefcase, CheckSquare, BarChart2, Clipboard, UserCheck,LayoutDashboard  } from "lucide-react";
 
 const Dashboard = () => {
   return (
@@ -18,7 +18,7 @@ const Dashboard = () => {
           <div className="w-48 flex flex-col justify-start items-start gap-1">
             <div className="px-2.5 py-2 bg-blue-500 rounded-lg shadow-[0px_4px_4px_0px_rgba(87,144,221,0.14)] inline-flex justify-between items-center">
               <div className="flex-1 flex justify-start items-center gap-3 text-white text-sm font-semibold font-['Inter']">
-                    <BarChart2 className="w-6 h-6" />
+                    <LayoutDashboard  className="w-6 h-6" />
                 Dashboard
               </div>
             </div>
