@@ -16,7 +16,7 @@ export default function Login() {
         password,
       });
 
-      const { access, refresh } = response.data;
+      const { access, refresh,role } = response.data;
 
       if (rememberMe) {
         localStorage.setItem("accessToken", access);
@@ -25,9 +25,20 @@ export default function Login() {
         sessionStorage.setItem("accessToken", access);
         sessionStorage.setItem("refreshToken", refresh);
       }
-
+        console.log(role)
       alert("Login successful!");
+      if(role === "client"){
+        navigate("/client");
+      }
+      if(role === "manager"){
+        navigate("/manager");
+      }
+      if(role === "manager"){
+        navigate("/manager");
+      }
+      else{
       navigate("/dashboard");
+      }
     } catch (error) {
       const err = error.response?.data;
       const message =
