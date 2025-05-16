@@ -5,12 +5,14 @@ import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword";
 import VerifyEmail from "./VerifyEmail";
 import Dashboard from "./pages/DashboardPage";
+import ManagerDashboard from "./pages/ManagerDashboard"; // <-- Add this line
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/teamlead" element={<Dashboard />} />
+        <Route path="/manager" element={<ManagerDashboard />} /> {/* <-- New route */}
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
