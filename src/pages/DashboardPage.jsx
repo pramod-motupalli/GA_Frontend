@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import logo from "../assets/GA.png";
 import {
   User,
@@ -16,7 +16,43 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 
+const menuItems = [
+  { icon: <LayoutDashboard className="w-6 h-6" />, label: "Dashboard" },
+  { icon: <UserCheck className="w-4 h-4" />, label: "Create Staff" },
+  { icon: <Briefcase className="w-4 h-4" />, label: "Work Space" },
+  { icon: <CheckSquare className="w-4 h-4" />, label: "Tasks TODO" },
+  { icon: <BarChart2 className="w-4 h-4" />, label: "Rise by Manager" },
+  { icon: <Users className="w-4 h-4" />, label: "Clients Services" },
+  { icon: <Clipboard className="w-4 h-4" />, label: "Client Requests" },
+  { icon: <Settings className="w-4 h-4" />, label: "Settings" },
+];
+
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState("Dashboard");
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "Dashboard":
+        return <div>This is the Dashboard content</div>;
+      case "Create Staff":
+        return <div>This is the Create Staff screen</div>;
+      case "Work Space":
+        return <div>This is the Work Space section</div>;
+      case "Tasks TODO":
+        return <div>Tasks to complete appear here</div>;
+      case "Rise by Manager":
+        return <div>Manager reports and insights</div>;
+      case "Clients Services":
+        return <div>All client services listed</div>;
+      case "Client Requests":
+        return <div>Client requests display here</div>;
+      case "Settings":
+        return <div>Settings panel</div>;
+      default:
+        return <div>Select an option</div>;
+    }
+  };
+
   return (
     <div className="w-full h-screen flex bg-white overflow-hidden">
       {/* Sidebar */}
@@ -30,27 +66,15 @@ const Dashboard = () => {
 
           {/* Menu Items */}
           <div className="w-48 flex flex-col items-start gap-1">
-            <div className="px-2.5 py-2 bg-blue-500 rounded-lg shadow-[0px_4px_4px_0px_rgba(87,144,221,0.14)] inline-flex justify-between items-center">
-              <div className="flex-1 flex items-center gap-3 text-white text-sm font-semibold font-['Inter']">
-                <LayoutDashboard className="w-6 h-6" />
-                Dashboard
-              </div>
-            </div>
-
-            {[
-              { icon: <UserCheck className="w-4 h-4" />, label: "create Staff" },
-              { icon: <Briefcase className="w-4 h-4" />, label: "work space" },
-              { icon: <CheckSquare className="w-4 h-4" />, label: "tasks TODO" },
-              { icon: <BarChart2 className="w-4 h-4" />, label: "Rise by manager" },
-              { icon: <Users className="w-4 h-4" />, label: "clients services" },
-              { icon: <Clipboard className="w-4 h-4" />, label: "client Requests" },
-              { icon: <Settings className="w-4 h-4" />, label: "Settings" },
-            ].map(({ icon, label }, index) => (
+            {menuItems.map(({ icon, label }, index) => (
               <div
                 key={index}
-                className="px-2.5 py-2 rounded-lg inline-flex items-center hover:bg-gray-100 cursor-pointer"
+                onClick={() => setActiveTab(label)}
+                className={`px-2.5 py-2 rounded-lg inline-flex items-center cursor-pointer ${
+                  activeTab === label ? "bg-blue-500 text-white shadow" : "hover:bg-gray-100 text-neutral-500"
+                }`}
               >
-                <div className="flex-1 flex items-center gap-3 text-neutral-500 text-sm font-normal font-['Inter']">
+                <div className="flex-1 flex items-center gap-3 text-sm font-['Inter'] font-semibold">
                   {icon}
                   {label}
                 </div>
@@ -97,9 +121,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Page Content Area (can be filled later) */}
+        {/* Dynamic Content Area */}
         <div className="flex-1 p-6 bg-gray-50 overflow-auto">
-          {/* Add dashboard cards, charts, or other components here */}
+          {renderContent()}
         </div>
       </div>
     </div>
