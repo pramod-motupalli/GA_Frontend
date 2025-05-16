@@ -88,7 +88,7 @@ const Dashboard = () => {
       </div>
 
       {/* Header + right icons */}
-      <div className="w-screen left-[312px] top-[21px] absolute inline-flex justify-between items-center">
+      <div className="w-5/6 left-[312px] top-[21px] absolute inline-flex justify-between items-center">
         <div className="justify-start text-black text-2xl font-semibold font-['Lato']">Welcome, Arjun</div>
         <div className="flex justify-start items-center gap-7">
           <div className="w-12 h-12 p-3 relative bg-white rounded-[34px] outline outline-1 outline-offset-[-1px] outline-neutral-300 flex justify-center items-center gap-2.5">
