@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Implement actual login functionality here
-    alert("Form submitted. Remember Me: " + rememberMe);
+    alert(Email: ${email}\nPassword: ${password}\nRemember Me: ${rememberMe});
   };
 
   const handleForgotPassword = () => {
@@ -14,19 +17,13 @@ export default function Login() {
   };
 
   const goToSignup = () => {
-  navigate("/signup");
-};
+    navigate("/signup");
+  };
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-white">
       {/* Left Panel */}
-      <div className="w-1/4 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500 rounded-tr-2xl rounded-br-2xl" style={{
-        width: '475px',
-        height:'1024px',
-        borderRadius:'16px 16px 0 0',
-        border:'1px solid #7690A3',
-        bckgroundColor:' #EBF4FF',
-        boxShadow:'2px 2px 4px 0 #D2E6F2'
-      }}>
+      <div className="w-[475px] h-[1024px] p-10 flex flex-col justify-center items-center border-r border-blue-500 shadow-md bg-blue-100 rounded-tr-2xl rounded-br-2xl">
         <img
           src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
           alt="Puzzle Hands"
@@ -35,7 +32,7 @@ export default function Login() {
         <h2 className="text-2xl font-semibold text-center text-blue-900 mb-4">
           Committed to Your Safety with Expertise and Care
         </h2>
-        <p className="text-gray-600 text-center max-w-md">
+        <p className="text-gray-600 text-center max-w-xs">
           Our team is built on years of proven experience and a deep commitment
           to user safety. We combine technical excellence with empathy to
           deliver secure, reliable solutions. Through strong collaboration and
@@ -43,60 +40,81 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Right Panel - Signup Form */}
-      <div className="w-[686px] inline-flex flex-col justify-start items-center gap-12">
-        <div className="self-stretch flex flex-col justify-start items-start gap-6">
-          <div className="w-96 flex flex-col justify-start items-start gap-2">
-            <div className="self-stretch text-center justify-start text-slate-600 text-3xl font-bold font-['Lato']">we glad to see you here again !</div>
-            <div className="self-stretch justify-start text-slate-600 text-base font-normal font-['Lato']">Enter yor mail id and password to get into the site.</div>
+      {/* Right Panel */}
+      <div className="flex-1 flex flex-col justify-center items-center px-12">
+        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
+          <h2 className="text-3xl font-bold text-slate-600 text-center">
+            We're glad to see you here again!
+          </h2>
+          <p className="text-base text-slate-600 text-center">
+            Enter your mail ID and password to get into the site.
+          </p>
+
+          {/* Email Input */}
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-700 text-lg">Enter your mail ID</label>
+            <input
+              type="email"
+              placeholder="eg: sample@mailid.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
           </div>
-          <div className="self-stretch flex flex-col justify-start items-start gap-6">
-            <div data-error-icon="true" data-show-label="true" data-show-left-icon="true" data-show-right-icon="false" data-state="Default" className="self-stretch flex flex-col justify-start items-start gap-2.5">
-              <div className="self-stretch inline-flex justify-start items-start gap-2.5">
-                <div className="flex-1 justify-start text-gray-700 text-lg font-normal font-['Lato']">Enteryour mail id</div>
-              </div>
-              <div className="self-stretch p-5 bg-white rounded-lg outline outline-1 outline-neutral-400/40 inline-flex justify-center items-center gap-2 overflow-hidden">
-                <div className="w-6 h-6 relative overflow-hidden">
-                  <div className="w-4 h-3.5 left-[3px] top-[5px] absolute outline outline-2 outline-offset-[-1px] outline-slate-500/75" />
-                </div>
-                <div className="flex-1 justify-start text-gray-400 text-base font-normal font-['Lato']">eg:sample@mailid.com</div>
-              </div>
-            </div>
-            <div data-error-icon="true" data-show-label="true" data-show-left-icon="true" data-show-right-icon="true" data-state="active" className="self-stretch flex flex-col justify-start items-start gap-2.5">
-              <div className="self-stretch inline-flex justify-start items-start gap-2.5">
-                <div className="flex-1 justify-start text-gray-700 text-lg font-normal font-['Lato']">Enter your password</div>
-              </div>
-              <div className="self-stretch p-5 bg-white rounded-lg outline outline-1 outline-blue-400/80 inline-flex justify-center items-center gap-2 overflow-hidden">
-                <div className="w-6 h-6 relative overflow-hidden">
-                  <div className="w-3.5 h-4 left-[5px] top-[3px] absolute outline outline-2 outline-offset-[-1px] outline-slate-500/75" />
-                </div>
-                <div className="flex-1 justify-start text-gray-400 text-base font-normal font-['Lato']">password</div>
-                <div className="w-6 h-6 relative overflow-hidden">
-                  <div className="w-4 h-3 left-[3px] top-[6px] absolute outline outline-2 outline-offset-[-1px] outline-slate-500/75" />
-                </div>
-              </div>
-            </div>
-            <div className="self-stretch inline-flex justify-between items-start">
-              <div className="flex justify-start items-start gap-2">
-                <div className="w-6 px-[5px] py-2 bg-blue-400 rounded inline-flex flex-col justify-start items-start gap-2.5 overflow-hidden">
-                  <div className="w-3.5 h-2 outline outline-2 outline-offset-[-1px] outline-white" />
-                </div>
-                <div className="justify-start text-gray-700 text-lg font-normal font-['Lato']">Remember me</div>
-              </div>
-              <div className="flex justify-start items-start gap-2">
-                <div className="justify-start text-gray-700 text-lg font-normal font-['Lato'] underline">Forgot password?</div>
-              </div>
-            </div>
+
+          {/* Password Input */}
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-700 text-lg">Enter your password</label>
+            <input
+              type="password"
+              placeholder="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
           </div>
-          <div className="self-stretch px-3 py-4 bg-blue-400 rounded inline-flex justify-center items-center gap-2.5">
-            <div className="justify-start text-white text-xl font-bold font-['Lato']">Login</div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="flex justify-between items-center">
+            <label className="flex items-center gap-2 text-lg text-gray-700">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+              />
+              Remember me
+            </label>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-blue-500 underline text-lg"
+            >
+              Forgot password?
+            </button>
           </div>
-        </div>
-        <div className="inline-flex justify-center items-center gap-2">
-          <div className="justify-start text-slate-600 text-base font-normal font-['Lato']">Don’t have an account ? </div>
-          <div className="text-center justify-start text-blue-500 text-xl font-bold font-['Lato']">Signup</div>
-        </div>
+
+          {/* Login Button */}
+          <button
+            type="submit"
+            className="w-full py-3 bg-blue-500 text-white text-xl font-bold rounded hover:bg-blue-600 transition"
+          >
+            Login
+          </button>
+
+          {/* Signup Link */}
+          <div className="text-center text-base text-slate-600">
+            Don’t have an account?{" "}
+            <button
+              onClick={goToSignup}
+              className="text-blue-500 font-bold text-xl underline"
+            >
+              Signup
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-   );
+  );
 }
