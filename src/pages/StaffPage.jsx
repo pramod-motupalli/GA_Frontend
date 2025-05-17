@@ -2,16 +2,13 @@ import React, { useState } from "react";
 import logo from "../assets/GA.png";
 import {
   LayoutDashboard,
-  UserCheck,
   Briefcase,
   ClipboardList,
-  Clipboard,
   Settings,
-  Users,
   User,
   LogOut,
   MessageCircle,
-  Bell
+  Bell,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -19,12 +16,8 @@ const Dashboard = () => {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard },
-    { name: "Create Staff", icon: UserCheck },
-    { name: "Work Space", icon: Briefcase },
-    { name: "Tasks TODO", icon: ClipboardList },
-    { name: "Rise by Manager", icon: Users },
-    { name: "Clients Services", icon: Briefcase },
-    { name: "Client Requests", icon: Clipboard },
+    { name: "Work Space", icon: Briefcase, badge: "02" },
+    { name: "tasks", icon: ClipboardList, badge: "02" },
     { name: "Settings", icon: Settings },
   ];
 
@@ -32,18 +25,10 @@ const Dashboard = () => {
     switch (activeTab) {
       case "Dashboard":
         return <div>This is the Dashboard content</div>;
-      case "Create Staff":
-        return <div>This is the Create Staff screen</div>;
       case "Work Space":
         return <div>This is the Work Space section</div>;
-      case "Tasks TODO":
-        return <div>Tasks to complete appear here</div>;
-      case "Rise by Manager":
-        return <div>Manager reports and insights</div>;
-      case "Clients Services":
-        return <div>All client services listed</div>;
-      case "Client Requests":
-        return <div>Client requests display here</div>;
+      case "tasks":
+        return <div>View and manage tasks.</div>;
       case "Settings":
         return <div>Settings panel</div>;
       default:
@@ -63,18 +48,29 @@ const Dashboard = () => {
 
           {/* Menu */}
           <div className="flex-1 px-4 py-4 space-y-2 overflow-auto">
-            {menuItems.map(({ name, icon: Icon }) => (
+            {menuItems.map(({ name, icon: Icon, badge }) => (
               <button
                 key={name}
                 onClick={() => setActiveTab(name)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-left ${
                   activeTab === name
                     ? "bg-blue-500 text-white font-semibold shadow"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                {name}
+                <div className="flex items-center gap-3">
+                  <Icon className="w-4 h-4" />
+                  {name}
+                </div>
+                {badge && (
+                  <span
+                    className={`bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ${
+                      activeTab === name ? "bg-blue-500 text-white font-semibold shadow" : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -84,7 +80,7 @@ const Dashboard = () => {
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
             <User className="w-4 h-4" />
-            Arjun
+            Staff
           </button>
           <button className="w-full flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
             <LogOut className="w-4 h-4" />
@@ -97,11 +93,11 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Welcome, Arjun</h1>
+          <h1 className="text-2xl font-semibold">Welcome, Aravind</h1>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
-                <MessageCircle className="w-6 h-6 text-gray-800" />
-              </div>
+              <MessageCircle className="w-6 h-6 text-gray-800" />
+            </div>
             <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
               <Bell className="w-6 h-6 text-gray-800" />
             </div>

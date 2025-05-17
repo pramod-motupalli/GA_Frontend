@@ -84,7 +84,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex">
-      <div className="w-1/3 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
+      <div className="w-97 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
         <img src="/hands.png" alt="Puzzle Hands" className="w-60 mb-6" />
         <h2 className="text-2xl font-semibold text-center text-blue-900 mb-4">
           Committed to Your Safety with Expertise and Care
