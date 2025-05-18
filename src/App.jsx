@@ -8,6 +8,7 @@ import Dashboard from "./pages/DashboardPage";
 import ManagerDashboard from "./pages/ManagerDashboard"; // <-- Add this line
 import StaffPage from "./pages/StaffPage"; 
 import ClientPage from "./pages/ClientPage";
+import AccountantPage from "./pages/AccountantPage"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/manager" element={<ManagerDashboard />} /> {/* <-- New route */}
         <Route path="/client" element={<ClientPage />}/>
+        <Route path="/accountant" element={<AccountantPage/>}/>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
