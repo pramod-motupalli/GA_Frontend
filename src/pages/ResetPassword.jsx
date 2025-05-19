@@ -13,8 +13,8 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState("");
 
   // Grab the UUID from the URL: /reset-password?verify_uuid=...
-  const uuid = searchParams.get("verify_uuid");
-  console.log(uuid)
+  const email = localStorage.getItem("email");
+  // console.log(email)
   const goToLogin = () => navigate("/login");
 
   const handleSubmit = async (e) => {
@@ -26,17 +26,17 @@ export default function ResetPassword() {
       setError("❌ Passwords do not match.");
       return;
     }
-    if (!uuid) {
-      setError("Invalid reset link.");
+    if (!email) {
+      setError("Invalid request.");
       return;
     }
 
     setLoading(true);
     try {
       const resp = await axios.post(
-        "http://localhost:8000/api/users/reset-password/<uuid:uuid>/",
+        "http://localhost:8000/api/users/reset-password/",
         {
-          uuid,
+          email,
           new_password: password,
           confirm_password: confirmPassword,
         }
