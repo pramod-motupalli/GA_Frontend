@@ -11,7 +11,8 @@ import {
   User,
   LogOut,
   MessageCircle,
-  Bell
+  Bell,
+  BadgeCheck
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -22,6 +23,7 @@ const Dashboard = () => {
     { name: "Create Staff", icon: UserCheck },
     { name: "Work Space", icon: Briefcase },
     { name: "Tasks TODO", icon: ClipboardList },
+    { name: "Approvals", icon:BadgeCheck},
     { name: "Rise by Manager", icon: Users },
     { name: "Clients Services", icon: Briefcase },
     { name: "Client Requests", icon: Clipboard },
@@ -36,6 +38,8 @@ const Dashboard = () => {
         return <div>This is the Create Staff screen</div>;
       case "Work Space":
         return <div>This is the Work Space section</div>;
+      case "Approvals":
+        return <div>This is the Approvals section</div>;
       case "Tasks TODO":
         return <div>Tasks to complete appear here</div>;
       case "Rise by Manager":
