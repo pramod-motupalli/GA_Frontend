@@ -26,19 +26,23 @@ export default function Login() {
         sessionStorage.setItem("refreshToken", refresh);
       }
         console.log(role)
-      alert("Login successful!");
+      // alert("Login successful!");
       if(role === "client"){
         navigate("/client");
       }
       if(role === "manager"){
         navigate("/manager");
       }
-      if(role === "manager"){
-        navigate("/manager");
+      if(role === "team_lead"){
+        navigate("/teamlead");
       }
-      else{
-      navigate("/dashboard");
+      if(role === "accountant"){
+        navigate("/accountant");
       }
+      if(role === "team_member"){
+        navigate("/staff");
+      }
+      
     } catch (error) {
       const err = error.response?.data;
       const message =

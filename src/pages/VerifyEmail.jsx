@@ -36,7 +36,7 @@ export default function VerifyMail() {
       setMessage("❌ Email is required to send verification link.");
       return;
     }
-
+    localStorage.setItem("email",email);
     setSending(true);
     setMessage("Sending verification email…");
 
