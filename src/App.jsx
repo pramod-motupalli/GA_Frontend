@@ -9,6 +9,7 @@ import ManagerDashboard from "./pages/ManagerDashboard"; // <-- Add this line
 import StaffPage from "./pages/StaffPage"; 
 import ClientPage from "./pages/ClientPage";
 import AccountantPage from "./pages/AccountantPage"
+import VerifyIdentity from "./pages/VerifyIdentity";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/manager" element={<ManagerDashboard />} /> {/* <-- New route */}
         <Route path="/client" element={<ClientPage />}/>
         <Route path="/accountant" element={<AccountantPage/>}/>
+        <Route path="/identity" element={<VerifyIdentity/>}/>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
