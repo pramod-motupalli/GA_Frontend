@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
 
 // --- Auth Context Setup ---
 const AuthContext = createContext();
@@ -44,6 +45,9 @@ const AuthProvider = ({ children }) => {
 const Signup = () => {
   const navigate = useNavigate();
   const { saveTokens } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -84,6 +88,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex">
+      {/* Left Panel */}
       <div className="w-97 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
         <img src="/hands.png" alt="Puzzle Hands" className="w-60 mb-6" />
         <h2 className="text-2xl font-semibold text-center text-blue-900 mb-4">
@@ -94,59 +99,86 @@ const Signup = () => {
         </p>
       </div>
 
+      {/* Right Panel */}
       <div className="w-2/3 bg-gray-50 flex items-center justify-center px-20">
         <div className="max-w-md w-full space-y-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Welcome to GA Digital Solutions</h2>
             <p className="text-sm text-gray-500 mt-1">We're excited to connect with you. Please sign up.</p>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {/** Form Fields **/}
-            {['email','username','first_name','last_name','phone_number'].map(field => (
-              <div key={field}>
-                <label className="block text-sm mb-1 text-gray-700">{field.replace('_',' ').replace(/\b\w/g,l=>l.toUpperCase())}</label>
+
+          {/* Form Container */}
+          <div className="bg-white p-6 rounded-xl shadow border">
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              {/* Text Fields */}
+              {["email", "username", "first_name", "last_name", "phone_number"].map((field) => (
+                <div key={field}>
+                  <label className="block text-sm mb-1 text-gray-700">
+                    {field.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </label>
+                  <input
+                    type={field.includes("email") ? "email" : "text"}
+                    name={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    required={field !== "last_name" && field !== "phone_number"}
+                    className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              ))}
+
+              {/* Password Field */}
+              <div className="relative">
+                <label className="block text-sm mb-1 text-gray-700">Password</label>
                 <input
-                  type={field.includes('email') ? 'email' : 'text'}
-                  name={field}
-                  value={formData[field]}
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
-                  required={field !== 'last_name' && field !== 'phone_number'}
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10"
                 />
+                <span
+                  className="absolute right-3 top-9 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
               </div>
-            ))}
-            <div>
-              <label className="block text-sm mb-1 text-gray-700">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1 text-gray-700">Confirm Password</label>
-              <input
-                type="password"
-                name="confirm_password"
-                value={formData.confirm_password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition duration-200"
-            >
-              Sign Up
-            </button>
-          </form>
+
+              {/* Confirm Password Field */}
+              <div className="relative">
+                <label className="block text-sm mb-1 text-gray-700">Confirm Password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirm_password"
+                  value={formData.confirm_password}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10"
+                />
+                <span
+                  className="absolute right-3 top-9 cursor-pointer text-gray-500"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
+              </div>
+                 
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition duration-200"
+              >
+                Next
+              </button>
+            </form>
+          </div>
+
+          {/* Link to Login */}
           <p className="text-sm text-center text-gray-600">
-            Already have an account?{' '}
-            <button onClick={() => navigate('/login')} className="text-blue-500 font-medium">
+            Already have an account?{" "}
+            <button onClick={() => navigate("/login")} className="text-blue-500 font-medium">
               Login
             </button>
           </p>
