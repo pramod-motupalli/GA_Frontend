@@ -1,90 +1,81 @@
 import React, { useState } from "react";
-import logo from "../assets/GA.png";
 import {
-  User,
+  LayoutDashboard,
+  UserPlus,
+  Users,
+  CreditCard,
+  FileText,
+  BadgeCheck,
+  Settings,
   LogOut,
+  User,
   MessageCircle,
   Bell,
-  Settings,
-  ClipboardList,
-  Users,
-  Briefcase,
-  CheckSquare,
-  Clipboard,
-  UserCheck,
-  LayoutDashboard,
 } from "lucide-react";
+import logo from "../assets/GA.png";
+import emptyImage from "../assets/empty-data-icon.png";
 
-const ManagerDashboard = () => {
-  const [selectedMenu, setSelectedMenu] = useState("Dashboard");
+const CreateMembers = () => {
+  const [activeTab, setActiveTab] = useState("Team-leads");
+  const [selectedMenuItem, setSelectedMenuItem] = useState("create member");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard },
-    { name: "create member", icon: UserCheck },
-    { name: "Tasks", icon: ClipboardList, badge: "02" },
+    { name: "create member", icon: UserPlus },
+    { name: "Tasks", icon: FileText, badge: "02" },
     { name: "clients", icon: Users },
-    { name: "clients services", icon: Users, badge: "02" },
-    { name: "payments", icon: Briefcase, badge: "02" },
-    { name: "Approvals", icon: CheckSquare, badge: "02" },
-    { name: "Request", icon: Clipboard },
+    { name: "clients services", icon: FileText, badge: "02" },
+    { name: "payments", icon: CreditCard, badge: "02" },
+    { name: "Approvals", icon: BadgeCheck },
+    { name: "Request", icon: FileText },
     { name: "Settings", icon: Settings },
   ];
 
-  // Sample content for each page
-  const renderContent = () => {
-    switch (selectedMenu) {
-      case "Dashboard":
-        return <div>📊 This is the Dashboard content.</div>;
-      case "create member":
-        return <div>👤 Create a new member here.</div>;
-      case "Tasks":
-        return <div>✅ View and manage tasks.</div>;
-      case "clients":
-        return <div>🧑‍💼 Client details listed here.</div>;
-      case "clients services":
-        return <div>🔧 Services for clients shown here.</div>;
-      case "payments":
-        return <div>💳 Payment records and actions.</div>;
-      case "Approvals":
-        return <div>✔️ Pending approval requests.</div>;
-      case "Request":
-        return <div>📄 Request details.</div>;
-      case "Settings":
-        return <div>⚙️ Settings and preferences.</div>;
-      default:
-        return <div>Select a section</div>;
-    }
+  const renderTabContent = () => {
+    return (
+      <div className="flex-1 flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
+        <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
+        <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          + Add User
+        </button>
+      </div>
+    );
   };
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex h-screen py-4 bg-white overflow-hidden">
       {/* Sidebar */}
-      <div className="w-60 h-full bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
-        {/* Top: Logo and Menu */}
+      <div className="w-60 bg-white rounded-2xl shadow-md outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div className="flex flex-col overflow-hidden">
-          {/* Logo */}
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
             <img src={logo} alt="GA Digital Solutions" className="h-14 object-contain" />
           </div>
 
-          {/* Menu */}
           <div className="flex-1 px-4 py-4 space-y-2 overflow-auto">
             {menuItems.map(({ name, icon: Icon, badge }) => (
               <button
                 key={name}
-                onClick={() => setSelectedMenu(name)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left ${
-                  selectedMenu === name
+                onClick={() => setSelectedMenuItem(name)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-left ${
+                  name === selectedMenuItem
                     ? "bg-blue-500 text-white font-semibold shadow"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <div className="flex items-center gap-3 text-sm">
+                <span className="flex items-center gap-3">
                   <Icon className="w-4 h-4" />
                   {name}
-                </div>
+                </span>
                 {badge && (
-                  <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="text-xs rounded-full px-2 py-0.5 bg-blue-100 text-blue-600">
                     {badge}
                   </span>
                 )}
@@ -93,7 +84,6 @@ const ManagerDashboard = () => {
           </div>
         </div>
 
-        {/* Bottom Buttons */}
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
             <User className="w-4 h-4" />
@@ -107,35 +97,122 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col p-6">
+      <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Welcome, Manager</h1>
-          <div className="flex items-center gap-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-semibold capitalize">{selectedMenuItem}</h1>
+          <div className="flex items-center gap-4 relative">
+            <span className="text-gray-700 font-medium">Welcome Manager</span>
+            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
+              <MessageCircle className="w-6 h-6 text-gray-800" />
+            </div>
+            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
+              <Bell className="w-6 h-6 text-gray-800" />
+            </div>
+            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
+              <User className="w-6 h-6 text-gray-800" />
+            </div>
             <div className="relative">
-              <div className="w-12 h-12 bg-white rounded-full flex justify-center items-center outline outline-1 outline-neutral-300">
-                <MessageCircle className="w-5 h-5 text-gray-800" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 text-white rounded-full flex justify-center items-center text-xs font-bold">
-                02
-              </div>
-            </div>
-            <div className="w-12 h-12 bg-white rounded-full flex justify-center items-center outline outline-1 outline-neutral-300">
-              <Bell className="w-5 h-5 text-gray-800" />
-            </div>
-            <div className="w-12 h-12 bg-white rounded-full flex justify-center items-center outline outline-1 outline-neutral-300">
-              <User className="w-5 h-5 text-gray-800" />
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+              >
+                + Add User
+              </button>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg z-20 border">
+                  <ul className="py-1 text-sm text-gray-800">
+                    <li
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setShowModal(true);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      Team Lead
+                    </li>
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Staff Member</li>
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Accountant</li>
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">Client</li>
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Dynamic Page Content */}
-        <div className="flex-1 bg-gray-50 rounded-xl p-6">
-          {renderContent()}
-        </div>
+        {/* Content Based on Menu Selection */}
+        {selectedMenuItem === "create member" ? (
+          <>
+            {/* Tabs */}
+            <div className="flex gap-6 border-b mb-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`pb-2 ${
+                    activeTab === tab
+                      ? "border-b-2 border-blue-500 font-medium text-blue-600"
+                      : "text-gray-600 hover:text-blue-500"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            {/* Tab Content */}
+            {renderTabContent()}
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
+            This is {selectedMenuItem} panel.
+          </div>
+        )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white w-96 rounded-lg p-6 shadow-lg relative">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Create Team Lead</h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-black text-xl">
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <select className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700">
+                <option>Designation</option>
+                <option>Manager</option>
+                <option>Senior Lead</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Name"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              />
+              <input
+                type="email"
+                placeholder="Email id"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              />
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+                >
+                  cancel
+                </button>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  Create User
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ManagerDashboard;
+export default CreateMembers;
