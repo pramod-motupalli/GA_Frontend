@@ -59,12 +59,10 @@ export default function VerifyMail() {
       <div
         className="hidden md:flex flex-col justify-center items-center"
         style={{
-          width: '475px',
+          width: '395px',
           height: '100vh',
           borderRadius: '16px 0 0 16px',
-          border: '1px solid #7690A3',
           backgroundColor: '#EBF4FF',
-          boxShadow: '2px 2px 4px 0 #D2E6F2',
         }}
       >
         <img src="/hands.png" alt="Puzzle Hands" className="w-60 mb-6" />

@@ -57,7 +57,7 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel */}
-      <div className="w-1/4 bg-blue-100 p-10 flex flex-col justify-center items-center">
+      <div className="w-1/4 bg-[#EBF4FF] p-10 flex flex-col justify-center items-center">
         <img
           src="/hands.png"
           alt="Puzzle Hands"
