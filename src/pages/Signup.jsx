@@ -89,7 +89,7 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel */}
-      <div className="w-97 bg-blue-100 p-10 flex flex-col justify-center items-center border-r border-blue-500">
+      <div className="w-1/4 bg-[#EBF4FF] p-10 flex flex-col justify-center items-center ">
         <img src="/hands.png" alt="Puzzle Hands" className="w-60 mb-6" />
         <h2 className="text-2xl font-semibold text-center text-blue-900 mb-4">
           Committed to Your Safety with Expertise and Care
@@ -103,12 +103,12 @@ const Signup = () => {
       <div className="w-2/3 bg-gray-50 flex items-center justify-center px-20">
         <div className="max-w-md w-full space-y-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Welcome to GA Digital Solutions</h2>
-            <p className="text-sm text-gray-500 mt-1">We're excited to connect with you. Please sign up.</p>
+            <h2 className="text-2xl font-bold text-gray-800 px-8">Welcome to GA Digital Solutions</h2>
+            <p className="text-sm text-gray-500 mt-1 px-14">We're excited to connect with you. Please sign up.</p>
           </div>
 
           {/* Form Container */}
-          <div className="bg-white p-6 rounded-xl shadow border">
+          <div className="bg-white p-6 rounded-xl border-1 border-gray-200 shadow-xs">
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Text Fields */}
               {["email", "username", "first_name", "last_name", "phone_number"].map((field) => (
@@ -178,7 +178,7 @@ const Signup = () => {
           {/* Link to Login */}
           <p className="text-sm text-center text-gray-600">
             Already have an account?{" "}
-            <button onClick={() => navigate("/login")} className="text-blue-500 font-medium">
+            <button onClick={() => navigate("/login")} className="text-blue-500 -end-py-2font-medium">
               Login
             </button>
           </p>

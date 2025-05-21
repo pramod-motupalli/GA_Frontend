@@ -24,6 +24,7 @@ export default function VerifyIdentity() {
       .post("http://localhost:8000/api/users/verify-email/", { email })
       .then((response) => {
         console.log("Backend response:", response.data);
+        alert("Your account is verified...")
         navigate("/login");
       })
       .catch((error) => {
@@ -36,8 +37,8 @@ export default function VerifyIdentity() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel */}
-      <div className="w-1/3 bg-blue-50 p-10 flex flex-col justify-center items-center">
-        <img src="/hands.png" alt="Puzzle Hands" className="w-48 mb-6" />
+      <div className="w-1/4 bg-[#EBF4FF] p-10 flex flex-col justify-center items-center">
+        <img src="/hands.png" alt="Puzzle Hands" className="w-2xl mb-6" />
         <h2 className="text-xl font-semibold text-center text-blue-900 mb-4">
           Committed to Your Safety with Expertise and Care
         </h2>
