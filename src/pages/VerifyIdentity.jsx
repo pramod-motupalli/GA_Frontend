@@ -1,35 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import identityImg from "../assets/identity.svg"; // adjust path if needed
 
 export default function VerifyIdentity() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Extract uuid from query params
+  const queryParams = new URLSearchParams(location.search);
+  const uuid = queryParams.get("uuid");
 
   const handleVerify = () => {
-    const email = localStorage.getItem("email"); // get email from localStorage
-    console.log("Email from localStorage:", email);  
-    if (!email) {
-      // setErrorMsg("No email found. Please log in first.");
-      console.log("No email found in localStorage");
+    if (!uuid) {
+      console.log("No UUID found in URL");
+      setErrorMsg("Invalid verification link.");
       return;
     }
 
     setLoading(true);
     setErrorMsg("");
+    setSuccessMsg("");
 
     axios
-      .post("http://localhost:8000/api/users/verify-email/", { email })
+      .post("http://localhost:8000/api/users/verify-email/", { uuid }) // backend should expect { uuid }
       .then((response) => {
         console.log("Backend response:", response.data);
-        alert("Your account is verified...")
-        navigate("/login");
+        setSuccessMsg("Your account has been successfully verified.");
+        setTimeout(() => navigate("/login"), 1500);
       })
       .catch((error) => {
-        console.error("Error sending email to backend:", error);
-        setErrorMsg("Failed to verify email. Please try again.");
+        console.error("Error verifying UUID:", error);
+        setErrorMsg(
+          error.response?.data?.error || "Failed to verify email. Please try again."
+        );
       })
       .finally(() => setLoading(false));
   };
@@ -73,14 +81,19 @@ export default function VerifyIdentity() {
               {errorMsg && (
                 <p className="text-red-600 mb-4 font-semibold">{errorMsg}</p>
               )}
+              {successMsg && (
+                <p className="text-green-600 mb-4 font-semibold">{successMsg}</p>
+              )}
               <button
                 onClick={handleVerify}
                 disabled={loading}
                 className={`${
-                  loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
                 } text-white font-semibold px-60 py-2 rounded-md shadow transition duration-200`}
               >
-                {loading ? "Verifying..." : "Verify account"}
+                {loading ? "Verifying..." : "Verify Account"}
               </button>
             </div>
           </div>

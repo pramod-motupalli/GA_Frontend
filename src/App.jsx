@@ -10,7 +10,6 @@ import StaffPage from "./pages/StaffPage";
 import ClientPage from "./pages/ClientPage";
 import AccountantPage from "./pages/AccountantPage"
 import VerifyIdentity from "./pages/VerifyIdentity";
-
 function App() {
   return (
     <Router>
@@ -19,6 +18,7 @@ function App() {
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/manager" element={<ManagerDashboard />} /> {/* <-- New route */}
         <Route path="/client" element={<ClientPage />}/>
+        <Route path="/form" element={<client/>}/>
         <Route path="/accountant" element={<AccountantPage/>}/>
         <Route path="/identity" element={<VerifyIdentity/>}/>
         <Route path="/signup" element={<Signup />} />
