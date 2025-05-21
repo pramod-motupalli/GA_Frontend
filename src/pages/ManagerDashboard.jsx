@@ -22,6 +22,13 @@ const CreateMembers = () => {
   const [showTeamLeadModal, setShowTeamLeadModal] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [showAccountantModal, setShowAccountantModal] = useState(false);
+  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+
+  const [teamLeads, setTeamLeads] = useState([]);
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [accountants, setAccountants] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -37,25 +44,73 @@ const CreateMembers = () => {
     { name: "Settings", icon: Settings },
   ];
 
-  const renderTabContent = () => (
-    <div className="flex-1 flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
-      <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
-      <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
-      <button
-  onClick={() => {
-    if (activeTab === "Team-leads") setShowTeamLeadModal(true);
-    else if (activeTab === "Staff-members") setShowStaffModal(true);
-    else if (activeTab === "Accountant") setShowAccountantModal(true);
-  }}
-  className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
->
-  + Add User
-</button>
-    </div>
-  );
+  const handleCreateUser = (userData) => {
+    const tab = activeTab;
+    if (tab === "Team-leads") {
+      setTeamLeads([...teamLeads, userData]);
+    } else if (tab === "Staff-members") {
+      setStaffMembers([...staffMembers, userData]);
+    } else if (tab === "Accountant") {
+      setAccountants([...accountants, userData]);
+    }
+
+    setShowTeamLeadModal(false);
+    setShowStaffModal(false);
+    setShowAccountantModal(false);
+  };
+const renderUserList = () => {
+  let users = [];
+  if (activeTab === "Team-leads") users = teamLeads;
+  else if (activeTab === "Staff-members") users = staffMembers;
+  else if (activeTab === "Accountant") users = accountants;
+
+  if (users.length === 0) {
+    return (
+      <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
+        <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
+        <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
+        <button
+          onClick={() => {
+            if (activeTab === "Team-leads") setShowTeamLeadModal(true);
+            else if (activeTab === "Staff-members") setShowStaffModal(true);
+            else if (activeTab === "Accountant") setShowAccountantModal(true);
+          }}
+          className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          + Add User
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen py-4 bg-white overflow-hidden">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {users.map((user, index) => (
+        <div key={index} className="bg-white shadow rounded-xl overflow-hidden">
+          <div className="p-4 flex justify-between items-start">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex justify-center items-center text-gray-500">
+                <User classname="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-md font-semibold">{user.name}</h3>
+                <p className="text-sm text-gray-500">{user.designation}</p>
+                <p className="text-sm text-gray-400">{user.email}</p>
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600">⋮</button>
+          </div>
+          <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
+            View Profile
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+  return (
+    <div className="flex h-screen py-4 bg-white overflow-hidden relative">
       {/* Sidebar */}
       <div className="w-60 bg-white rounded-2xl shadow-md outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div className="flex flex-col overflow-hidden">
@@ -174,7 +229,7 @@ const CreateMembers = () => {
                 </button>
               ))}
             </div>
-            {renderTabContent()}
+            {renderUserList()}
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
@@ -183,84 +238,94 @@ const CreateMembers = () => {
         )}
       </div>
 
-      {/* Team Lead Modal */}
       {showTeamLeadModal && (
         <Modal
           title="Create Team Lead"
-          onClose={() => setShowTeamLeadModal(false)}
           fields={[
-            { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"] },
-            { type: "text", placeholder: "Name" },
-            { type: "email", placeholder: "Email id" },
+            { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"], name: "designation" },
+            { type: "text", placeholder: "Name", name: "name" },
+            { type: "email", placeholder: "Email id", name: "email" },
           ]}
+          onClose={() => setShowTeamLeadModal(false)}
+          onSubmit={handleCreateUser}
         />
       )}
 
-      {/* Staff Member Modal */}
       {showStaffModal && (
         <Modal
           title="Create Staff Member"
-          onClose={() => setShowStaffModal(false)}
           fields={[
-            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"] },
-            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"] },
-            { type: "text", placeholder: "Name" },
-            { type: "email", placeholder: "Email id" },
+            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"], name: "teamLead" },
+            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"], name: "designation" },
+            { type: "text", placeholder: "Name", name: "name" },
+            { type: "email", placeholder: "Email id", name: "email" },
           ]}
+          onClose={() => setShowStaffModal(false)}
+          onSubmit={handleCreateUser}
         />
       )}
 
-      {/* Accountant Modal */}
       {showAccountantModal && (
         <Modal
           title="Create Accountant"
-          onClose={() => setShowAccountantModal(false)}
           fields={[
-            { type: "text", placeholder: "Name" },
-            { type: "email", placeholder: "Email id" },
+            { type: "text", placeholder: "Name", name: "name" },
+            { type: "email", placeholder: "Email id", name: "email" },
           ]}
+          onClose={() => setShowAccountantModal(false)}
+          onSubmit={handleCreateUser}
         />
       )}
     </div>
   );
 };
 
-const Modal = ({ title, onClose, fields }) => {
+const Modal = ({ title, onClose, fields, onSubmit }) => {
+  const [formData, setFormData] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
       <div className="bg-white w-96 rounded-lg p-6 shadow-lg relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-black text-xl">
-            ×
-          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-black text-xl">×</button>
         </div>
         <div className="space-y-4">
           {fields.map((field, idx) =>
             field.type === "select" ? (
-              <select key={idx} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700">
-                <option>{field.placeholder}</option>
+              <select
+                key={idx}
+                name={field.name}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-700"
+              >
+                <option value="">{field.placeholder}</option>
                 {field.options.map((opt) => (
-                  <option key={opt}>{opt}</option>
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
             ) : (
               <input
                 key={idx}
+                name={field.name}
                 type={field.type}
                 placeholder={field.placeholder}
+                onChange={handleChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
               />
             )
           )}
           <div className="flex justify-end gap-3 mt-4">
+            <button onClick={onClose} className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button>
             <button
-              onClick={onClose}
-              className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              onClick={() => onSubmit(formData)}
             >
-              Cancel
-            </button>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               Create User
             </button>
           </div>
