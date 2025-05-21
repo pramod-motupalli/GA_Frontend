@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   UserCheck,
@@ -30,7 +30,24 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
+  const [teamLeads, setTeamLeads] = useState([]); // <-- ✅ team leads state
+
   const totalPages = Math.ceil(staffMembers.length / itemsPerPage);
+
+  useEffect(() => {
+    const fetchTeamLeads = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/users/team-leads/");
+        const data = await response.json();
+        console.log(data)
+        setTeamLeads(data);
+      } catch (error) {
+        console.error("Failed to fetch team leads:", error);
+      }
+    };
+
+    fetchTeamLeads();
+  }, []);
 
   const openModal = (userType, index = null) => {
     setModalUserType(userType);
@@ -48,18 +65,44 @@ const Dashboard = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log(formData)
+
+  try {
+    const response = await fetch("http://localhost:8000/api/users/register-staff/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to register staff member");
+    }
+
+    const data = await response.json();
+    console.log("User created:", data);
+
     if (editingIndex !== null) {
+      // Update existing
       const updated = [...staffMembers];
       updated[editingIndex] = formData;
       setStaffMembers(updated);
     } else {
+      // Add new
       setStaffMembers([...staffMembers, formData]);
     }
+
     setShowModal(false);
     setEditingIndex(null);
-  };
+  } catch (error) {
+    console.error("Error creating staff member:", error);
+    alert("Error: " + error.message);
+  }
+};
+
 
   const handleDelete = (index) => {
     const updated = [...staffMembers];
@@ -75,8 +118,16 @@ const Dashboard = () => {
           <button onClick={() => setShowModal(false)} className="text-gray-600 hover:text-black text-xl font-bold">×</button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <select name="teamLead" value={formData.teamLead} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-gray-600">
+          <select
+            name="teamLead"
+            value={formData.teamLead}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md p-2 text-gray-600"
+          >
             <option value="">Select the team-lead</option>
+            {teamLeads.map((lead) => (
+              <option key={lead} value={lead}>{lead}</option>
+            ))}
           </select>
           <select name="designation" value={formData.designation} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-gray-600">
             <option value="">Designation</option>
@@ -192,7 +243,6 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
-      {/* Sidebar */}
       <div className="w-60 h-11/12 bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div>
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
@@ -227,7 +277,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         <div className="flex justify-end items-center gap-4 mb-6">
           {[MessageCircle, Bell, User].map((Icon, i) => (
