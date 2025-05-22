@@ -11,48 +11,54 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+const goToLogin = () => navigate("/login");
 
   // Grab the UUID from the URL: /reset-password?verify_uuid=...
-  const email = localStorage.getItem("email");
-  // console.log(email)
-  const goToLogin = () => navigate("/login");
+  const accessToken = localStorage.getItem("accessToken");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("❌ Passwords do not match.");
-      return;
-    }
-    if (!email) {
-      setError("Invalid request.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    setError("❌ Passwords do not match.");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const resp = await axios.post(
-        "http://localhost:8000/api/users/reset-password/",
-        {
-          email,
-          new_password: password,
-          confirm_password: confirmPassword,
-        }
-      );
-      setSuccess("✅ " + resp.data.detail);
-      setTimeout(() => navigate("/login"), 2000);
-    } catch (err) {
-      const msg =
-        err.response?.data?.new_password?.[0] ||
-        err.response?.data?.detail ||
-        "❌ Something went wrong.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!accessToken) {
+    setError("Unauthorized: Access token missing.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const resp = await axios.post(
+      "http://localhost:8000/api/users/reset-password/",
+      {
+        new_password: password,
+        confirm_password: confirmPassword,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    setSuccess("✅ " + resp.data.detail);
+    setTimeout(() => navigate("/login"), 2000);
+  } catch (err) {
+    const msg =
+      err.response?.data?.new_password?.[0] ||
+      err.response?.data?.detail ||
+      "❌ Something went wrong.";
+    setError(msg);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex">
