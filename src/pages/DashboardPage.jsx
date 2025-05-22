@@ -111,7 +111,7 @@ const Dashboard = () => {
   };
 
   const renderModal = () => (
-    <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-20">
+    <div className="fixed inset-0 flex justify-center items-center z-50 ">
       <div className="bg-white rounded-lg shadow-lg w-96 p-6 max-w-full">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">{editingIndex !== null ? "Edit User" : "Staff Member"}</h2>
