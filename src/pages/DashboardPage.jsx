@@ -18,7 +18,29 @@ import {
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 
+
 const Dashboard = () => {
+  const [clientRequests, setClientRequests] = useState([
+  {
+    id: 1,
+    clientName: "ABC Corp",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 2,
+    clientName: "ABC Corp",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+]);
+
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const [activeTab, setActiveTab] = useState("Create Member");
   const [selectedTab, setSelectedTab] = useState("Staff Member");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -30,7 +52,7 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const [teamLeads, setTeamLeads] = useState([]); // <-- ✅ team leads state
+  const [teamLeads, setTeamLeads] = useState([]); 
 
   const totalPages = Math.ceil(staffMembers.length / itemsPerPage);
 
@@ -231,15 +253,110 @@ const Dashboard = () => {
       </div>
     );
   };
+const renderClientRequests = () => (
+  <div className="w-full bg-white p-6 rounded-xl shadow">
+    <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
+    <table className="w-full table-auto border-collapse">
+      <thead>
+        <tr className="bg-gray-100 text-left text-sm text-gray-600">
+          <th className="p-2 border">Client Name</th>
+          <th className="p-2 border">Domain Name</th>
+          <th className="p-2 border">Request Raised Date</th>
+          <th className="p-2 border">client requests</th>
+          <th className="p-2 border">Scope Status</th>         
+          <th className="p-2 border text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {clientRequests.map((req) => (
+          <tr key={req.id} className="text-sm text-gray-700">
+            <td className="p-2 border">{req.clientName}</td>
+            <td className="p-2 border">{req.domain}</td>
+            <td className="p-2 border">{req.raisedDate}</td>
+            <td className="p-2 border text-center">
+              <button 
+                onClick={()=>{
+                  setSelectedRequest(req);
+                  setShowRequestModal(true);
+                }}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                >view request</button>
+            </td>
+            <td className="p-2 border text-center">
+              <button
+                onClick={() => {
+                  setSelectedRequest(req);
+                  setShowRequestModal(true);
+                }}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+              >
+                View scope
+              </button>
+            </td>
+            <td className="p-2 border ">
+              {req.scopeStatus ? (
+                <span className={`px-2 py-1 rounded text-xs font-medium ${req.scopeStatus === "Within Scope" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                  {req.scopeStatus}
+                </span>
+              ):(
+                <span className="text-gray-400 italic">Pending</span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+const handleScopeDecision = (status) => {
+  if (!selectedRequest) return;
+  const updatedRequests = clientRequests.map((req) =>
+    req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req
+  );
+  setClientRequests(updatedRequests);
+  setShowRequestModal(false); // Optionally close the modal after decision
+};
+
 
   const renderContent = () => {
     switch (activeTab) {
       case "Create Member":
         return renderCreateMembersContent();
+      case "Client Requests":
+        return renderClientRequests();
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
     }
   };
+ const renderRequestModal = () => (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 w-[400px] max-w-full shadow-lg">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Request Description</h2>
+        <button onClick={() => setShowRequestModal(false)} className="text-xl font-bold text-gray-600">×</button>
+      </div>
+      <p className="text-gray-700 text-sm mb-4">{selectedRequest?.description}</p>
+      <div className="mt-4">
+        <h3 className="text-md font-medium mb-2">View Scope</h3>
+        <div className="flex gap-4">
+          <button
+            onClick={() => handleScopeDecision("Within Scope")}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Within Scope
+          </button>
+          <button
+            onClick={() => handleScopeDecision("Out of Scope")}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+           Out of Scope
+         </button>
+       </div>
+      </div>
+    </div>
+  </div>
+);
+
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
@@ -269,14 +386,13 @@ const Dashboard = () => {
         </div>
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
-            <User className="w-4 h-4" /> Manager
+            <User className="w-4 h-4" /> Arjun
           </button>
           <button className="w-full flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
             <LogOut className="w-4 h-4" /> Logout
           </button>
         </div>
       </div>
-
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         <div className="flex justify-end items-center gap-4 mb-6">
           {[MessageCircle, Bell, User].map((Icon, i) => (
@@ -287,8 +403,8 @@ const Dashboard = () => {
         </div>
         <div className="flex-1">{renderContent()}</div>
       </div>
-
       {showModal && renderModal()}
+      {showRequestModal && renderRequestModal()}
     </div>
   );
 };
