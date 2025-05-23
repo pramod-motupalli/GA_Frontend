@@ -178,7 +178,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-
   const renderCreateMembersContent = () => {
     const startIdx = (currentPage - 1) * itemsPerPage;
     const visibleMembers = staffMembers.slice(startIdx, startIdx + itemsPerPage);
@@ -285,7 +284,7 @@ const renderClientRequests = () => (
             <td className="p-2 border">{req.clientName}</td>
             <td className="p-2 border">{req.domain}</td>
             <td className="p-2 border">{req.raisedDate}</td>
-            <td className="p-2 border text-center">           
+            <td className=" p-2 border text-center">           
                   <button onClick={() => handleViewRequest(req)}>View Request</button>           
             </td>
             <td className="p-2 border text-center">
@@ -302,6 +301,46 @@ const renderClientRequests = () => (
             </td>
           </tr>
         ))}
+        {isRequestModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded shadow max-w-lg w-full">
+      <div className=" flex justify-between items-center mb-4">
+        <h3 className=" text-xl font-semibold mb-4">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
+        <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
+      </div>
+      {modalContentType === "request" ? (
+        <p className="text-gray-700">{selectedRequest?.description}</p>
+      ) : (
+        <div className="flex justify-between">
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Within Scope
+          </button>
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Out of Scope
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
       </tbody>
     </table>
   </div>
