@@ -1,12 +1,14 @@
-html,body, #root {
-  display: flex;  
+.plan-selection-container {
+  min-height: 100vh;
   width: 100%;
-  margin: 0;
-  padding: 0;
-  justify-content: center;
-  align-items: center;
-  background-color: #f7f9fa;
-   background-image: 
+  background-color: transparent;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+    background-image: 
     url('../assets/BG1.svg'),
     url('../assets/BG2.svg'),
     url('../assets/BG3.svg'),
@@ -24,17 +26,7 @@ html,body, #root {
     50% 80%;
   background-repeat: no-repeat;
   background-size: auto;
-}
-.plan-selection-container {
-  min-height: 100vh;
-  width: 100%;
-  background-color: transparent;
-  padding: 0px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
+
 }
 
 

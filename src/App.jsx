@@ -21,7 +21,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PlanRequests from './pages/PlanRequests';
 import DomainHostingTable from './pages/DomainHostingTable';
 import PaymentRequests from './pages/PaymentRequests';
-
+import api from "./api/axiosClient";
 function App() {
   return (
     <Router>
@@ -47,6 +47,7 @@ function App() {
         <Route path="/plan-requests" element={<PlanRequests />} />
         <Route path="/plan-requests-domain" element={<DomainHostingTable />} />
         <Route path="/payment-requests" element={<PaymentRequests />} />
+    
       </Routes>
     </Router>
   );
