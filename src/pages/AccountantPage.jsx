@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/GA.png";
+import PaymentApprovals from "./PaymentApprovals";
+import DomainHostingTable from "./DomainHostingTable";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -26,9 +28,9 @@ const Dashboard = () => {
       case "Dashboard":
         return <div>This is the Dashboard content</div>;
       case "Payment info":
-        return <div>This is the Payment Information</div>;
+        return <PaymentApprovals />; 
       case "H & D Service":
-        return <div>View the H & D Services.</div>;
+        return <div><DomainHostingTable /></div>;
       case "Settings":
         return <div>Settings panel</div>;
       default:

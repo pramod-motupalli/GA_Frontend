@@ -33,7 +33,7 @@ const PlanRequests = () => {
   const handleSavePrice = async () => {
     if (!selectedRequest) return;
     try {
-      await axios.patch('http://localhost:8000/api/plan-requests/', {
+      await axios.patch('http://localhost:8000/api/users/plan-requests/', {
         id: selectedRequest.id,
         price: priceInput
       });
@@ -45,16 +45,26 @@ const PlanRequests = () => {
     }
   };
   const handleRaiseAlert = async (req) => {
-  try {
-    await axios.post('http://localhost:8000/api/payment-requests/', {
-      plan_request: req.id,
-      price: req.plan_price || 0
-    });
-    alert("Alert sent and payment request created ✅");
-  } catch (error) {
-    console.error("Failed to raise alert:", error);
-  }
-};
+    try {
+      // Call PATCH API to update price and set is_approved = True
+      await axios.patch('http://localhost:8000/api/users/plan-requests/', {
+        id: req.id,
+        price: req.plan_price || 0
+      });
+
+      // Then create payment request as before
+      await axios.post('http://localhost:8000/api/users/payment-requests/', {
+        plan_request: req.id,
+        price: req.plan_price || 0
+      });
+
+      alert("Alert sent and payment request created ✅");
+      fetchRequests(); // refresh data to show changes
+    } catch (error) {
+      console.error("Failed to raise alert:", error);
+    }
+  };
+
 
   const totalPages = Math.ceil(requests.length / requestsPerPage);
   let filteredRequests = [...requests];

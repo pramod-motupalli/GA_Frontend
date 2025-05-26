@@ -21,8 +21,9 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PlanRequests from './pages/PlanRequests';
 import DomainHostingTable from './pages/DomainHostingTable';
 import PaymentRequests from './pages/PaymentRequests';
-import api from "./api/axiosClient";
+// import api from "./api/axiosClient";
 import Main from "./pages/WorkspaceCard";
+
 function App() {
   return (
     <Router>
