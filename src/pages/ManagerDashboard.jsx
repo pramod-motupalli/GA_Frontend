@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   UserPlus,
@@ -11,8 +11,6 @@ import {
   User,
   MessageCircle,
   Bell,
-  Filter,
-  Search,
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyImage from "../assets/empty-data-icon.png";
@@ -24,15 +22,11 @@ const CreateMembers = () => {
   const [showTeamLeadModal, setShowTeamLeadModal] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [showAccountantModal, setShowAccountantModal] = useState(false);
-  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 8;
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
+  const [allTeamLeads, setAllTeamLeads] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -125,79 +119,17 @@ return (
                 <p className="text-sm text-gray-500">{user.designation}</p>
                 <p className="text-sm text-gray-400">{user.email}</p>
               </div>
+              <button className="text-gray-400 hover:text-gray-600">⋮</button>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">⋮</button>
+            <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
+              View Profile
+            </div>
           </div>
-          <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
-            View Profile
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* Pagination Controls */}
-    <div className="flex justify-between items-center mt-auto pt-4">
-      <div className="flex items-center gap-2">
-        <span>Page</span>
-        <select
-          value={currentPage}
-          onChange={(e) => setCurrentPage(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
-        <span>of {totalPages}</span>
-      </div>
-
-      <div className="flex gap-1 items-center">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className={`px-3 py-1 rounded ${currentPage === 1 ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-100'}`}
-        >
-          ‹
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((num) => (
-          <button
-            key={num}
-            onClick={() => setCurrentPage(num)}
-            className={`px-3 py-1 rounded ${num === currentPage ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-100'}`}
-          >
-            {num}
-          </button>
         ))}
-
-        {totalPages > 5 && (
-          <>
-            <span className="px-2 text-gray-500">...</span>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              className={`px-3 py-1 rounded ${currentPage === totalPages ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-100'}`}
-            >
-              {totalPages}
-            </button>
-          </>
-        )}
-
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className={`px-3 py-1 rounded ${currentPage === totalPages ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-100'}`}
-        >
-          ›
-        </button>
       </div>
-    </div>
-  </div>
-  </div>
-);
+    );
   };
-
-
-return (
+  return (
     <div className="flex h-screen py-4 bg-white overflow-hidden relative">
       {/* Sidebar */}
       <div className="w-60 bg-white rounded-2xl shadow-md outline outline-1 outline-zinc-200 flex flex-col justify-between">
@@ -242,7 +174,7 @@ return (
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-gray-50 overflow-y-auto px-6">
+      <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold capitalize">{selectedMenuItem}</h1>
           <div className="flex items-center gap-4 relative">
@@ -307,16 +239,18 @@ return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 ${activeTab === tab ? "font-medium text-blue-600" : "text-gray-600 hover:text-blue-500"}`}
-
-                  
+                  className={`pb-2 ${
+                    activeTab === tab
+                      ? "border-b-2 border-blue-500 font-medium text-blue-600"
+                      : "text-gray-600 hover:text-blue-500"
+                  }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
             {renderUserList()}
-          </div>
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is {selectedMenuItem} panel.
@@ -341,8 +275,18 @@ return (
         <Modal
           title="Create Staff Member"
           fields={[
-            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"], name: "teamLead" },
-            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"], name: "designation" },
+            {
+              type: "select",
+              placeholder: "Select Team Lead",
+              options: allTeamLeads,
+              name: "teamLead",
+            },
+            {
+              type: "select",
+              placeholder: "Designation",
+              options: ["Senior Staff", "Junior Staff"],
+              name: "designation",
+            },
             { type: "text", placeholder: "Name", name: "name" },
             { type: "email", placeholder: "Email id", name: "email" },
           ]}
