@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   UserPlus,
@@ -11,8 +11,6 @@ import {
   User,
   MessageCircle,
   Bell,
-  Filter,
-  Search,
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyImage from "../assets/empty-data-icon.png";
@@ -24,15 +22,11 @@ const CreateMembers = () => {
   const [showTeamLeadModal, setShowTeamLeadModal] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [showAccountantModal, setShowAccountantModal] = useState(false);
-  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 8;
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
+  const [allTeamLeads, setAllTeamLeads] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -48,10 +42,34 @@ const CreateMembers = () => {
     { name: "Settings", icon: Settings },
   ];
 
+  useEffect(() => {
+    const fetchTeamLeads = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch("http://localhost:8000/api/users/team-leads/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch team leads");
+        }
+
+        const data = await response.json();
+        console.log(data)
+        setAllTeamLeads(data);
+      } catch (error) {
+        console.error("Error fetching team leads:", error);
+      }
+    };
+
+    fetchTeamLeads();
+  }, []);
+
   const createTeamLeadRequest = async (userData) => {
     try {
-      const token = localStorage.getItem("accessToken"); // Ensure token is stored
-      console.log(userData  )
+      const token = localStorage.getItem("accessToken");
       const response = await fetch("http://localhost:8000/api/users/teamlead/register/", {
         method: "POST",
         headers: {
@@ -61,10 +79,7 @@ const CreateMembers = () => {
         body: JSON.stringify(userData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create team lead");
-      }
-
+      if (!response.ok) throw new Error("Failed to create team lead");
       const data = await response.json();
       return data;
     } catch (error) {
@@ -73,20 +88,63 @@ const CreateMembers = () => {
     }
   };
 
+  const createStaffRequest = async (userData) => {
+    console.log(userData)
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("http://localhost:8000/api/users/register-staff/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) throw new Error("Failed to create staff");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error creating staff:", error);
+      return null;
+    }
+  };
+
+  const createAccountantRequest = async (userData) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("http://localhost:8000/api/users/create-accountant/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) throw new Error("Failed to create accountant");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error creating accountant:", error);
+      return null;
+    }
+  };
+
   const handleCreateUser = async (userData) => {
     const tab = activeTab;
 
-    if (tab === "Team-leads") {
+     if (tab === "Team-leads") {
       const createdUser = await createTeamLeadRequest(userData);
-      if (createdUser) {
-        setTeamLeads([...teamLeads, createdUser]);
-      }
+      if (createdUser) setTeamLeads([...teamLeads, createdUser]);
       setShowTeamLeadModal(false);
     } else if (tab === "Staff-members") {
-      setStaffMembers([...staffMembers, userData]);
+      const createdUser = await createStaffRequest(userData);
+      if (createdUser) setStaffMembers([...staffMembers, createdUser]);
       setShowStaffModal(false);
     } else if (tab === "Accountant") {
-      setAccountants([...accountants, userData]);
+      const createdUser = await createAccountantRequest(userData);
+      if (createdUser) setAccountants([...accountants, createdUser]);
       setShowAccountantModal(false);
     }
   };
@@ -116,146 +174,32 @@ const CreateMembers = () => {
       );
     }
 
-    setShowTeamLeadModal(false);
-    setShowStaffModal(false);
-    setShowAccountantModal(false);
-  };
-  const renderUserList = () => {
-  let users = [];
-  if (activeTab === "Team-leads") users = teamLeads;
-  else if (activeTab === "Staff-members") users = staffMembers;
-  else if (activeTab === "Accountant") users = accountants;
-
-  const totalPages = Math.ceil(users.length / usersPerPage);
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-if (users.length === 0) {
-  return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="w-full h-full bg-white rounded-xl shadow p-6 text-center flex flex-col items-center justify-center">
-        <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
-        <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
-        <button
-          onClick={() => {
-            if (activeTab === "Team-leads") setShowTeamLeadModal(true);
-            else if (activeTab === "Staff-members") setShowStaffModal(true);
-            else if (activeTab === "Accountant") setShowAccountantModal(true);
-          }}
-          className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          + Add User
-        </button>
-      </div>
-    </div>
-  );
-}
-
-  
-return (
-  <div className="flex-1 min-h-[calc(100vh-250px)] px-0">
-  <div className="w-full h-full bg-white rounded-xl shadow p-6 flex flex-col justify-center items-center">
-    {/* Search + Filter */}
-    <div className="flex justify-between items-center mb-6 w-full">
-      <div className="relative w-full">
-        <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"/>
-        <input
-          type="text"
-          placeholder="Search user..."
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm"
-        />
-      </div>
-      <button className="ml-4 p-2 border border-gray-300 rounded-md hover:bg-gray-100">
-        <Filter className="w-3 h-3" />
-      </button>
-    </div>
-    {/*User Card Grids */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {currentUsers.map((user, index) => (
-        <div key={index} className="bg-white shadow rounded-xl overflow-hidden">
-          <div className="p-4 flex justify-between items-start">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex justify-center items-center text-gray-500">
-                <User className="w-5 h-5" />
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {users.map((user, index) => (
+          <div key={index} className="bg-white shadow rounded-xl overflow-hidden">
+            <div className="p-4 flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex justify-center items-center text-gray-500">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-md font-semibold">{user.name}</h3>
+                  <p className="text-sm text-gray-500">{user.designation}</p>
+                  <p className="text-sm text-gray-400">{user.email}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-md font-semibold">{user.name}</h3>
-                <p className="text-sm text-gray-500">{user.designation}</p>
-                <p className="text-sm text-gray-400">{user.email}</p>
-              </div>
+              <button className="text-gray-400 hover:text-gray-600">⋮</button>
             </div>
-            <button className="text-gray-400 hover:text-gray-600">⋮</button>
+            <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
+              View Profile
+            </div>
           </div>
-          <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
-            View Profile
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* Pagination Controls */}
-    <div className="flex justify-between items-center mt-auto pt-4">
-      <div className="flex items-center gap-2">
-        <span>Page</span>
-        <select
-          value={currentPage}
-          onChange={(e) => setCurrentPage(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
-        <span>of {totalPages}</span>
-      </div>
-
-      <div className="flex gap-1 items-center">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className={`px-3 py-1 rounded ${currentPage === 1 ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-100'}`}
-        >
-          ‹
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((num) => (
-          <button
-            key={num}
-            onClick={() => setCurrentPage(num)}
-            className={`px-3 py-1 rounded ${num === currentPage ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-100'}`}
-          >
-            {num}
-          </button>
         ))}
-
-        {totalPages > 5 && (
-          <>
-            <span className="px-2 text-gray-500">...</span>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              className={`px-3 py-1 rounded ${currentPage === totalPages ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-100'}`}
-            >
-              {totalPages}
-            </button>
-          </>
-        )}
-
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className={`px-3 py-1 rounded ${currentPage === totalPages ? 'text-gray-400' : 'text-blue-600 hover:bg-blue-100'}`}
-        >
-          ›
-        </button>
       </div>
-    </div>
-  </div>
-  </div>
-);
+    );
   };
-
-
-return (
+  return (
     <div className="flex h-screen py-4 bg-white overflow-hidden relative">
       {/* Sidebar */}
       <div className="w-60 bg-white rounded-2xl shadow-md outline outline-1 outline-zinc-200 flex flex-col justify-between">
@@ -300,7 +244,7 @@ return (
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-gray-50 overflow-y-auto px-6">
+      <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold capitalize">{selectedMenuItem}</h1>
           <div className="flex items-center gap-4 relative">
@@ -359,22 +303,24 @@ return (
         </div>
 
         {selectedMenuItem === "create member" ? (
-          <div className="bg-white w-full rounded-xl shadow p-6 flex flex-col min-h-[calc(100vh-180px)]">
-            <div className="flex gap-6 mb-4 border-b border-gray-200 pb-2">
+          <>
+            <div className="flex gap-6 border-b mb-6">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 ${activeTab === tab ? "font-medium text-blue-600" : "text-gray-600 hover:text-blue-500"}`}
-
-                  
+                  className={`pb-2 ${
+                    activeTab === tab
+                      ? "border-b-2 border-blue-500 font-medium text-blue-600"
+                      : "text-gray-600 hover:text-blue-500"
+                  }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
             {renderUserList()}
-          </div>
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is {selectedMenuItem} panel.
@@ -400,8 +346,18 @@ return (
         <Modal
           title="Create Staff Member"
           fields={[
-            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"], name: "teamLead" },
-            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"], name: "designation" },
+            {
+              type: "select",
+              placeholder: "Select Team Lead",
+              options: allTeamLeads,
+              name: "teamLead",
+            },
+            {
+              type: "select",
+              placeholder: "Designation",
+              options: ["Senior Staff", "Junior Staff"],
+              name: "designation",
+            },
             { type: "text", placeholder: "Name", name: "name" },
             { type: "email", placeholder: "Email id", name: "email" },
           ]}
