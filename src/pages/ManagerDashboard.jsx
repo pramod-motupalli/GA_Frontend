@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   UserPlus,
@@ -29,12 +29,65 @@ const CreateMembers = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 8;
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
+  const API_ENDPOINTS = {
+  teamLeads: "http://localhost:8000/api/users/get-team-leads/",
+  staffMembers: "http://localhost:8000/api/users/get-staff-members/",
+  accountants: "http://localhost:8000/api/users/get-accountants/",
+};
+useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+
+        const [teamRes, staffRes, accRes] = await Promise.all([
+          fetch("http://localhost:8000/api/users/get-team-leads/", {
+      
+          }),
+          fetch("http://localhost:8000/api/users/get-staff-members/", {
+  
+          }),
+          fetch("http://localhost:8000/api/users/get-accountants/", {
+         
+          }),
+        ]);
+
+        const teamData = await teamRes.json();
+        const staffData = await staffRes.json();
+        const accData = await accRes.json();
+
+        setTeamLeads(teamData);
+        setStaffMembers(staffData);
+        setAccountants(accData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Get the relevant user list based on selected tab
+  
+
+  // ✅ Filtered list based on search
+  function getUsersByTab() {
+  if (activeTab === "Team Leads") return teamLeads;
+  if (activeTab === "Staff Members") return staffMembers;
+  if (activeTab === "Accountants") return accountants;
+  return [];
+}
+
+const usersToDisplay = getUsersByTab().filter((user) =>
+  user.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard },
