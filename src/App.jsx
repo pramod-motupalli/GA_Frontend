@@ -21,10 +21,6 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PlanRequests from './pages/PlanRequests';
 import DomainHostingTable from './pages/DomainHostingTable';
 import PaymentRequests from './pages/PaymentRequests';
-import PaymentApprovals from './pages/PaymentApprovals';
-import WorkSpaceActivation from './pages/WorkSpaceActivation';
-import WorkspaceCard from "./pages/WorkspaceCard";
-import WorkspaceClient from "./pages/WorkspaceCardClient";
 
 function App() {
   return (
@@ -51,10 +47,6 @@ function App() {
         <Route path="/plan-requests" element={<PlanRequests />} />
         <Route path="/plan-requests-domain" element={<DomainHostingTable />} />
         <Route path="/payment-requests" element={<PaymentRequests />} />
-        <Route path="/payment-approvals" element={<PaymentApprovals />} />
-        <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />
-        <Route path="/Workspacecard" element={<WorkspaceCard />} />
-        <Route path="/Workspaceclient" element={<WorkspaceClient />} />
       </Routes>
     </Router>
   );

@@ -1,12 +1,14 @@
-/* html,body, #root {
+html,body, #root {
   display: flex;  
   width: 100%;
-  margin: 0;
-  padding: 0;
-  justify-content: center;
-  align-items: center;
-  background-color: #f7f9fa;
-   background-image: 
+  background-color: transparent;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+    background-image: 
     url('../assets/BG1.svg'),
     url('../assets/BG2.svg'),
     url('../assets/BG3.svg'),
@@ -24,7 +26,7 @@
     50% 80%;
   background-repeat: no-repeat;
   background-size: auto;
-} */
+}
 .plan-selection-container {
   min-height: 100vh;
   width: 100%;
@@ -35,24 +37,6 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-     background-image: 
-    url('../assets/BG1.svg'),
-    url('../assets/BG2.svg'),
-    url('../assets/BG3.svg'),
-    url('../assets/BG4.svg'),
-    url('../assets/BG5.svg'),
-    url('../assets/BG6.svg'),
-    url('../assets/BG7.svg');
-  background-position: 
-    5% 5%,
-    60% 27%,
-    96% 30%,
-    12% 70%,
-    94% 90%,
-    0% 100%,
-    50% 80%;
-  background-repeat: no-repeat;
-  background-size: auto;
 }
 
 
