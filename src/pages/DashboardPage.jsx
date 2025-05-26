@@ -18,6 +18,136 @@ import {
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 
+// Place at the top of Dashboard.jsx (after imports)
+function FlowManager() {
+  const [showFlowModal, setShowFlowModal] = useState(false);
+  const [showHoursModal, setShowHoursModal] = useState(false);
+  const [flowSteps, setFlowSteps] = useState([]);
+  const [hours, setHours] = useState([]);
+
+  const handleAddFlow = () => {
+    setFlowSteps([...flowSteps, ""]);
+  };
+
+  const handleFlowChange = (index, value) => {
+    const updatedSteps = [...flowSteps];
+    updatedSteps[index] = value;
+    setFlowSteps(updatedSteps);
+  };
+
+  const handleCreateFlow = () => {
+    const initialHours = flowSteps.map(() => 0);
+    setHours(initialHours);
+    setShowFlowModal(false);
+    setShowHoursModal(true);
+  };
+
+  const handleHourChange = (index, value) => {
+    const updatedHours = [...hours];
+    updatedHours[index] = value;
+    setHours(updatedHours);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => {
+          setFlowSteps([]);
+          setShowFlowModal(true);
+        }}
+        className="bg-blue-500 text-white px-4 py-1 rounded"
+      >
+        Create Flow
+      </button>
+
+      {/* Work Flow Modal */}
+      {showFlowModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-[400px] p-4 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Work Flow</h2>
+              <button onClick={() => setShowFlowModal(false)}>✕</button>
+            </div>
+            <div>
+              {flowSteps.map((step, idx) => (
+                <input
+                  key={idx}
+                  className="w-full border rounded px-3 py-2 mb-2"
+                  placeholder={`Step ${idx + 1}`}
+                  value={step}
+                  onChange={(e) => handleFlowChange(idx, e.target.value)}
+                />
+              ))}
+              <button
+                onClick={handleAddFlow}
+                className="text-blue-600 underline mb-4"
+              >
+                + add to flow
+              </button>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowFlowModal(false)}
+                className="border px-4 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateFlow}
+                className="bg-blue-500 text-white px-4 py-1 rounded"
+              >
+                Create Flow
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scope of Hours Modal */}
+      {showHoursModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-[400px] p-4 rounded-lg shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Scope of Hours</h2>
+              <button onClick={() => setShowHoursModal(false)}>✕</button>
+            </div>
+            <table className="w-full mb-4">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-1">Category</th>
+                  <th className="py-1">Hours</th>
+                </tr>
+              </thead>
+              <tbody>
+                {flowSteps.map((step, idx) => (
+                  <tr key={idx} className="border-b">
+                    <td className="py-2">{step}</td>
+                    <td>
+                      <input
+                        type="number"
+                        value={hours[idx]}
+                        onChange={(e) => handleHourChange(idx, e.target.value)}
+                        className="w-full border rounded px-2 py-1"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowHoursModal(false)}
+                className="bg-blue-500 text-white px-4 py-1 rounded"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Dashboard = () => {
   const [clientRequests, setClientRequests] = useState([
@@ -274,8 +404,12 @@ const renderClientRequests = () => (
           <th className="p-2 border">Domain Name</th>
           <th className="p-2 border">Request Raised Date</th>
           <th className="p-2 border">client requests</th>
-          <th className="p-2 border">Scope Status</th>         
-          <th className="p-2 border text-center">Actions</th>
+          <th className="p-2 border">Scope of service</th>         
+          <th className="p-2 border text-center">scope of service status</th>
+          <th>Task Assigned to</th>
+          <th>Flow Creation</th>
+          <th>Workhours</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -299,6 +433,27 @@ const renderClientRequests = () => (
                 <span className="text-gray-400 italic">Pending</span>
               )}
             </td>
+            <td>
+              <select className="border rounded px-2 py-1">
+                <option>Select</option>
+                <option>Staff 1</option>
+                <option>Staff 2</option>
+              </select>
+            </td>
+            <td>
+              <button className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+                Create Flow
+              </button>
+            </td>
+            <td className="text-blue-700 font-semibold">Working hours</td>
+            <td className="space-x-2">
+              <button className="text-blue-500 underline hover:text-blue-700">
+                Create Work
+              </button>
+              <button className="text-blue-500 underline hover:text-blue-700">
+                Rise to manager
+              </button>
+              </td>
           </tr>
         ))}
         {isRequestModalOpen && (
