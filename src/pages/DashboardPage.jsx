@@ -19,8 +19,7 @@ import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 
 // Place at the top of Dashboard.jsx (after imports)
-function FlowManager() {
-  const [showFlowModal, setShowFlowModal] = useState(false);
+function FlowManager({ isOpen, onClose }) {
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [flowSteps, setFlowSteps] = useState([]);
   const [hours, setHours] = useState([]);
@@ -38,7 +37,6 @@ function FlowManager() {
   const handleCreateFlow = () => {
     const initialHours = flowSteps.map(() => 0);
     setHours(initialHours);
-    setShowFlowModal(false);
     setShowHoursModal(true);
   };
 
@@ -49,24 +47,13 @@ function FlowManager() {
   };
 
   return (
-    <div>
-      <button
-        onClick={() => {
-          setFlowSteps([]);
-          setShowFlowModal(true);
-        }}
-        className="bg-blue-500 text-white px-4 py-1 rounded"
-      >
-        Create Flow
-      </button>
-
-      {/* Work Flow Modal */}
-      {showFlowModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <>
+      {isOpen && (
+        <div className="fixed inset-0  flex items-center justify-center z-50">
           <div className="bg-white w-[400px] p-4 rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Work Flow</h2>
-              <button onClick={() => setShowFlowModal(false)}>✕</button>
+              <button onClick={onClose}>✕</button>
             </div>
             <div>
               {flowSteps.map((step, idx) => (
@@ -86,10 +73,7 @@ function FlowManager() {
               </button>
             </div>
             <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setShowFlowModal(false)}
-                className="border px-4 py-1 rounded"
-              >
+              <button onClick={onClose} className="border px-4 py-1 rounded">
                 Cancel
               </button>
               <button
@@ -105,7 +89,7 @@ function FlowManager() {
 
       {/* Scope of Hours Modal */}
       {showHoursModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-white w-[400px] p-4 rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Scope of Hours</h2>
@@ -145,15 +129,16 @@ function FlowManager() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
+
 
 const Dashboard = () => {
   const [clientRequests, setClientRequests] = useState([
   {
     id: 1,
-    clientName: "ABC Corp",
+    clientName: "Surya",
     domain: "abc.com",
     raisedDate: "2025-05-20",
     description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
@@ -161,14 +146,71 @@ const Dashboard = () => {
   },
   {
     id: 2,
-    clientName: "ABC Corp",
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 3,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 4,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 5,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 6,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 7,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 8,
+    clientName: "Surya",
+    domain: "abc.com",
+    raisedDate: "2025-05-20",
+    description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
+    scopeStatus: "",
+  },
+  {
+    id: 9,
+    clientName: "Surya",
     domain: "abc.com",
     raisedDate: "2025-05-20",
     description: "I need to build a block that allows users to submit feedback via a form and store it in the database.",
     scopeStatus: "",
   },
 ]);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [modalContentType, setModalContentType] = useState(null); // 'request' or 'scope'
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -395,36 +437,38 @@ const Dashboard = () => {
     );
   };
 const renderClientRequests = () => (
+  
   <div className="w-full bg-white p-6 rounded-xl shadow">
     <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
-    <table className="w-full table-auto border-collapse">
-      <thead>
-        <tr className="bg-gray-100 text-left text-sm text-gray-600">
-          <th className="p-2 border">Client Name</th>
-          <th className="p-2 border">Domain Name</th>
-          <th className="p-2 border">Request Raised Date</th>
-          <th className="p-2 border">client requests</th>
-          <th className="p-2 border">Scope of service</th>         
-          <th className="p-2 border text-center">scope of service status</th>
-          <th>Task Assigned to</th>
-          <th>Flow Creation</th>
-          <th>Workhours</th>
-          <th>Actions</th>
+    <div className="overflow-x-auto rounded-lg border">
+      <table className="min-w-[1200px] w-full table-auto border-collapse">
+      <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+        <tr className="border-b">
+          <th className="px-4 py-3 whitespace-nowrap">Client Name</th>
+          <th className="px-4 py-3 whitespace-nowrap">Domain Name</th>
+          <th className="px-4 py-3 whitespace-nowrap">Request Raised Date</th>
+          <th className="px-4 py-3 whitespace-nowrap">client requests</th>    
+          <th className="px-4 py-3 whitespace-nowrap">Scope of service</th>         
+          <th className="px-4 py-3 whitespace-nowrap">scope of service status</th>
+          <th className="px-4 py-3 whitespace-nowrap">Task Assigned to</th>
+          <th className="px-4 py-3 whitespace-nowrap">Flow Creation</th>
+          <th className="px-4 py-3 whitespace-nowrap">Workhours</th>
+          <th className="px-4 py-3 whitespace-nowrap">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody className="divide-y divide-gray-200">
         {clientRequests.map((req) => (
-          <tr key={req.id} className="text-sm text-gray-700">
-            <td className="p-2 border">{req.clientName}</td>
-            <td className="p-2 border">{req.domain}</td>
-            <td className="p-2 border">{req.raisedDate}</td>
-            <td className=" p-2 border text-center">           
+          <tr key={req.id} className=" text-sm text-gray-700">
+            <td className="px-4 py-2">{req.clientName}</td>
+            <td className="px-4 py-2">{req.domain}</td>
+            <td className="px-4 py-2">{req.raisedDate}</td>
+            <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">           
                   <button onClick={() => handleViewRequest(req)}>View Request</button>           
             </td>
-            <td className="p-2 border text-center">
+            <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">
               <button onClick={() => handleViewScope(req)}>View Scope</button>
             </td>
-            <td className="p-2 border ">
+            <td className="px-4 py-2">
               {req.scopeStatus ? (
                 <span className={`px-2 py-1 rounded text-xs font-medium ${req.scopeStatus === "Within Scope" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                   {req.scopeStatus}
@@ -433,20 +477,24 @@ const renderClientRequests = () => (
                 <span className="text-gray-400 italic">Pending</span>
               )}
             </td>
-            <td>
+            <td className="px-4 py-2">
               <select className="border rounded px-2 py-1">
                 <option>Select</option>
                 <option>Staff 1</option>
                 <option>Staff 2</option>
               </select>
             </td>
-            <td>
-              <button className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+            
+            <td className="px-4 py-2">
+              
+              <button 
+              onClick={() => setFlowModalOpen(true)}
+              className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600">
                 Create Flow
               </button>
             </td>
-            <td className="text-blue-700 font-semibold">Working hours</td>
-            <td className="space-x-2">
+            <td className="px-4 py-2 text-blue-600">Working hours</td>
+            <td className="px-4 py-2 text-blue-600">
               <button className="text-blue-500 underline hover:text-blue-700">
                 Create Work
               </button>
@@ -499,7 +547,20 @@ const renderClientRequests = () => (
       </tbody>
     </table>
   </div>
+  <div className="flex items-center justify-between mt-4 px-2">
+    <div className="text-sm text-gray-500">Page <span className="font-medium">1</span> of 10</div>
+    <div className="flex space-x-1">
+      <button className="px-3 py-1 border rounded">1</button>
+      <button className="px-3 py-1 border rounded">2</button>
+      <button className="px-3 py-1 border rounded">3</button>
+      <span className="px-3 py-1">...</span>
+      <button className="px-3 py-1 border rounded">10</button>
+    </div>
+  </div>
+  </div>
+  
 );
+
 
 
 const handleScopeDecision = (status) => {
@@ -577,6 +638,7 @@ const handleScopeDecision = (status) => {
               </button>
             ))}
           </div>
+          <FlowManager isOpen={flowModalOpen} onClose={() => setFlowModalOpen(false)} />
         </div>
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
