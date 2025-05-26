@@ -48,14 +48,72 @@ const CreateMembers = () => {
     { name: "Settings", icon: Settings },
   ];
 
-  const handleCreateUser = (userData) => {
+  const createTeamLeadRequest = async (userData) => {
+    try {
+      const token = localStorage.getItem("accessToken"); // Ensure token is stored
+      console.log(userData  )
+      const response = await fetch("http://localhost:8000/api/users/teamlead/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create team lead");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error creating team lead:", error);
+      return null;
+    }
+  };
+
+  const handleCreateUser = async (userData) => {
     const tab = activeTab;
+
     if (tab === "Team-leads") {
-      setTeamLeads([...teamLeads, userData]);
+      const createdUser = await createTeamLeadRequest(userData);
+      if (createdUser) {
+        setTeamLeads([...teamLeads, createdUser]);
+      }
+      setShowTeamLeadModal(false);
     } else if (tab === "Staff-members") {
       setStaffMembers([...staffMembers, userData]);
+      setShowStaffModal(false);
     } else if (tab === "Accountant") {
       setAccountants([...accountants, userData]);
+      setShowAccountantModal(false);
+    }
+  };
+
+  const renderUserList = () => {
+    let users = [];
+    if (activeTab === "Team-leads") users = teamLeads;
+    else if (activeTab === "Staff-members") users = staffMembers;
+    else if (activeTab === "Accountant") users = accountants;
+
+    if (users.length === 0) {
+      return (
+        <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
+          <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
+          <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
+          <button
+            onClick={() => {
+              if (activeTab === "Team-leads") setShowTeamLeadModal(true);
+              else if (activeTab === "Staff-members") setShowStaffModal(true);
+              else if (activeTab === "Accountant") setShowAccountantModal(true);
+            }}
+            className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            + Add User
+          </button>
+        </div>
+      );
     }
 
     setShowTeamLeadModal(false);
@@ -324,6 +382,7 @@ return (
         )}
       </div>
 
+      {/* Modals */}
       {showTeamLeadModal && (
         <Modal
           title="Create Team Lead"
@@ -375,7 +434,7 @@ const Modal = ({ title, onClose, fields, onSubmit }) => {
   };
 
   return (
-    <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+    <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-30">
       <div className="bg-white w-96 rounded-lg p-6 shadow-lg relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">{title}</h2>

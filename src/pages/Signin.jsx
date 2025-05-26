@@ -21,13 +21,10 @@ export default function Login() {
 
             const { access, refresh, role, is_email_verified } = response.data;
 
-            if (rememberMe) {
+            
                 localStorage.setItem("accessToken", access);
                 localStorage.setItem("refreshToken", refresh);
-            } else {
-                sessionStorage.setItem("accessToken", access);
-                sessionStorage.setItem("refreshToken", refresh);
-            }
+            
             console.log(role);
             // alert("Login successful!");
             console.log(is_email_verified)
