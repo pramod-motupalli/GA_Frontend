@@ -12,6 +12,8 @@ import {
   MessageCircle,
   Bell,
 } from "lucide-react";
+import PaymentRequests from "./PaymentRequests";
+import WorkspaceCardClient from "./WorkspaceCardClient"
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -30,13 +32,13 @@ const ClientDashboard = () => {
       case "Dashboard":
         return <div>This is the Dashboard content</div>;
       case "Workspace":
-        return <div>This is the Workspace section</div>;
+        return <div><WorkspaceCardClient /></div>;
       case "My services":
         return <div>All your services are listed here</div>;
       case "Rise a Request":
         return <div>Submit a request here</div>;
       case "Transactions":
-        return <div>View your transaction history</div>;
+        return <div><PaymentRequests /></div>;
       case "Settings":
         return <div>Adjust your settings</div>;
       default:

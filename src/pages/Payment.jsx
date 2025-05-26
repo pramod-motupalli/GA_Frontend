@@ -6,18 +6,10 @@ import bankIcon from '../assets/Banking.svg';
 import walletIcon from '../assets/building-bank.svg';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const Payment = () => {
   const navigate = useNavigate();
-  const [planInfo, setPlanInfo] = useState(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('selectedPlanInfo');
-    if (stored) {
-      setPlanInfo(JSON.parse(stored));
-    }
-  }, []);
 
   const [activeMethod, setActiveMethod] = useState('Card payments');
   const [formData, setFormData] = useState({
@@ -27,47 +19,8 @@ const Payment = () => {
     cvc: '',
   });
 
-  const handlePayment = async () => {
-    if (!planInfo) {
-      alert('No payment data found.');
-      return;
-    }
-
-    const payload = {
-      title: planInfo.title,
-      price: planInfo.price,
-      billing: planInfo.billing,
-      features: planInfo.features,
-      domain_hosting: planInfo.domain_hosting,
-      payment_status: 'Done',
-      payment_method: activeMethod,
-      card_holder_name: formData.name,
-      card_number: formData.number,
-      expiry: formData.expiry,
-      cvc: formData.cvc,
-    };
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/submissions/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Backend error:', errorText);
-        alert('Payment submission failed: ' + errorText);
-        return;
-      }
-
-      console.log('Payment submitted successfully');
-      localStorage.removeItem('selectedPlanInfo');
-      navigate('/payment-success');
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Payment submission failed: ' + error.message);
-    }
+  const handlePayment = () => {
+    navigate('/payment-success');
   };
 
   const handleInput = (e) => {

@@ -14,6 +14,11 @@ import {
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyImage from "../assets/empty-data-icon.png";
+import ActivatedPayments from "./WorkSpaceActivation"; // adjust path as needed
+import WorkspaceCard from "./WorkspaceCard";
+import PlanRequests from "./PlanRequests";
+import DomainHostingTable from "./DomainHostingTable";
+
 
 const CreateMembers = () => {
   const [activeTab, setActiveTab] = useState("Team-leads");
@@ -231,11 +236,18 @@ const renderUserList = () => {
             </div>
             {renderUserList()}
           </>
-        ) : (
+        ) : selectedMenuItem === "Approvals" ? (
+          <ActivatedPayments />
+        ) : selectedMenuItem === "Dashboard" ? (
+            <WorkspaceCard />
+          ) : selectedMenuItem === "Request" ? (
+            <PlanRequests />
+          ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is {selectedMenuItem} panel.
           </div>
         )}
+
       </div>
 
       {showTeamLeadModal && (
