@@ -39,6 +39,8 @@ const Dashboard = () => {
   },
 ]);
 
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [modalContentType, setModalContentType] = useState(null); // 'request' or 'scope'
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [activeTab, setActiveTab] = useState("Create Member");
@@ -131,6 +133,16 @@ const Dashboard = () => {
     updated.splice(index, 1);
     setStaffMembers(updated);
   };
+  const handleViewRequest = (request) => {
+  setSelectedRequest(request);
+  setModalContentType('request');
+  setIsRequestModalOpen(true);
+};
+ const handleViewScope = (request) => {
+  setSelectedRequest(request);
+  setModalContentType('scope');
+  setIsRequestModalOpen(true);
+};
 
   const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 ">
@@ -166,7 +178,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-
   const renderCreateMembersContent = () => {
     const startIdx = (currentPage - 1) * itemsPerPage;
     const visibleMembers = staffMembers.slice(startIdx, startIdx + itemsPerPage);
@@ -273,25 +284,11 @@ const renderClientRequests = () => (
             <td className="p-2 border">{req.clientName}</td>
             <td className="p-2 border">{req.domain}</td>
             <td className="p-2 border">{req.raisedDate}</td>
-            <td className="p-2 border text-center">
-              <button 
-                onClick={()=>{
-                  setSelectedRequest(req);
-                  setShowRequestModal(true);
-                }}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                >view request</button>
+            <td className=" p-2 border text-center">           
+                  <button onClick={() => handleViewRequest(req)}>View Request</button>           
             </td>
             <td className="p-2 border text-center">
-              <button
-                onClick={() => {
-                  setSelectedRequest(req);
-                  setShowRequestModal(true);
-                }}
-                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-              >
-                View scope
-              </button>
+              <button onClick={() => handleViewScope(req)}>View Scope</button>
             </td>
             <td className="p-2 border ">
               {req.scopeStatus ? (
@@ -304,10 +301,52 @@ const renderClientRequests = () => (
             </td>
           </tr>
         ))}
+        {isRequestModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded shadow max-w-lg w-full">
+      <div className=" flex justify-between items-center mb-4">
+        <h3 className=" text-xl font-semibold mb-4">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
+        <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
+      </div>
+      {modalContentType === "request" ? (
+        <p className="text-gray-700">{selectedRequest?.description}</p>
+      ) : (
+        <div className="flex justify-between">
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Within Scope
+          </button>
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Out of Scope
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
       </tbody>
     </table>
   </div>
 );
+
+
 const handleScopeDecision = (status) => {
   if (!selectedRequest) return;
   const updatedRequests = clientRequests.map((req) =>
@@ -407,6 +446,47 @@ const handleScopeDecision = (status) => {
       {showRequestModal && renderRequestModal()}
     </div>
   );
+{isRequestModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded shadow max-w-lg w-full">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
+        <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
+      </div>
+      {modalContentType === "request" ? (
+        <p className="text-gray-700">{selectedRequest?.description}</p>
+      ) : (
+        <div className="flex justify-between">
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Within Scope
+          </button>
+          <button
+            onClick={() => {
+              const updatedRequests = clientRequests.map((r) =>
+                r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
+              );
+              setClientRequests(updatedRequests);
+              setIsRequestModalOpen(false);
+            }}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Out of Scope
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
 };
 
 export default Dashboard;
