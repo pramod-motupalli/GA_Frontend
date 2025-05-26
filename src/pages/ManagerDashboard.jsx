@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   UserPlus,
@@ -26,6 +26,7 @@ const CreateMembers = () => {
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
+  const [allTeamLeads, setAllTeamLeads] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -41,10 +42,34 @@ const CreateMembers = () => {
     { name: "Settings", icon: Settings },
   ];
 
+  useEffect(() => {
+    const fetchTeamLeads = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch("http://localhost:8000/api/users/team-leads/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch team leads");
+        }
+
+        const data = await response.json();
+        console.log(data)
+        setAllTeamLeads(data);
+      } catch (error) {
+        console.error("Error fetching team leads:", error);
+      }
+    };
+
+    fetchTeamLeads();
+  }, []);
+
   const createTeamLeadRequest = async (userData) => {
     try {
-      const token = localStorage.getItem("accessToken"); // Ensure token is stored
-      console.log(userData  )
+      const token = localStorage.getItem("accessToken");
       const response = await fetch("http://localhost:8000/api/users/teamlead/register/", {
         method: "POST",
         headers: {
@@ -54,10 +79,7 @@ const CreateMembers = () => {
         body: JSON.stringify(userData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create team lead");
-      }
-
+      if (!response.ok) throw new Error("Failed to create team lead");
       const data = await response.json();
       return data;
     } catch (error) {
@@ -66,20 +88,63 @@ const CreateMembers = () => {
     }
   };
 
+  const createStaffRequest = async (userData) => {
+    console.log(userData)
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("http://localhost:8000/api/users/register-staff/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) throw new Error("Failed to create staff");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error creating staff:", error);
+      return null;
+    }
+  };
+
+  const createAccountantRequest = async (userData) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("http://localhost:8000/api/users/create-accountant/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) throw new Error("Failed to create accountant");
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error creating accountant:", error);
+      return null;
+    }
+  };
+
   const handleCreateUser = async (userData) => {
     const tab = activeTab;
 
-    if (tab === "Team-leads") {
+     if (tab === "Team-leads") {
       const createdUser = await createTeamLeadRequest(userData);
-      if (createdUser) {
-        setTeamLeads([...teamLeads, createdUser]);
-      }
+      if (createdUser) setTeamLeads([...teamLeads, createdUser]);
       setShowTeamLeadModal(false);
     } else if (tab === "Staff-members") {
-      setStaffMembers([...staffMembers, userData]);
+      const createdUser = await createStaffRequest(userData);
+      if (createdUser) setStaffMembers([...staffMembers, createdUser]);
       setShowStaffModal(false);
     } else if (tab === "Accountant") {
-      setAccountants([...accountants, userData]);
+      const createdUser = await createAccountantRequest(userData);
+      if (createdUser) setAccountants([...accountants, createdUser]);
       setShowAccountantModal(false);
     }
   };
@@ -282,8 +347,18 @@ const CreateMembers = () => {
         <Modal
           title="Create Staff Member"
           fields={[
-            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"], name: "teamLead" },
-            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"], name: "designation" },
+            {
+              type: "select",
+              placeholder: "Select Team Lead",
+              options: allTeamLeads,
+              name: "teamLead",
+            },
+            {
+              type: "select",
+              placeholder: "Designation",
+              options: ["Senior Staff", "Junior Staff"],
+              name: "designation",
+            },
             { type: "text", placeholder: "Name", name: "name" },
             { type: "email", placeholder: "Email id", name: "email" },
           ]}

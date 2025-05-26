@@ -32,7 +32,7 @@ const AppWrapper = ({ children }) => {
       };
 
       refreshAccessToken();
-    }, 60 * 1000); // Check every 1 minute
+    }, 50 * 1000); // Check every 1 minute
 
     return () => clearInterval(interval); // Cleanup
   }, []);
