@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     domainName: '',
     domainProvider: '',
@@ -13,46 +15,66 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
     hostingExpiry: '',
   });
 
-  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: '' });
   };
 
-  const validate = () => {
-    return {};
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newErrors = validate();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    if (!selectedPlan) {
-      alert('No plan selected. Please select a plan first.');
-      return;
-    }
-
-    const combinedData = {
-      title: selectedPlan.title,
-      price: selectedPlan.price,
-      billing: selectedPlan.billing || 'monthly',
-      features: selectedPlan.features,
+  try {
+    const payload = {
+      title: selectedPlan?.title || '',
+      price: selectedPlan?.price || '',
+      billing: selectedPlan?.billing || '',
+      features: selectedPlan?.features || [],
+      payment_status: 'Done',
       domain_hosting: {
-        ...form,
-        domainExpiry: form.domainExpiry === '' ? null : form.domainExpiry,
-        hostingExpiry: form.hostingExpiry === '' ? null : form.hostingExpiry,
-      },
+        domainName: form.domainName,
+        domainProvider: form.domainProvider,
+        domainAccount: form.domainAccount,
+        domainExpiry: form.domainExpiry,
+        hostingProvider: form.hostingProvider,
+        hostingProviderName: form.hostingProviderName,
+        hostingExpiry: form.hostingExpiry,
+      }
     };
 
-    localStorage.setItem('selectedPlanInfo', JSON.stringify(combinedData));
-    navigate('/payment');
-  };
+    const response = await axios.post('http://localhost:8000/api/users/submissions/', payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
+    if (response.status === 201 || response.status === 200) {
+      setMessage('Domain & hosting info saved successfully!');
+      setForm({
+        domainName: '',
+        domainProvider: '',
+        domainAccount: '',
+        domainExpiry: '',
+        hostingProvider: '',
+        hostingProviderName: '',
+        hostingExpiry: '',
+      });
+
+      // Redirect to payment
+      navigate('/payment');
+    } else {
+      setMessage('Unexpected response from server.');
+    }
+  } catch (error) {
+    console.error('Error saving domain hosting info:', error);
+    setMessage('Failed to save data. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
   const handleClose = () => {
     setForm({
       domainName: '',
@@ -63,7 +85,7 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
       hostingProviderName: '',
       hostingExpiry: '',
     });
-    setErrors({});
+    setMessage('');
     if (onClose) onClose();
     navigate('/plans');
   };
@@ -76,11 +98,14 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
         <button
           onClick={handleClose}
           className="absolute top-4 right-5 text-2xl font-bold text-gray-400 hover:text-black"
+          aria-label="Close"
         >
           ×
         </button>
 
-        <h2 className="text-2xl font-semibold text-blue-600 mb-6">Domain and Hosting Information</h2>
+        <h2 className="text-2xl font-semibold text-blue-600 mb-6">
+          Domain and Hosting Information
+        </h2>
 
         {selectedPlan && (
           <p className="mb-4 text-gray-600">
@@ -89,8 +114,11 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
         )}
 
         <form onSubmit={handleSubmit}>
+          {/* Domain Related Info */}
           <div className="mb-8">
-            <h4 className="text-lg font-medium text-gray-800 mb-4">Domain Related Information</h4>
+            <h4 className="text-lg font-medium text-gray-800 mb-4">
+              Domain Related Information
+            </h4>
 
             <input
               type="text"
@@ -138,8 +166,12 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
               </div>
             </div>
           </div>
+
+          {/* Hosting Related Info */}
           <div className="mb-8">
-            <h4 className="text-lg font-medium text-gray-800 mb-4">Hosting Related Information</h4>
+            <h4 className="text-lg font-medium text-gray-800 mb-4">
+              Hosting Related Information
+            </h4>
 
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex-1 min-w-[200px]">
@@ -178,12 +210,22 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
             </div>
           </div>
 
+          {/* Submit Button and Messages */}
+          {message && (
+            <p className={`mb-4 ${message.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
+              {message}
+            </p>
+          )}
+
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-md hover:bg-blue-700 transition"
+              disabled={loading}
+              className={`bg-blue-600 text-white font-semibold px-6 py-3 rounded-md transition ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+              }`}
             >
-              Take a plan
+              {loading ? 'Saving...' : 'Take a plan'}
             </button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   LayoutDashboard,
   UserPlus,
@@ -14,6 +14,11 @@ import {
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyImage from "../assets/empty-data-icon.png";
+import ActivatedPayments from "./WorkSpaceActivation"; // adjust path as needed
+import WorkspaceCard from "./WorkspaceCard";
+import PlanRequests from "./PlanRequests";
+import DomainHostingTable from "./DomainHostingTable";
+
 
 const CreateMembers = () => {
   const [activeTab, setActiveTab] = useState("Team-leads");
@@ -22,11 +27,13 @@ const CreateMembers = () => {
   const [showTeamLeadModal, setShowTeamLeadModal] = useState(false);
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [showAccountantModal, setShowAccountantModal] = useState(false);
+  const [activeMenuIndex, setActiveMenuIndex] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
-  const [allTeamLeads, setAllTeamLeads] = useState([]);
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -42,163 +49,71 @@ const CreateMembers = () => {
     { name: "Settings", icon: Settings },
   ];
 
-  useEffect(() => {
-    const fetchTeamLeads = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const response = await fetch("http://localhost:8000/api/users/team-leads/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch team leads");
-        }
-
-        const data = await response.json();
-        console.log(data)
-        setAllTeamLeads(data);
-      } catch (error) {
-        console.error("Error fetching team leads:", error);
-      }
-    };
-
-    fetchTeamLeads();
-  }, []);
-
-  const createTeamLeadRequest = async (userData) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:8000/api/users/teamlead/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) throw new Error("Failed to create team lead");
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error creating team lead:", error);
-      return null;
-    }
-  };
-
-  const createStaffRequest = async (userData) => {
-    console.log(userData)
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:8000/api/users/register-staff/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) throw new Error("Failed to create staff");
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error creating staff:", error);
-      return null;
-    }
-  };
-
-  const createAccountantRequest = async (userData) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch("http://localhost:8000/api/users/create-accountant/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) throw new Error("Failed to create accountant");
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error creating accountant:", error);
-      return null;
-    }
-  };
-
-  const handleCreateUser = async (userData) => {
+  const handleCreateUser = (userData) => {
     const tab = activeTab;
-
-     if (tab === "Team-leads") {
-      const createdUser = await createTeamLeadRequest(userData);
-      if (createdUser) setTeamLeads([...teamLeads, createdUser]);
-      setShowTeamLeadModal(false);
+    if (tab === "Team-leads") {
+      setTeamLeads([...teamLeads, userData]);
     } else if (tab === "Staff-members") {
-      const createdUser = await createStaffRequest(userData);
-      if (createdUser) setStaffMembers([...staffMembers, createdUser]);
-      setShowStaffModal(false);
+      setStaffMembers([...staffMembers, userData]);
     } else if (tab === "Accountant") {
-      const createdUser = await createAccountantRequest(userData);
-      if (createdUser) setAccountants([...accountants, createdUser]);
-      setShowAccountantModal(false);
+      setAccountants([...accountants, userData]);
     }
+
+    setShowTeamLeadModal(false);
+    setShowStaffModal(false);
+    setShowAccountantModal(false);
   };
+const renderUserList = () => {
+  let users = [];
+  if (activeTab === "Team-leads") users = teamLeads;
+  else if (activeTab === "Staff-members") users = staffMembers;
+  else if (activeTab === "Accountant") users = accountants;
 
-  const renderUserList = () => {
-    let users = [];
-    if (activeTab === "Team-leads") users = teamLeads;
-    else if (activeTab === "Staff-members") users = staffMembers;
-    else if (activeTab === "Accountant") users = accountants;
-
-    if (users.length === 0) {
-      return (
-        <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
-          <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
-          <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
-          <button
-            onClick={() => {
-              if (activeTab === "Team-leads") setShowTeamLeadModal(true);
-              else if (activeTab === "Staff-members") setShowStaffModal(true);
-              else if (activeTab === "Accountant") setShowAccountantModal(true);
-            }}
-            className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
-          >
-            + Add User
-          </button>
-        </div>
-      );
-    }
-
+  if (users.length === 0) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {users.map((user, index) => (
-          <div key={index} className="bg-white shadow rounded-xl overflow-hidden">
-            <div className="p-4 flex justify-between items-start">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex justify-center items-center text-gray-500">
-                  <User className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-md font-semibold">{user.name}</h3>
-                  <p className="text-sm text-gray-500">{user.designation}</p>
-                  <p className="text-sm text-gray-400">{user.email}</p>
-                </div>
-              </div>
-              <button className="text-gray-400 hover:text-gray-600">⋮</button>
-            </div>
-            <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
-              View Profile
-            </div>
-          </div>
-        ))}
+      <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
+        <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
+        <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
+        <button
+          onClick={() => {
+            if (activeTab === "Team-leads") setShowTeamLeadModal(true);
+            else if (activeTab === "Staff-members") setShowStaffModal(true);
+            else if (activeTab === "Accountant") setShowAccountantModal(true);
+          }}
+          className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          + Add User
+        </button>
       </div>
     );
-  };
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {users.map((user, index) => (
+        <div key={index} className="bg-white shadow rounded-xl overflow-hidden">
+          <div className="p-4 flex justify-between items-start">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex justify-center items-center text-gray-500">
+                <User classname="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-md font-semibold">{user.name}</h3>
+                <p className="text-sm text-gray-500">{user.designation}</p>
+                <p className="text-sm text-gray-400">{user.email}</p>
+              </div>
+            </div>
+            <button className="text-gray-400 hover:text-gray-600">⋮</button>
+          </div>
+          <div className="bg-blue-100 px-4 py-2 text-center text-blue-600 font-medium cursor-pointer">
+            View Profile
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden relative">
       {/* Sidebar */}
@@ -321,14 +236,20 @@ const CreateMembers = () => {
             </div>
             {renderUserList()}
           </>
-        ) : (
+        ) : selectedMenuItem === "Approvals" ? (
+          <ActivatedPayments />
+        ) : selectedMenuItem === "Dashboard" ? (
+            <WorkspaceCard />
+          ) : selectedMenuItem === "Request" ? (
+            <PlanRequests />
+          ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is {selectedMenuItem} panel.
           </div>
         )}
+
       </div>
 
-      {/* Modals */}
       {showTeamLeadModal && (
         <Modal
           title="Create Team Lead"
@@ -346,18 +267,8 @@ const CreateMembers = () => {
         <Modal
           title="Create Staff Member"
           fields={[
-            {
-              type: "select",
-              placeholder: "Select Team Lead",
-              options: allTeamLeads,
-              name: "teamLead",
-            },
-            {
-              type: "select",
-              placeholder: "Designation",
-              options: ["Senior Staff", "Junior Staff"],
-              name: "designation",
-            },
+            { type: "select", placeholder: "Select Team Lead", options: ["Lead A", "Lead B"], name: "teamLead" },
+            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff"], name: "designation" },
             { type: "text", placeholder: "Name", name: "name" },
             { type: "email", placeholder: "Email id", name: "email" },
           ]}
@@ -390,7 +301,7 @@ const Modal = ({ title, onClose, fields, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-30">
+    <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
       <div className="bg-white w-96 rounded-lg p-6 shadow-lg relative">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">{title}</h2>

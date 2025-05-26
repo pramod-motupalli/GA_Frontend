@@ -1,5 +1,5 @@
-.plan-selection-container {
-  min-height: 100vh;
+html,body, #root {
+  display: flex;  
   width: 100%;
   background-color: transparent;
   padding: 0px;
@@ -26,7 +26,17 @@
     50% 80%;
   background-repeat: no-repeat;
   background-size: auto;
-
+}
+.plan-selection-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: transparent;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 

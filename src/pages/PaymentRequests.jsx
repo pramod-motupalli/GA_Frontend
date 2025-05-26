@@ -20,8 +20,6 @@ const PaymentRequests = () => {
   };
 
   return (
-    <div className="rounded-xl bg-white p-5 shadow-md text-sm">
-      <h2 className="text-xl font-semibold mb-4">Client Payment Requests</h2>
       <table className="w-full table-auto border-collapse text-sm">
         <thead className="bg-gray-50 text-gray-700">
           <tr>
@@ -33,7 +31,19 @@ const PaymentRequests = () => {
         <tbody>
           {requests.map((req, i) => (
             <tr key={i} className="border hover:bg-gray-50">
-              <td className="border px-4 py-2 text-gray-500 italic text-center">—</td>
+              <td className="px-4 py-3">
+                {req.title?.trim().toLowerCase() === 'plan customization' ? (
+                  <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full" />
+                    Customization
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 bg-green-100 text-green-600 text-xs font-semibold px-3 py-1 rounded-full">
+                    <span className="w-2 h-2 bg-green-600 rounded-full" />
+                    for payment settle of payment
+                  </span>
+                )}
+              </td>
               <td className="border px-4 py-2">{req.price}</td>
               <td className="border px-4 py-2">
                 <button
@@ -47,7 +57,6 @@ const PaymentRequests = () => {
           ))}
         </tbody>
       </table>
-    </div>
   );
 };
 
