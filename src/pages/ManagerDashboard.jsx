@@ -34,6 +34,9 @@ const CreateMembers = () => {
   const [teamLeads, setTeamLeads] = useState([]);
   const [staffMembers, setStaffMembers] = useState([]);
   const [accountants, setAccountants] = useState([]);
+  const [activeRequestTab, setActiveRequestTab] = useState("Client Request");
+  const [activeSubTab, setActiveSubTab] = useState("Task Request");
+
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
@@ -71,7 +74,8 @@ const renderUserList = () => {
 
   if (users.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow p-6 text-center">
+      <div className="flex-1 flex items-center justify-center">
+      <div className="w-full h-full bg-white rounded-xl shadow p-6 text-center flex flex-col items-center justify-center">
         <img src={emptyImage} alt="Empty" className="w-20 h-20 mb-4 opacity-60" />
         <p className="text-gray-500 mb-4">No {activeTab.toLowerCase()} created</p>
         <button
@@ -84,6 +88,7 @@ const renderUserList = () => {
         >
           + Add User
         </button>
+      </div>
       </div>
     );
   }
@@ -241,7 +246,58 @@ const renderUserList = () => {
         ) : selectedMenuItem === "Dashboard" ? (
             <WorkspaceCard />
           ) : selectedMenuItem === "Request" ? (
-            <PlanRequests />
+            <>
+    {/* Tabs - Client Request / Team Lead Request */}
+    <div className="inline-flex items-center gap-1 p-1 bg-gradient-to-br from-white to-neutral-100 rounded-full shadow-[inset_2px_2px_4px_rgba(255,255,255,0.6),_inset_-2px_-2px_4px_rgba(0,0,0,0.05),_0_4px_6px_rgba(0,0,0,0.05)] mb-6">
+      <button
+        className={`px-5 py-2 rounded-full font-semibold text-sm ${
+          activeRequestTab === "Client Request"
+            ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md"
+            : "text-gray-700"
+        }`}
+        onClick={() => setActiveRequestTab("Client Request")}
+      >
+        Client Request
+      </button>
+      <button
+        className={`px-5 py-2 rounded-full text-sm flex items-center gap-2 ${
+          activeRequestTab === "Team Lead Request"
+            ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md"
+            : "text-gray-700"
+        }`}
+        onClick={() => setActiveRequestTab("Team Lead Request")}
+      >
+        Team Lead Request
+        <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white text-xs font-semibold flex items-center justify-center">
+          02
+        </span>
+      </button>
+    </div>
+
+    {/* Sub-tabs - Custom Plans / Task Request */}
+    <div className="flex items-center gap-6 mb-2">
+      <div
+        className="flex items-center gap-2 text-gray-800 font-semibold text-sm cursor-pointer"
+        onClick={() => setActiveSubTab("Custom Plans")}
+      >
+        Custom plans
+        <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white text-xs font-semibold flex items-center justify-center">
+          02
+        </span>
+      </div>
+      <div
+        className={`text-sm font-semibold border-b-2 pb-1 cursor-pointer ${
+          activeSubTab === "Task Request" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent"
+        }`}
+        onClick={() => setActiveSubTab("Task Request")}
+      >
+        Task Request
+      </div>
+    </div>
+
+    {/* From Search Bar down — PlanRequests */}
+    <PlanRequests />
+  </>
           ) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is {selectedMenuItem} panel.
