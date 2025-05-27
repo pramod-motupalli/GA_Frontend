@@ -18,6 +18,8 @@ import {
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 
+import AssignMembersModal from "./AssignMembersModal";
+
 // Place at the top of Dashboard.jsx (after imports)
 function FlowManager({ isOpen, onClose }) {
   const [showHoursModal, setShowHoursModal] = useState(false);
@@ -209,6 +211,7 @@ const Dashboard = () => {
     scopeStatus: "",
   },
 ]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -225,10 +228,11 @@ const Dashboard = () => {
   const [staffMembers, setStaffMembers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
+  
   const [teamLeads, setTeamLeads] = useState([]); 
 
   const totalPages = Math.ceil(staffMembers.length / itemsPerPage);
+  
 
   useEffect(() => {
     const fetchTeamLeads = async () => {
@@ -436,130 +440,142 @@ const Dashboard = () => {
       </div>
     );
   };
-const renderClientRequests = () => (
-  
-  <div className="w-full bg-white p-6 rounded-xl shadow">
-    <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="min-w-[1200px] w-full table-auto border-collapse">
-      <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-        <tr className="border-b">
-          <th className="px-4 py-3 whitespace-nowrap">Client Name</th>
-          <th className="px-4 py-3 whitespace-nowrap">Domain Name</th>
-          <th className="px-4 py-3 whitespace-nowrap">Request Raised Date</th>
-          <th className="px-4 py-3 whitespace-nowrap">client requests</th>    
-          <th className="px-4 py-3 whitespace-nowrap">Scope of service</th>         
-          <th className="px-4 py-3 whitespace-nowrap">scope of service status</th>
-          <th className="px-4 py-3 whitespace-nowrap">Task Assigned to</th>
-          <th className="px-4 py-3 whitespace-nowrap">Flow Creation</th>
-          <th className="px-4 py-3 whitespace-nowrap">Workhours</th>
-          <th className="px-4 py-3 whitespace-nowrap">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-200">
-        {clientRequests.map((req) => (
-          <tr key={req.id} className=" text-sm text-gray-700">
-            <td className="px-4 py-2">{req.clientName}</td>
-            <td className="px-4 py-2">{req.domain}</td>
-            <td className="px-4 py-2">{req.raisedDate}</td>
-            <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">           
-                  <button onClick={() => handleViewRequest(req)}>View Request</button>           
-            </td>
-            <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">
-              <button onClick={() => handleViewScope(req)}>View Scope</button>
-            </td>
-            <td className="px-4 py-2">
-              {req.scopeStatus ? (
-                <span className={`px-2 py-1 rounded text-xs font-medium ${req.scopeStatus === "Within Scope" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                  {req.scopeStatus}
-                </span>
-              ):(
-                <span className="text-gray-400 italic">Pending</span>
-              )}
-            </td>
-            <td className="px-4 py-2">
-              <select className="border rounded px-2 py-1">
-                <option>Select</option>
-                <option>Staff 1</option>
-                <option>Staff 2</option>
-              </select>
-            </td>
-            
-            <td className="px-4 py-2">
-              
-              <button 
-              onClick={() => setFlowModalOpen(true)}
-              className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600">
-                Create Flow
-              </button>
-            </td>
-            <td className="px-4 py-2 text-blue-600">Working hours</td>
-            <td className="px-4 py-2 text-blue-600">
-              <button className="text-blue-500 underline hover:text-blue-700">
-                Create Work
-              </button>
-              <button className="text-blue-500 underline hover:text-blue-700">
-                Rise to manager
-              </button>
-              </td>
+ 
+  const renderClientRequests = () => (
+    <>
+    <div className="w-full bg-white p-6 rounded-xl shadow">
+      <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
+      <div className="overflow-x-auto rounded-lg border">
+        <table className="min-w-[1200px] w-full table-auto border-collapse">
+        <thead className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+          <tr className="border-b">
+            <th className="px-4 py-3 whitespace-nowrap">Client Name</th>
+            <th className="px-4 py-3 whitespace-nowrap">Domain Name</th>
+            <th className="px-4 py-3 whitespace-nowrap">Request Raised Date</th>
+            <th className="px-4 py-3 whitespace-nowrap">client requests</th>    
+            <th className="px-4 py-3 whitespace-nowrap">Scope of service</th>         
+            <th className="px-4 py-3 whitespace-nowrap">scope of service status</th>
+            <th className="px-4 py-3 whitespace-nowrap">Task Assigned to</th>
+            <th className="px-4 py-3 whitespace-nowrap">Flow Creation</th>
+            <th className="px-4 py-3 whitespace-nowrap">Workhours</th>
+            <th className="px-4 py-3 whitespace-nowrap">Actions</th>
           </tr>
-        ))}
-        {isRequestModalOpen && (
-  <div className="fixed inset-0 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded shadow max-w-lg w-full">
-      <div className=" flex justify-between items-center mb-4">
-        <h3 className=" text-xl font-semibold mb-4">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
-        <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
-      </div>
-      {modalContentType === "request" ? (
-        <p className="text-gray-700">{selectedRequest?.description}</p>
-      ) : (
-        <div className="flex justify-between">
-          <button
-            onClick={() => {
-              const updatedRequests = clientRequests.map((r) =>
-                r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
-              );
-              setClientRequests(updatedRequests);
-              setIsRequestModalOpen(false);
-            }}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Within Scope
-          </button>
-          <button
-            onClick={() => {
-              const updatedRequests = clientRequests.map((r) =>
-                r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
-              );
-              setClientRequests(updatedRequests);
-              setIsRequestModalOpen(false);
-            }}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Out of Scope
-          </button>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {clientRequests.map((req) => (
+            <tr key={req.id} className=" text-sm text-gray-700">
+              <td className="px-4 py-2">{req.clientName}</td>
+              <td className="px-4 py-2">{req.domain}</td>
+              <td className="px-4 py-2">{req.raisedDate}</td>
+              <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">           
+                    <button onClick={() => handleViewRequest(req)}>View Request</button>           
+              </td>
+              <td className="px-4 py-2 font-semibold text-blue-600 cursor-pointer">
+                <button onClick={() => handleViewScope(req)}>View Scope</button>
+              </td>
+              <td className="px-4 py-2">
+                {req.scopeStatus ? (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${req.scopeStatus === "Within Scope" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    {req.scopeStatus}
+                  </span>
+                ):(
+                  <span className="text-gray-400 italic">Pending</span>
+                )}
+              </td>
+              <td className="px-4 py-2">
+                <select className="border rounded px-2 py-1">
+                  <option>Select</option>
+                  <option>Staff 1</option>
+                  <option>Staff 2</option>
+                </select>
+              </td>
+              
+              <td className="px-4 py-2">
+                
+                <button 
+                onClick={() => setFlowModalOpen(true)}
+                className="bg-blue-500 text-white px-1 py-1 rounded hover:bg-blue-600">
+                  Create Flow
+                </button>
+              </td>
+              <td className="px-4 py-2 text-blue-600">Working hours</td>
+              <td className="px-4 py-2 text-blue-600">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="text-blue-600 hover:underline mr-2"
+                >
+                  Create Work
+                </button>
+
+                <button className="text-blue-500 underline hover:text-blue-700">
+                  Rise to manager
+                </button>
+                </td>
+                
+            </tr>
+            
+          ))}
+        </tbody> 
+      </table>
+          {isRequestModalOpen && (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded shadow max-w-lg w-full">
+        <div className=" flex justify-between items-center mb-4">
+          <h3 className=" text-xl font-semibold mb-4">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
+          <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
         </div>
-      )}
+        {modalContentType === "request" ? (
+          <p className="text-gray-700">{selectedRequest?.description}</p>
+        ) : (
+          <div className="flex justify-between">
+            <button
+              onClick={() => {
+                const updatedRequests = clientRequests.map((r) =>
+                  r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
+                );
+                setClientRequests(updatedRequests);
+                setIsRequestModalOpen(false);
+              }}
+              className="bg-green-500 text-white px-4 py-2 rounded"
+            >
+              Within Scope
+            </button>
+            <button
+              onClick={() => {
+                const updatedRequests = clientRequests.map((r) =>
+                  r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
+                );
+                setClientRequests(updatedRequests);
+                setIsRequestModalOpen(false);
+              }}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Out of Scope
+            </button>
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-)}
-      </tbody>
-    </table>
-  </div>
-  <div className="flex items-center justify-between mt-4 px-2">
-    <div className="text-sm text-gray-500">Page <span className="font-medium">1</span> of 10</div>
-    <div className="flex space-x-1">
-      <button className="px-3 py-1 border rounded">1</button>
-      <button className="px-3 py-1 border rounded">2</button>
-      <button className="px-3 py-1 border rounded">3</button>
-      <span className="px-3 py-1">...</span>
-      <button className="px-3 py-1 border rounded">10</button>
+  )}  
+      
     </div>
-  </div>
-  </div>
-  
-);
+    <div className="flex items-center justify-between mt-4 px-2">
+      <div className="text-sm text-gray-500">Page <span className="font-medium">1</span> of 10</div>
+      <div className="flex space-x-1">
+        <button className="px-3 py-1 border rounded">1</button>
+        <button className="px-3 py-1 border rounded">2</button>
+        <button className="px-3 py-1 border rounded">3</button>
+        <span className="px-3 py-1">...</span>
+        <button className="px-3 py-1 border rounded">10</button>
+      </div>
+    </div>
+    </div>
+        <AssignMembersModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+        />
+  </>
+  );
 
 
 
@@ -663,47 +679,6 @@ const handleScopeDecision = (status) => {
       {showRequestModal && renderRequestModal()}
     </div>
   );
-{isRequestModalOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded shadow max-w-lg w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
-        <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
-      </div>
-      {modalContentType === "request" ? (
-        <p className="text-gray-700">{selectedRequest?.description}</p>
-      ) : (
-        <div className="flex justify-between">
-          <button
-            onClick={() => {
-              const updatedRequests = clientRequests.map((r) =>
-                r.id === selectedRequest.id ? { ...r, scopeStatus: "Within Scope" } : r
-              );
-              setClientRequests(updatedRequests);
-              setIsRequestModalOpen(false);
-            }}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Within Scope
-          </button>
-          <button
-            onClick={() => {
-              const updatedRequests = clientRequests.map((r) =>
-                r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of Scope" } : r
-              );
-              setClientRequests(updatedRequests);
-              setIsRequestModalOpen(false);
-            }}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Out of Scope
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
-)}
 
 };
-
 export default Dashboard;
