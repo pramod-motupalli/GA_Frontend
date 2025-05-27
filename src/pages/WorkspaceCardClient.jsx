@@ -60,7 +60,7 @@ const handleRequestSubmit = async () => {
       date: currentDate,
       subject: requestForm.request,
       scope: requestForm.scopeOfService,
-      status: 'Accepted',
+      status: 'Pending',
       progress: 'In Progress',
     },
   ]);
@@ -70,7 +70,7 @@ const handleRequestSubmit = async () => {
       date: currentDate,
       subject: requestForm.request,
       scope: requestForm.scopeOfService,
-      status: 'Accepted',
+      status: 'Pending',
       progress: 'In Progress' });
 } catch (error) {
   console.error('Error submitting request:', error);
@@ -408,7 +408,7 @@ const handleRequestSubmit = async () => {
         <td className="px-6 py-4">{req.date}</td>
         <td className="px-6 py-4">{req.subject}</td>
         <td className="px-6 py-4">{req.scope}</td>
-        <td className="px-6 py-4 text-green-600">{req.status}</td>
+        <td className="px-6 py-4 text-orange-600">{req.status}</td>
         <td className="px-6 py-4 text-blue-600">{req.progress}</td>
       </tr>
     ))}
@@ -485,7 +485,7 @@ const handleRequestSubmit = async () => {
           <div>
             <label
               htmlFor="file-upload"
-              className="cursor-pointer inline-flex items-center px-3 py-2 bg-blue-600 text-blue-700 rounded hover:bg-gray-200"
+              className="cursor-pointer text-white  inline-flex items-center px-3 py-2 bg-blue-600 rounded hover:bg-gray-200"
             >
               Upload File
             </label>
