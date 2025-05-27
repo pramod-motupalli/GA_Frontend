@@ -3,15 +3,39 @@ import axios from 'axios';
 import settingsLogo from '../assets/logos/settings.svg';
 import userLogo from '../assets/logos/user.svg';
 import dotsverticalLogo from '../assets/logos/dots-vertical.svg';
-import PlanList from './planSelectionPopup';
+import PlanList from './planSelectionPopup'; // Assuming this is the correct path
+
+// Helper to get CSRF token if your Django setup uses it for POST requests from JS
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken'); // Get CSRF token
+
+// Add CSRF token to Axios default headers if available
+if (csrftoken) {
+  axios.defaults.headers.common['X-CSRFToken'] = csrftoken;
+}
+// If you use session-based authentication, ensure 'withCredentials' is true
+// axios.defaults.withCredentials = true;
+// If you use token-based authentication (e.g., JWT), you'll need to add
+// the Authorization header, e.g., in handleCreateRequestSubmit or globally.
+// axios.defaults.headers.common['Authorization'] = `Bearer ${yourAuthToken}`;
+
 
 export default function Main() {
-  const [requests, setRequests] = React.useState([]);
-
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredWorkspaces, setFilteredWorkspaces] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [selectedIds, setSelectedIds] = useState([]);
   const [menuOpenId, setMenuOpenId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [editId, setEditId] = useState(null);
@@ -20,112 +44,44 @@ export default function Main() {
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [showPlanList, setShowPlanList] = useState(false);
   const [isMonthly, setIsMonthly] = useState(true);
+
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
-const [requestForm, setRequestForm] = useState({
-  domainName: '',
-  request: '',
-  scopeOfService: '',
-});
-const handleFileChange = (e) => {
-  const files = e.target.files;
-  if (files.length === 0) return;
-}
-const handleRequestSubmit = async () => {
-  // if (!selectedWorkspace) {
-  //   alert('No workspace selected');
-  //   return;
-  // }
-  // try {
-  //   // Example API call — adjust URL & payload as needed
-  //   await axios.post(`http://localhost:8000/api/workspaces/${selectedWorkspace.id}/requests/`, {
-  //     subject: requestForm.request,
-  //     description: requestForm.scopeOfService,
-  //   });
-  //   alert('Request submitted successfully');
-  //   setShowCreateRequestModal(false);
-  //   setRequestForm({ domainName: '', request: '', scopeOfService: '' });
-  //   // Optionally refresh requests or update UI here
-  // } catch (error) {
-  //   console.error('Error submitting request:', error);
-  //   alert('Failed to submit request');
-  // }
-  try {
-  const currentDate = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
+  const [requestSubject, setRequestSubject] = useState('');
+  const [requestDescription, setRequestDescription] = useState('');
+  const [requestFiles, setRequestFiles] = useState([]);
+  const fileInputRef = useRef(null);
 
-  // Add to frontend requests list
-  setRequests(prev => [
-    ...prev,
-    {
-      domain: "example.com",
-      date: currentDate,
-      subject: requestForm.request,
-      scope: requestForm.scopeOfService,
-      status: 'Pending',
-      progress: 'In Progress',
-    },
-  ]);
-
-  setShowCreateRequestModal(false);
-  setRequestForm({domain: "example.com",
-      date: currentDate,
-      subject: requestForm.request,
-      scope: requestForm.scopeOfService,
-      status: 'Pending',
-      progress: 'In Progress' });
-} catch (error) {
-  console.error('Error submitting request:', error);
-  alert('Failed to submit request');
-}
+  // State for tasks in the table view
+  const [tasksForWorkspace, setTasksForWorkspace] = useState([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
 
-};
+  const currentUserAvatar = 'https://i.pravatar.cc/40?img=68';
+  // const filePreviewImage = 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwY2hhcnR8ZW58MHx8MHx8&auto=format&fit=crop&w=130&h=80&q=80';
 
   const billingType = isMonthly ? 'monthly' : 'yearly';
-
   const monthlyPlans = [
-    {
-      title: 'Pro',
-      price: 100,
-      features: ['All limited links', 'Own analytics platform', 'Chat support', 'Optimize hashtags', 'Unlimited users'],
-    },
-    {
-      title: 'Intro',
-      price: 300,
-      features: ['Dedicated account', 'Tailored analytics', '24/7 support', 'AI-driven hashtag', 'Unlimited users'],
-    },
-    {
-      title: 'Basic',
-      price: 200,
-      features: ['Priority support', 'Custom analytics reports', 'Phone support', 'Advanced hashtag', 'Up to 50 users'],
-    },
+    { title: 'Pro', price: 100, features: ['All limited links', 'Own analytics platform', 'Chat support', 'Optimize hashtags', 'Unlimited users'] },
+    { title: 'Intro', price: 300, features: ['Dedicated account', 'Tailored analytics', '24/7 support', 'AI-driven hashtag', 'Unlimited users'] },
+    { title: 'Basic', price: 200, features: ['Priority support', 'Custom analytics reports', 'Phone support', 'Advanced hashtag', 'Up to 50 users'] },
   ];
-
   const yearlyPlans = [
-    {
-      title: 'Pro',
-      price: 1000,
-      features: ['All limited links', 'Own analytics platform', 'Chat support', 'Optimize hashtags', 'Unlimited users'],
-    },
-    {
-      title: 'Intro',
-      price: 2800,
-      features: ['Dedicated account', 'Tailored analytics', '24/7 support', 'AI-driven hashtag', 'Unlimited users'],
-    },
-    {
-      title: 'Basic',
-      price: 1800,
-      features: ['Priority support', 'Custom analytics reports', 'Phone support', 'Advanced hashtag', 'Up to 50 users'],
-    },
+    { title: 'Pro', price: 1000, features: ['All limited links', 'Own analytics platform', 'Chat support', 'Optimize hashtags', 'Unlimited users'] },
+    { title: 'Intro', price: 2800, features: ['Dedicated account', 'Tailored analytics', '24/7 support', 'AI-driven hashtag', 'Unlimited users'] },
+    { title: 'Basic', price: 1800, features: ['Priority support', 'Custom analytics reports', 'Phone support', 'Advanced hashtag', 'Up to 50 users'] },
   ];
-
   const plans = isMonthly ? monthlyPlans : yearlyPlans;
+
   const workspacesPerPage = 9;
   const cardRefs = useRef({});
-  
-  // Fetch workspaces on mount
+  const selectedIds = editId ? [editId] : [];
+
+
+  // Fetch initial workspaces
   useEffect(() => {
     axios
-      .get('http://localhost:8000/api/users/workspaces/create/')
+      .get('http://localhost:8000/api/users/workspaces/create/') // Assuming this is your workspace list endpoint
       .then(res => {
         setWorkspaces(res.data);
         setFilteredWorkspaces(res.data);
@@ -133,7 +89,32 @@ const handleRequestSubmit = async () => {
       .catch(err => console.error('Failed to fetch workspaces:', err));
   }, []);
 
-  // Edit workspace: open inputs
+  // Fetch tasks when selectedWorkspace changes and in tableMode
+ useEffect(() => {
+  if (tableMode && selectedWorkspace) {
+    setIsLoadingTasks(true);
+
+    const token = localStorage.getItem("accessToken");
+
+    axios.get(`http://localhost:8000/api/users/workspaces/${selectedWorkspace.id}/tasks/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => {
+        setTasksForWorkspace(res.data);
+        setIsLoadingTasks(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch tasks:', err.response ? err.response.data : err.message);
+        setIsLoadingTasks(false);
+        setTasksForWorkspace([]);
+      });
+  } else {
+    setTasksForWorkspace([]); // Clear tasks if not in table mode or no workspace selected
+  }
+}, [tableMode, selectedWorkspace]);
+
   const handleEdit = (id) => {
     const ws = workspaces.find(w => w.id === id);
     setEditValues({ name: ws.workspace_name, description: ws.description });
@@ -141,7 +122,6 @@ const handleRequestSubmit = async () => {
     setMenuOpenId(null);
   };
 
-  // Save edited workspace to server and update state
   const handleSave = async (id) => {
     try {
       const res = await axios.patch(`http://localhost:8000/api/users/workspaces/create/${id}/`, {
@@ -156,7 +136,6 @@ const handleRequestSubmit = async () => {
     }
   };
 
-  // Delete workspace (implement API call here)
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8000/api/users/workspaces/create/${id}/`);
@@ -168,9 +147,8 @@ const handleRequestSubmit = async () => {
     }
   };
 
-  // Format workspace name to URL-friendly string
   const formatWorkspaceUrl = (name) => {
-    return name.toLowerCase().replace(/\s+/g, '') + '.com';
+    return name ? name.toLowerCase().replace(/\s+/g, '') + '.com' : '';
   };
 
   const totalPages = Math.ceil(filteredWorkspaces.length / workspacesPerPage);
@@ -178,7 +156,6 @@ const handleRequestSubmit = async () => {
   const indexOfFirst = indexOfLast - workspacesPerPage;
   const currentWorkspaces = filteredWorkspaces.slice(indexOfFirst, indexOfLast);
 
-  // Pagination buttons
   const renderPageNumbers = () => {
     const pages = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -197,7 +174,6 @@ const handleRequestSubmit = async () => {
     return pages;
   };
 
-  // Workspace cards view
   const renderWorkspaceCards = () => (
     <>
       <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
@@ -328,34 +304,16 @@ const handleRequestSubmit = async () => {
           Page {currentPage} of {totalPages}
         </div>
         <div className="flex gap-1 items-center">
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-          >
-            &lt;
-          </button>
+          <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50">-</button>
           {renderPageNumbers()}
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-          >
-            &gt;
-          </button>
+          <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50">+</button>
         </div>
       </div>
 
-      {/* Modal for Plan List */}
       {showPlanList && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-full max-w-5xl overflow-auto max-h-[90vh] relative shadow-lg">
-            <button
-              onClick={() => setShowPlanList(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
-            >
-              ×
-            </button>
+            <button onClick={() => setShowPlanList(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold">×</button>
             <h2 className="text-2xl font-semibold mb-4">Relevant plans to your request</h2>
             <PlanList plans={plans} type={billingType} />
           </div>
@@ -364,18 +322,16 @@ const handleRequestSubmit = async () => {
     </>
   );
 
-  // Table view when viewing selected workspace requests
   const renderTableView = () => (
     <>
       <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 className="text-xl font-semibold">Raised Requests</h2>
+        <h2 className="text-xl font-semibold">Raised Requests for: {selectedWorkspace?.workspace_name}</h2>
         <button
-  onClick={() => setShowCreateRequestModal(true)}
-  className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition"
->
-  + Create Request
-</button>
-
+          onClick={() => { setSubmitError(''); setShowCreateRequestModal(true);}}
+          className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition"
+        >
+          + Create Request
+        </button>
       </div>
 
       <div className="overflow-auto rounded-lg border">
@@ -384,44 +340,37 @@ const handleRequestSubmit = async () => {
             <tr>
               <th className="px-6 py-3 text-left">Domain Name</th>
               <th className="px-6 py-3 text-left">Request Raised Date</th>
-              <th className="px-6 py-3 text-left">Request</th>
+              <th className="px-6 py-3 text-left">Request (Title)</th>
               <th className="px-6 py-3 text-left">Scope of Service</th>
               <th className="px-6 py-3 text-left">Acceptance Status</th>
               <th className="px-6 py-3 text-left">Scope Status</th>
             </tr>
           </thead>
-           {/* <tbody>
-            
-            <tr>
-              <td className="px-6 py-4">example.com</td>
-              <td className="px-6 py-4">2025-05-27</td>
-              <td className="px-6 py-4">Hosting Setup</td>
-              <td className="px-6 py-4">Basic Deployment</td>
-              <td className="px-6 py-4 text-green-600">Accepted</td>
-              <td className="px-6 py-4 text-blue-600">In Progress</td>
-            </tr>
-          </tbody>  */}
-          <tbody className="bg-white divide-y divide-gray-200">
-    {requests.map((req, index) => (
-      <tr key={index}>
-        <td className="px-6 py-4">{req.domain}</td>
-        <td className="px-6 py-4">{req.date}</td>
-        <td className="px-6 py-4">{req.subject}</td>
-        <td className="px-6 py-4">{req.scope}</td>
-        <td className="px-6 py-4 text-orange-600">{req.status}</td>
-        <td className="px-6 py-4 text-blue-600">{req.progress}</td>
-      </tr>
-    ))}
-  </tbody>
+          <tbody>
+            {isLoadingTasks ? (
+              <tr><td colSpan="6" className="text-center py-4">Loading requests...</td></tr>
+            ) : tasksForWorkspace.length > 0 ? (
+              tasksForWorkspace.map(task => (
+                <tr key={task.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{selectedWorkspace?.workspace_name || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{new Date(task.created_at).toLocaleDateString()}</td>
+                  <td className="px-6 py-4">{task.title}</td>
+                  {/* The following fields depend on your Task model and serializer */}
+                  <td className="px-6 py-4">{task.scope_of_service || 'N/A'}</td>
+                  <td className="px-6 py-4">{task.acceptance_status || task.status || 'Pending'}</td>
+                  <td className="px-6 py-4">{task.scope_status || task.status || 'Pending'}</td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="6" className="text-center py-4">No requests found for this workspace.</td></tr>
+            )}
+          </tbody>
         </table>
       </div>
 
       <div className="mt-6 flex justify-between items-center">
         <button
-          onClick={() => {
-            setTableMode(false);
-            setSelectedWorkspace(null);
-          }}
+          onClick={() => { setTableMode(false); setSelectedWorkspace(null); }}
           className="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg shadow hover:bg-gray-200 transition"
         >
           ← Back to Workspaces
@@ -430,99 +379,132 @@ const handleRequestSubmit = async () => {
     </>
   );
 
-  return (
-    <div className="p-6 bg-white min-h-screen">
-      {tableMode ? renderTableView() : renderWorkspaceCards()}
-            {/* Create Request Modal */}
-      {showCreateRequestModal && (
-         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg w-full max-w-2xl relative shadow-lg">
-        <button
-          onClick={() => setShowCreateRequestModal(false)}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
-        >
-          ×
-        </button>
-        <h2 className="text-xl font-semibold mb-4">Raise a Request</h2>
+  const handleCloseCreateRequestModal = () => {
+    setShowCreateRequestModal(false);
+    setRequestSubject('');
+    setRequestDescription('');
+    setRequestFiles([]);
+    setSubmitError(''); // Clear any previous submission errors
+  };
 
-        <div className="space-y-4">
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700">Domain Name</label>
-            <input
-              type="text"
-              value={requestForm.domainName}
-              onChange={(e) => setRequestForm({ ...requestForm, domainName: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="example.com"
-            />
-          </div> */}
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files);
+    const newFiles = files.map(file => ({
+      name: file.name,
+      fileObject: file,
+      id: Date.now() + Math.random().toString(36).substr(2, 9)
+    }));
+    setRequestFiles(prevFiles => [...prevFiles, ...newFiles].slice(0, 3));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">subject</label>
-            <input
-              type="text"
-              value={requestForm.request}
-              onChange={(e) => setRequestForm({ ...requestForm, request: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g. Hosting Setup"
-            />
-          </div>
+  const handleRemoveFile = (fileIdToRemove) => {
+    setRequestFiles(prevFiles => prevFiles.filter(file => file.id !== fileIdToRemove));
+  };
+const token = localStorage.getItem("accessToken")
+  const handleCreateRequestSubmit = async () => {
+    if (!selectedWorkspace) {
+      setSubmitError("No workspace selected. Cannot create request.");
+      console.error("No workspace selected to associate the request with.");
+      return;
+    }
+    setSubmitError(''); // Clear previous error
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">description</label>
-            <textarea
-              rows={3}
-              value={requestForm.scopeOfService}
-              onChange={(e) => setRequestForm({ ...requestForm, scopeOfService: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g. Basic deployment to shared server"
-            ></textarea>
-          </div>
-        </div>
+    const formData = new FormData();
+    formData.append('title', requestSubject);
+    formData.append('description', requestDescription);
 
-        {/* File Upload Button bottom-left */}
-        <div className="mt-6 flex justify-between items-center">
-          <div>
-            <label
-              htmlFor="file-upload"
-              className="cursor-pointer text-white  inline-flex items-center px-3 py-2 bg-blue-600 rounded hover:bg-gray-200"
-            >
-              Upload File
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-              multiple
-            />
-          </div>
+    // Append files. Ensure your backend TaskSerializer is set up to handle
+    // a list of files under the key 'attachments'.
+    if (requestFiles.length > 0) {
+      requestFiles.forEach(file => {
+        formData.append('attachments', file.fileObject, file.name); // Key 'attachments'
+      });
+    }
+    // If your backend expects a different key for files (e.g. 'attachments_input' or 'files'), change it above.
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowCreateRequestModal(false)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-            >
-              Cancel
+    try {
+      // IMPORTANT: Adjust the URL to match your Django URL configuration for WorkspaceTaskListCreateView (POST part)
+      const response = await axios.post(
+        `http://localhost:8000/api/users/workspaces/${selectedWorkspace.id}/tasks/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            // If you use token auth, add it here or globally:
+             'Authorization': `Bearer ${token}`
+          },
+        }
+      );
+      console.log('Request submitted successfully:', response.data);
+      setTasksForWorkspace(prevTasks => [response.data, ...prevTasks]); // Add new task to the top of the list
+      handleCloseCreateRequestModal();
+    } catch (error) {
+      console.error('Error submitting request:', error.response ? error.response.data : error.message);
+      const errorMsg = error.response && error.response.data ?
+                       (typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data))
+                       : error.message;
+      setSubmitError(`Failed to create request: ${errorMsg}`);
+    }
+  };
+
+  const renderCreateRequestModal = () => {
+    if (!showCreateRequestModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4 transition-opacity duration-300 ease-in-out">
+        <div className="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl transform transition-all duration-300 ease-in-out scale-100">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-lg font-semibold text-gray-800">Rise a Request</h2>
+            <button onClick={handleCloseCreateRequestModal} className="text-gray-400 hover:text-gray-600" aria-label="Close modal">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <button
-              onClick={() => {
-                // Handle form submission logic here
-                console.log('Submitting Request:', requestForm);
-                setShowCreateRequestModal(false);
-                setRequestForm({ domainName: '', request: '', scopeOfService: '' });
-                handleRequestSubmit()
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Submit Request
-            </button>
+          </div>
+
+          {submitError && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{submitError}</div>}
+
+          <div className="space-y-4">
+            <div>
+              <input type="text" value={requestSubject} onChange={(e) => setRequestSubject(e.target.value)} placeholder="Subject" className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4C74DA] focus:border-[#4C74DA] sm:text-sm" />
+            </div>
+            <div>
+              <textarea value={requestDescription} onChange={(e) => setRequestDescription(e.target.value)} placeholder="Describe the Problem (text Editors)" rows="8" className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4C74DA] focus:border-[#4C74DA] sm:text-sm resize-none" />
+            </div>
+            <div className="flex flex-wrap gap-3 my-3">
+              {requestFiles.map((file) => (
+                <div key={file.id} className="relative border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col w-[130px]">
+                  <div className="relative h-[80px] bg-gray-100">
+                    <img src={filePreviewImage} alt="File preview" className="w-full h-full object-cover" />
+                    <button onClick={() => handleRemoveFile(file.id)} className="absolute top-1 right-1 bg-white rounded-full w-5 h-5 flex items-center justify-center text-gray-700 hover:text-black shadow-md focus:outline-none" aria-label="Remove file"><span className="text-xs font-bold">×</span></button>
+                  </div>
+                  <div className="p-1.5 text-center bg-white"><p className="text-xs text-gray-600 truncate" title={file.name}>{file.name}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-5 mt-3 border-t border-gray-200">
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => fileInputRef.current && fileInputRef.current.click()} disabled={requestFiles.length >= 3} className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#4C74DA] hover:bg-[#3b5fc3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4C74DA] disabled:opacity-50">Add a file<span className="ml-1.5 text-base font-semibold">+</span></button>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" />
+              <img src={currentUserAvatar} alt="User avatar" className="w-9 h-9 rounded-full" />
+            </div>
+            <div className="flex gap-3">
+              <button type="button" onClick={handleCloseCreateRequestModal} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400">cancel</button>
+              <button type="button" onClick={handleCreateRequestSubmit} className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#4C74DA] hover:bg-[#3b5fc3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4C74DA]">Rise a Request</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-      )}
+    );
+  };
 
+  return (
+    <div className="p-6 bg-white min-h-screen">
+      {tableMode ? renderTableView() : renderWorkspaceCards()}
+      {renderCreateRequestModal()}
     </div>
   );
 }
