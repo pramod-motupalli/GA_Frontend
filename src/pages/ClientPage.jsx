@@ -86,7 +86,7 @@ const ClientDashboard = () => {
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
             <User className="w-4 h-4" />
-            Accountants
+            Client
           </button>
           <button className="w-full flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100 transition">
             <LogOut className="w-4 h-4" />

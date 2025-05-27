@@ -6,6 +6,8 @@ import dotsverticalLogo from '../assets/logos/dots-vertical.svg';
 import PlanList from './planSelectionPopup';
 
 export default function Main() {
+  const [requests, setRequests] = React.useState([]);
+
   const [workspaces, setWorkspaces] = useState([]);
   const [filteredWorkspaces, setFilteredWorkspaces] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -18,6 +20,65 @@ export default function Main() {
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [showPlanList, setShowPlanList] = useState(false);
   const [isMonthly, setIsMonthly] = useState(true);
+  const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
+const [requestForm, setRequestForm] = useState({
+  domainName: '',
+  request: '',
+  scopeOfService: '',
+});
+const handleFileChange = (e) => {
+  const files = e.target.files;
+  if (files.length === 0) return;
+}
+const handleRequestSubmit = async () => {
+  // if (!selectedWorkspace) {
+  //   alert('No workspace selected');
+  //   return;
+  // }
+  // try {
+  //   // Example API call — adjust URL & payload as needed
+  //   await axios.post(`http://localhost:8000/api/workspaces/${selectedWorkspace.id}/requests/`, {
+  //     subject: requestForm.request,
+  //     description: requestForm.scopeOfService,
+  //   });
+  //   alert('Request submitted successfully');
+  //   setShowCreateRequestModal(false);
+  //   setRequestForm({ domainName: '', request: '', scopeOfService: '' });
+  //   // Optionally refresh requests or update UI here
+  // } catch (error) {
+  //   console.error('Error submitting request:', error);
+  //   alert('Failed to submit request');
+  // }
+  try {
+  const currentDate = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
+
+  // Add to frontend requests list
+  setRequests(prev => [
+    ...prev,
+    {
+      domain: "example.com",
+      date: currentDate,
+      subject: requestForm.request,
+      scope: requestForm.scopeOfService,
+      status: 'Accepted',
+      progress: 'In Progress',
+    },
+  ]);
+
+  setShowCreateRequestModal(false);
+  setRequestForm({domain: "example.com",
+      date: currentDate,
+      subject: requestForm.request,
+      scope: requestForm.scopeOfService,
+      status: 'Accepted',
+      progress: 'In Progress' });
+} catch (error) {
+  console.error('Error submitting request:', error);
+  alert('Failed to submit request');
+}
+
+
+};
 
   const billingType = isMonthly ? 'monthly' : 'yearly';
 
@@ -308,9 +369,13 @@ export default function Main() {
     <>
       <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
         <h2 className="text-xl font-semibold">Raised Requests</h2>
-        <button className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition">
-          + Create Request
-        </button>
+        <button
+  onClick={() => setShowCreateRequestModal(true)}
+  className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition"
+>
+  + Create Request
+</button>
+
       </div>
 
       <div className="overflow-auto rounded-lg border">
@@ -325,7 +390,29 @@ export default function Main() {
               <th className="px-6 py-3 text-left">Scope Status</th>
             </tr>
           </thead>
-          {/* TODO: Add tbody and data rows */}
+           {/* <tbody>
+            
+            <tr>
+              <td className="px-6 py-4">example.com</td>
+              <td className="px-6 py-4">2025-05-27</td>
+              <td className="px-6 py-4">Hosting Setup</td>
+              <td className="px-6 py-4">Basic Deployment</td>
+              <td className="px-6 py-4 text-green-600">Accepted</td>
+              <td className="px-6 py-4 text-blue-600">In Progress</td>
+            </tr>
+          </tbody>  */}
+          <tbody className="bg-white divide-y divide-gray-200">
+    {requests.map((req, index) => (
+      <tr key={index}>
+        <td className="px-6 py-4">{req.domain}</td>
+        <td className="px-6 py-4">{req.date}</td>
+        <td className="px-6 py-4">{req.subject}</td>
+        <td className="px-6 py-4">{req.scope}</td>
+        <td className="px-6 py-4 text-green-600">{req.status}</td>
+        <td className="px-6 py-4 text-blue-600">{req.progress}</td>
+      </tr>
+    ))}
+  </tbody>
         </table>
       </div>
 
@@ -346,6 +433,96 @@ export default function Main() {
   return (
     <div className="p-6 bg-white min-h-screen">
       {tableMode ? renderTableView() : renderWorkspaceCards()}
+            {/* Create Request Modal */}
+      {showCreateRequestModal && (
+         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg w-full max-w-2xl relative shadow-lg">
+        <button
+          onClick={() => setShowCreateRequestModal(false)}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+        <h2 className="text-xl font-semibold mb-4">Raise a Request</h2>
+
+        <div className="space-y-4">
+          {/* <div>
+            <label className="block text-sm font-medium text-gray-700">Domain Name</label>
+            <input
+              type="text"
+              value={requestForm.domainName}
+              onChange={(e) => setRequestForm({ ...requestForm, domainName: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="example.com"
+            />
+          </div> */}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">subject</label>
+            <input
+              type="text"
+              value={requestForm.request}
+              onChange={(e) => setRequestForm({ ...requestForm, request: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g. Hosting Setup"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">description</label>
+            <textarea
+              rows={3}
+              value={requestForm.scopeOfService}
+              onChange={(e) => setRequestForm({ ...requestForm, scopeOfService: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g. Basic deployment to shared server"
+            ></textarea>
+          </div>
+        </div>
+
+        {/* File Upload Button bottom-left */}
+        <div className="mt-6 flex justify-between items-center">
+          <div>
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer inline-flex items-center px-3 py-2 bg-blue-600 text-blue-700 rounded hover:bg-gray-200"
+            >
+              Upload File
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              onChange={handleFileChange}
+              className="hidden"
+              multiple
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowCreateRequestModal(false)}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                // Handle form submission logic here
+                console.log('Submitting Request:', requestForm);
+                setShowCreateRequestModal(false);
+                setRequestForm({ domainName: '', request: '', scopeOfService: '' });
+                handleRequestSubmit()
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Submit Request
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+      )}
+
     </div>
   );
 }
