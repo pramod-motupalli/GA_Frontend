@@ -12,6 +12,7 @@ const ActivatedPayments = () => {
   const [hdLeads, setHdLeads] = useState([]); // <-- NEW
   const [hdMaintenance, setHdMaintenance] = useState('');
   const [assignStaff, setAssignStaff] = useState('');
+  const [staffList, setStaffList] = useState([]);
   const [activeTab, setActiveTab] = useState('new');
 
   const token = localStorage.getItem('accessToken');
@@ -59,6 +60,19 @@ const ActivatedPayments = () => {
         }
       })
       .catch(() => setHdLeads([]));
+
+      axios.get('http://localhost:8000/api/users/staff-members/', {
+        headers: { Authorization: `Token ${token}` }
+      })
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setStaffList(res.data); // ✅ correct
+        } else {
+          setStaffList([]);
+        }
+      })
+      .catch(() => setStaffList([]));
+
     }
   }, []);
 
@@ -281,8 +295,11 @@ const ActivatedPayments = () => {
                   onChange={(e) => setAssignStaff(e.target.value)}
                 >
                   <option value="" disabled>Select Staff</option>
-                  <option value="staff1">Staff Member 1</option>
-                  <option value="staff2">Staff Member 2</option>
+                  {staffList.map((staff, index) => (
+                    <option key={index} value={staff.username}>
+                      {staff.username}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
