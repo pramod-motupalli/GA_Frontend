@@ -20,6 +20,8 @@ import ThankYouCustom from './pages/ThankYouCustom';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PlanRequests from './pages/PlanRequests';
 import DomainHostingTable from './pages/DomainHostingTable';
+import DomainHostingTableTeamlead from './pages/DomainHostingTableTeamlead';
+import DomainHostingTableClient from './pages/DomainHostingTableClient';
 import PaymentRequests from './pages/PaymentRequests';
 // import api from "./api/axiosClient";
 import Main from "./pages/WorkspaceCard";
@@ -49,6 +51,8 @@ function App() {
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/plan-requests" element={<PlanRequests />} />
         <Route path="/plan-requests-domain" element={<DomainHostingTable />} />
+        <Route path="/Domain-teamlead" element={<DomainHostingTableTeamlead />} />
+        <Route path="/Domain-client" element={<DomainHostingTableClient />} />
         <Route path="/payment-requests" element={<PaymentRequests />} />
         <Route path="/main" element={<Main />} />
         <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />

@@ -13,7 +13,6 @@ export default function App() {
       .catch(err => console.error('Fetch error:', err));
   }, []);
 
-  // Close dropdown menu if clicked outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -41,8 +40,31 @@ export default function App() {
     setOpenMenuIndex(null);
   };
 
-  const handleRaise = (index) => {
-    alert(`Raise to Team Lead row ${index + 1}`);
+  const handleRaise = (rowId, index) => {
+    const confirmAction = window.confirm("Update status to expired and notify client?");
+    if (confirmAction) {
+      fetch(`http://localhost:8000/api/users/domain-hosting/${rowId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "expired" }),
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to update status");
+          return res.json();
+        })
+        .then(updated => {
+          const newData = [...data];
+          newData[index] = updated;
+          setData(newData);
+          alert("Status updated and client notified.");
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Error updating status.");
+        });
+    }
     setOpenMenuIndex(null);
   };
 
@@ -59,7 +81,7 @@ export default function App() {
           {[
             "Client Name", "Phone Number", "Email ID", "Domain Name", "Domain Provider",
             "Domain Account", "Domain Expire Date", "Hosting Provider", "Hosting Account",
-            "Hosting Expire Date", "Assigned To", "Status"
+            "Hosting Expire Date", "Status"
           ].map((col) => (
             <th key={col} className="px-3 py-2 text-left">{col}</th>
           ))}
@@ -85,15 +107,13 @@ export default function App() {
               <td className="px-3 py-2">{row.hosting_provider}</td>
               <td className="px-3 py-2">{row.hosting_provider_name}</td>
               <td className="px-3 py-2 font-medium">{row.hosting_expiry}</td>
-              <td className="px-3 py-2">{row.assigned_to || 'Unknown'}</td>
               <td className="px-3 py-2">
                 {row.status ? (
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${row.status === 'active' ? 'bg-green-100 text-green-700'
-                      : row.status === 'inactive' ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-gray-200 text-gray-700'}
-                    `}
+                      ${row.status === 'running' ? 'bg-green-100 text-green-700'
+                      : row.status === 'expired' ? 'bg-red-100 text-red-700'
+                      : 'bg-gray-200 text-gray-700'}`}
                   >
                     {row.status}
                   </span>
@@ -121,11 +141,11 @@ export default function App() {
                         Edit
                       </li>
                       <li
-                        onClick={() => handleRaise(index)}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-400 cursor-not-allowed"
+                        onClick={() => handleRaise(row.id, index)}
+                        className="flex items-center gap-2 px-4 py-2 text-yellow-600 hover:bg-yellow-100 cursor-pointer"
                       >
                         <Eye size={16} />
-                        Rise alert
+                        Raise Alert
                       </li>
                       <li
                         onClick={() => handleDelete(index)}
