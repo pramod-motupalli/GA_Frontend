@@ -50,6 +50,7 @@ const CreateMembers = () => {
   const [error, setError] = useState(null);
   const [activeRequestTab, setActiveRequestTab] = useState("Client Request");
   const [activeSubTab, setActiveSubTab] = useState("Task Request");
+  const [requestSubTab, setRequestSubTab] = useState("customPlans");
 
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
@@ -515,59 +516,46 @@ const CreateMembers = () => {
         ) : selectedMenuItem === "Dashboard" ? (
             <WorkspaceCard />
           ) : selectedMenuItem === "Request" ? (
-            <>
-    {/* Tabs - Client Request / Team Lead Request */}
-    <div className="inline-flex items-center gap-1 p-1 bg-gradient-to-br from-white to-neutral-100 rounded-full shadow-[inset_2px_2px_4px_rgba(255,255,255,0.6),_inset_-2px_-2px_4px_rgba(0,0,0,0.05),_0_4px_6px_rgba(0,0,0,0.05)] mb-6">
-      <button
-        className={`px-5 py-2 rounded-full font-semibold text-sm ${
-          activeRequestTab === "Client Request"
-            ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md"
-            : "text-gray-700"
-        }`}
-        onClick={() => setActiveRequestTab("Client Request")}
-      >
+           <>
+    {/* Request Header */}
+   
+
+    {/* Top Tabs (Client Request / Team Lead Request) */}
+    <div className="inline-flex items-center gap-1 p-1 mb-4 bg-gradient-to-br from-white to-neutral-100 rounded-full shadow">
+      <button className="px-5 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold">
         Client Request
       </button>
-      <button
-        className={`px-5 py-2 rounded-full text-sm flex items-center gap-2 ${
-          activeRequestTab === "Team Lead Request"
-            ? "bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md"
-            : "text-gray-700"
-        }`}
-        onClick={() => setActiveRequestTab("Team Lead Request")}
-      >
-        Team Lead Request
-        <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white text-xs font-semibold flex items-center justify-center">
-          02
-        </span>
+      <button className="px-5 py-2 text-gray-700 rounded-full text-sm font-medium flex items-center gap-2">
+        Team Lead Request <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white text-xs flex items-center justify-center">02</span>
       </button>
     </div>
 
-    {/* Sub-tabs - Custom Plans / Task Request */}
-    <div className="flex items-center gap-6 mb-2">
-      <div
-        className="flex items-center gap-2 text-gray-800 font-semibold text-sm cursor-pointer"
-        onClick={() => setActiveSubTab("Custom Plans")}
+    {/* Sub Tabs (Custom Plans / Task Request) */}
+    <div className="flex gap-6 mb-4 text-sm font-semibold">
+      <button
+        onClick={() => setRequestSubTab("customPlans")}
+        className={`pb-1 ${requestSubTab === "customPlans" ? "text-gray-800 border-b-2 border-gray-700" : "text-gray-400"}`}
       >
-        Custom plans
-        <span className="w-6 h-6 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white text-xs font-semibold flex items-center justify-center">
-          02
-        </span>
-      </div>
-      <div
-        className={`text-sm font-semibold border-b-2 pb-1 cursor-pointer ${
-          activeSubTab === "Task Request" ? "text-blue-600 border-blue-600" : "text-gray-500 border-transparent"
-        }`}
-        onClick={() => setActiveSubTab("Task Request")}
+        Custom plans <span className="ml-1 rounded-full bg-gradient-to-br from-[#BDD9FE] to-[#223E65] text-white px-2 text-xs">02</span>
+      </button>
+      <button
+        onClick={() => setRequestSubTab("taskRequest")}
+        className={`pb-1 ${requestSubTab === "taskRequest" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"}`}
       >
         Task Request
-      </div>
+      </button>
     </div>
 
-    {/* From Search Bar down — PlanRequests */}
-    <PlanRequests />
+    {/* Table Section (only from search bar downward) */}
+    <div className="bg-white rounded-xl shadow p-4 mt-2">
+      {requestSubTab === "customPlans" ? (
+        <PlanRequests type="custom" />
+      ) : (
+        <PlanRequests type="task" />
+      )}
+    </div>
   </>
-          ) : (
+) : (
           <div className="flex-1 flex items-center justify-center h-full text-gray-600 text-lg">
             This is the {selectedMenuItem} panel.
           </div>

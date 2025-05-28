@@ -23,6 +23,7 @@ import DomainHostingTable from './pages/DomainHostingTable';
 import PaymentRequests from './pages/PaymentRequests';
 // import api from "./api/axiosClient";
 import Main from "./pages/WorkspaceCard";
+import WorkSpaceActivation from './pages/WorkSpaceActivation';
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
         <Route path="/plan-requests-domain" element={<DomainHostingTable />} />
         <Route path="/payment-requests" element={<PaymentRequests />} />
         <Route path="/main" element={<Main />} />
+        <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />
       </Routes>
     </Router>
   );

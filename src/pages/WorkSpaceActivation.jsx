@@ -8,6 +8,7 @@ const ActivatedPayments = () => {
   const [workspaceName, setWorkspaceName] = useState('');
   const [description, setDescription] = useState('');
   const [assignSpoc, setAssignSpoc] = useState('');
+  const [teamLeads, setTeamLeads] = useState([]);
   const [hdMaintenance, setHdMaintenance] = useState('');
   const [assignStaff, setAssignStaff] = useState('');
   const [activeTab, setActiveTab] = useState('new');
@@ -32,6 +33,21 @@ useEffect(() => {
     .catch(err => {
       console.error("API error:", err);
     });
+  
+  axios.get('http://localhost:8000/api/users/get-team-leads/', {
+      headers: {
+    Authorization: `Token ${token}`  // or Bearer ${token}
+  }
+  })
+  
+  .then(res => {
+    setTeamLeads(res.data);
+  })
+  .catch(err => {
+    console.error("Failed to fetch team leads:", err);
+  });
+
+    
 }, []);
 
 
@@ -53,6 +69,14 @@ const handleConfirmActivation = async () => {
   }
 
   try {
+    await axios.post('http://localhost:8000/api/users/assign-spoc/', 
+      { username: assignSpoc }, 
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        }
+      }
+    );
     const payload = {
       client_name: selectedRequest.client_name,
       phone_number: selectedRequest.phone_number,
@@ -223,10 +247,13 @@ const handleConfirmActivation = async () => {
           <option value="" disabled>
             Select SPOC
           </option>
-          <option value="lead1">Team Lead 1</option>
-          <option value="manager">Manager</option>
-          {/* Populate dynamically if needed */}
+          {teamLeads.map((lead) => (
+            <option key={lead.id} value={lead.username}>
+              {lead.username}
+            </option>
+          ))}
         </select>
+
       </div>
 
       {/* H&D Maintenance */}

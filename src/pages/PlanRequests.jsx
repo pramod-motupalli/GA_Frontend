@@ -2,16 +2,25 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { EyeIcon } from '@heroicons/react/24/outline';
 
-const PlanRequests = () => {
+const PlanRequests = ({ type = "custom" }) => {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [priceInput, setPriceInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const requestsPerPage = 5;
+  const requestsPerPage = 10;
   const [sortOption, setSortOption] = useState('');
   const [showSortOptions, setShowSortOptions] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+const dummyTaskRequests = Array.from({ length: 15 }, (_, i) => ({
+  id: i + 1,
+  client_name: "Elon Musk",
+  domain_name: "Sampledomain.com",
+  request_date: "04-05-2025",
+  scope_status: i % 3 === 0 ? "Not Updated" : i % 3 === 1 ? "with in scope" : "out of scope",
+  assigned_to: "Mamatha",
+  task_status: i % 3 === 0 ? "Not started yet" : i % 3 === 1 ? "Completed" : "Processing",
+}));
 
 
   useEffect(() => {
@@ -65,8 +74,8 @@ const PlanRequests = () => {
     }
   };
 
-
-  const totalPages = Math.ceil(requests.length / requestsPerPage);
+   
+  const totalPages = Math.ceil(dummyTaskRequests.length / requestsPerPage);
   let filteredRequests = [...requests];
 
 if (searchQuery.trim() !== '') {
@@ -94,7 +103,122 @@ const paginatedRequests = sortedRequests.slice(
   currentPage * requestsPerPage
 );
 
+if (type === 'task') { 
+  return (
+     <>
+    {/* Horizontal scrollable table wrapper */}
+    <div className="overflow-x-auto w-full bg-white rounded-xl shadow-md">
+  <table className="min-w-[1100px] w-full text-sm text-left text-gray-700">
+    <thead className="bg-[#F8FAFC] text-gray-800 font-medium">
+      <tr>
+        <th className="px-4 py-3 whitespace-nowrap">Client Name</th>
+        <th className="px-4 py-3 whitespace-nowrap">Domain Name</th>
+        <th className="px-4 py-3 whitespace-nowrap">Request Raised Date</th>
+        <th className="px-4 py-3 whitespace-nowrap">Client Request</th>
+        <th className="px-4 py-3 whitespace-nowrap">Scope of service</th>
+        <th className="px-4 py-3 whitespace-nowrap">Scope of service status</th>
 
+        {/* These columns will go out of view initially */}
+        <th className="px-4 py-3 whitespace-nowrap">Assigned to</th>
+        <th className="px-4 py-3 whitespace-nowrap">Task Status</th>
+        <th className="px-4 py-3 whitespace-nowrap">Rise an alert</th>
+      </tr>
+    </thead>
+    <tbody>
+      {dummyTaskRequests.map((req, index) => (
+        <tr key={index} className="hover:bg-gray-50">
+          <td className="px-4 py-3">{req.client_name}</td>
+          <td className="px-4 py-3">{req.domain_name}</td>
+          <td className="px-4 py-3">{req.request_date}</td>
+          <td className="px-4 py-3 text-blue-600 font-medium cursor-pointer">
+            <div className="flex items-center gap-1">
+              <EyeIcon className="h-4 w-4" />
+              View Request
+            </div>
+          </td>
+          <td className="px-4 py-3 text-blue-600 font-medium cursor-pointer">View Scope</td>
+          <td className="px-4 py-3">
+            <span className={`text-xs px-3 py-1 rounded-full ${
+              req.scope_status === "with in scope" ? "bg-green-100 text-green-700" :
+              req.scope_status === "out of scope" ? "bg-orange-100 text-orange-600" :
+              "bg-gray-200 text-gray-600"
+            }`}>
+              {req.scope_status}
+            </span>
+          </td>
+
+          {/* These will be off-screen initially */}
+          <td className="px-4 py-3">{req.assigned_to}</td>
+          <td className="px-4 py-3">
+            <span className={`text-xs px-3 py-1 rounded-full ${
+              req.task_status === "Completed" ? "bg-green-100 text-green-700" :
+              req.task_status === "Processing" ? "bg-orange-100 text-orange-600" :
+              "bg-gray-200 text-gray-600"
+            }`}>
+              {req.task_status}
+            </span>
+          </td>
+          <td className="px-4 py-3">
+            <button className="bg-blue-500 text-white px-4 py-1.5 rounded hover:bg-blue-600">
+              Rise alert
+            </button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+
+    {/* Pagination stays outside scroll box */}
+    <div className="flex justify-between items-center mt-2 text-sm">
+      <div className="flex items-center gap-2">
+        <span>Page</span>
+        <select
+          className="border rounded px-2 py-1"
+          value={currentPage}
+          onChange={(e) => setCurrentPage(Number(e.target.value))}
+        >
+          {Array.from({ length: totalPages }, (_, i) => (
+            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          ))}
+        </select>
+        <span>of {totalPages}</span>
+      </div>
+      <div className="flex gap-2">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="px-2 py-1 border rounded disabled:opacity-50"
+        >
+          &lt;
+        </button>
+        {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+          const pageNum = i + 1;
+          return (
+            <button
+              key={pageNum}
+              onClick={() => setCurrentPage(pageNum)}
+              className={`px-3 py-1 rounded ${
+                currentPage === pageNum ? 'bg-blue-600 text-white' : 'border'
+              }`}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
+        {totalPages > 5 && <span>...</span>}
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          className="px-2 py-1 border rounded disabled:opacity-50"
+        >
+          &gt;
+        </button>
+      </div>
+    </div>
+  </>
+)}
   return (
     <div className="rounded-xl bg-white p-5 shadow-md text-sm">
       <div className="flex justify-between items-center mb-4">
@@ -149,25 +273,25 @@ const paginatedRequests = sortedRequests.slice(
 
       </div>
 
-      <table className="w-full table-auto border-collapse text-sm">
-        <thead className="bg-gray-50 text-gray-700">
+      <table className="w-full text-sm text-left text-gray-700 border">
+        <thead className="bg-[#F8FAFC] text-gray-800 font-medium">
           <tr>
-            <th className="border px-4 py-2 font-medium">Client Name</th>
-            <th className="border px-4 py-2 font-medium">Phone Number</th>
-            <th className="border px-4 py-2 font-medium">Email</th>
-            <th className="border px-4 py-2 font-medium">Client Request</th>
-            <th className="border px-4 py-2 font-medium">Cost of plan</th>
-            <th className="border px-4 py-2 font-medium">Send to client</th>
+            <th className="px-4 py-3">Client Name</th>
+            <th className="px-4 py-3">Phone Number</th>
+            <th className="px-4 py-3">Email</th>
+            <th className="px-4 py-3">Client Request</th>
+            <th className="px-4 py-3">Cost of plan</th>
+            <th className="px-4 py-3">Send to client</th>
           </tr>
         </thead>
         <tbody>
           {paginatedRequests.map((req, index) => (
             <tr key={index} className="border hover:bg-gray-50">
-              <td className="border px-4 py-2">{req.client_name}</td>
-              <td className="border px-4 py-2">{req.client_phone}</td>
-              <td className="border px-4 py-2">{req.client_email}</td>
+              <td className="px-4 py-3">{req.client_name}</td>
+              <td className="px-4 py-3">{req.client_phone}</td>
+              <td className="px-4 py-3">{req.client_email}</td>
               <td
-                className="border px-4 py-2 text-blue-500 cursor-pointer hover:underline flex items-center justify-center space-x-1"
+                className="px-4 py-2 text-blue-00 font-medium cursor-pointer flex items-center gap-1"
                 onClick={() => {
                   setSelectedRequest(req);
                   setPriceInput(req.plan_price || '');
@@ -243,7 +367,7 @@ const paginatedRequests = sortedRequests.slice(
             <ul className="space-y-2 mb-4">
               {selectedRequest.plan_features?.map((feature, i) => (
                 <li key={i} className="flex items-center space-x-2">
-                  <span className="text-green-600">✔️</span>
+                  <span className="text-green-600">✔</span>
                   <span>{feature}</span>
                 </li>
               ))}
