@@ -4,6 +4,7 @@ import { Pencil, Eye, Trash } from 'lucide-react';
 export default function App() {
   const [data, setData] = useState([]);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [statusMenuIndex, setStatusMenuIndex] = useState(null); // for status submenu
   const menuRefs = useRef([]);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function App() {
         !menuRefs.current[openMenuIndex].contains(event.target)
       ) {
         setOpenMenuIndex(null);
+        setStatusMenuIndex(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -40,32 +42,36 @@ export default function App() {
     setOpenMenuIndex(null);
   };
 
-  const handleRaise = (rowId, index) => {
-    const confirmAction = window.confirm("Update status to expired and notify client?");
-    if (confirmAction) {
-      fetch(`http://localhost:8000/api/users/domain-hosting/${rowId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: "expired" }),
+  const handleRaise = (index) => {
+    setStatusMenuIndex(index);
+  };
+
+  const handleStatusUpdate = (rowId, index, status) => {
+    fetch(`http://localhost:8000/api/users/domain-hosting/${rowId}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to update status");
+        return res.json();
       })
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to update status");
-          return res.json();
-        })
-        .then(updated => {
-          const newData = [...data];
-          newData[index] = updated;
-          setData(newData);
-          alert("Status updated and client notified.");
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Error updating status.");
-        });
-    }
-    setOpenMenuIndex(null);
+      .then(updated => {
+        const newData = [...data];
+        newData[index] = updated;
+        setData(newData);
+        alert(`Status updated to "${status}" successfully.`);
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error updating status.");
+      })
+      .finally(() => {
+        setOpenMenuIndex(null);
+        setStatusMenuIndex(null);
+      });
   };
 
   const handleDelete = (index) => {
@@ -113,7 +119,7 @@ export default function App() {
                     className={`px-2 py-1 rounded-full text-xs font-medium
                       ${row.status === 'running' ? 'bg-green-100 text-green-700'
                       : row.status === 'expired' ? 'bg-red-100 text-red-700'
-                      : 'bg-gray-200 text-gray-700'}`}
+                      : 'bg-yellow-100 text-yellow-700'}`}
                   >
                     {row.status}
                   </span>
@@ -124,7 +130,10 @@ export default function App() {
               <td className="px-3 py-2 text-center">
                 <div className="relative" ref={el => (menuRefs.current[index] = el)}>
                   <button
-                    onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
+                    onClick={() => {
+                      setOpenMenuIndex(openMenuIndex === index ? null : index);
+                      setStatusMenuIndex(null);
+                    }}
                     className="text-gray-500 hover:text-gray-800 focus:outline-none"
                     aria-label="Open actions menu"
                   >
@@ -141,12 +150,25 @@ export default function App() {
                         Edit
                       </li>
                       <li
-                        onClick={() => handleRaise(row.id, index)}
+                        onClick={() => handleRaise(index)}
                         className="flex items-center gap-2 px-4 py-2 text-yellow-600 hover:bg-yellow-100 cursor-pointer"
                       >
                         <Eye size={16} />
                         Raise Alert
                       </li>
+                      {statusMenuIndex === index && (
+                        <ul className="ml-6 mt-1 border-l border-gray-200">
+                          {['running', 'expiring', 'expired'].map(status => (
+                            <li
+                              key={status}
+                              onClick={() => handleStatusUpdate(row.id, index, status)}
+                              className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            >
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <li
                         onClick={() => handleDelete(index)}
                         className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
