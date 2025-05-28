@@ -16,8 +16,8 @@ const ActivatedPayments = () => {
   // --- RECTIFICATION: Token Placeholder ---
   // IMPORTANT: Replace 'YOUR_AUTH_TOKEN_PLACEHOLDER' with your actual token
   // retrieval logic (e.g., from localStorage, context, or props).
-  // const token = localStorage.getItem('authToken');
-  const token = 'YOUR_AUTH_TOKEN_PLACEHOLDER';
+  const token = localStorage.getItem('accessToken');
+ 
 
 useEffect(() => {
   // Fetch Submissions
@@ -46,7 +46,7 @@ useEffect(() => {
     });
   
   // Fetch Team Leads (conditionally, if token exists)
-  if (token && token !== 'YOUR_AUTH_TOKEN_PLACEHOLDER') { // Added check to ensure placeholder isn't used
+  if (token) { // Added check to ensure placeholder isn't used
     axios.get('http://localhost:8000/api/users/team-leads/no-spoc/', {
         headers: {
       Authorization: `Token ${token}`
@@ -55,6 +55,11 @@ useEffect(() => {
     .then(res => {
       if (Array.isArray(res.data)) {
         setTeamLeads(res.data);
+        console.log("Response data:", res.data);
+console.log("Is array?", Array.isArray(res.data));
+console.log("Array length:", res.data.length);
+
+        console.log("tl",res.data[0]);
       } else {
         console.error("API response for team leads is not an array:", res.data);
         setTeamLeads([]);
@@ -65,7 +70,7 @@ useEffect(() => {
       setTeamLeads([]); // Ensure teamLeads is an array on failure
     });
   } else {
-    if (token === 'YOUR_AUTH_TOKEN_PLACEHOLDER') {
+    if (token) {
         console.warn("Using placeholder token. Skipping fetch for team leads. Please replace placeholder.");
     } else {
         console.warn("Auth token is not available. Skipping fetch for team leads.");
@@ -92,7 +97,7 @@ const handleConfirmActivation = async () => {
     return;
   }
 
-  if (!token || token === 'YOUR_AUTH_TOKEN_PLACEHOLDER') {
+  if (!token) {
     alert("Authentication token is missing or is a placeholder. Cannot proceed with activation.");
     console.error('Activation failed: Auth token missing or is placeholder.');
     return;
@@ -289,10 +294,11 @@ const handleConfirmActivation = async () => {
           onChange={(e) => setAssignSpoc(e.target.value)}
         >
           <option value="" disabled>Select SPOC</option>
-          {teamLeads.map((lead) => (
-            <option key={lead.id || lead.username} value={lead.username}> {/* Added fallback key */}
-              {lead.username} {lead.first_name && lead.last_name ? `(${lead.first_name} ${lead.last_name})` : ''}
-            </option>
+          {teamLeads.map((lead, index) => (
+  <option key={index} value={lead}>
+    {lead}
+  </option>
+
           ))}
         </select>
       </div>
