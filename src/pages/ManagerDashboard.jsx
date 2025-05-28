@@ -52,7 +52,6 @@ const CreateMembers = () => {
   const [activeSubTab, setActiveSubTab] = useState("Task Request");
   const [requestSubTab, setRequestSubTab] = useState("customPlans");
 
-
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
 
   const menuItems = [
@@ -234,7 +233,6 @@ const CreateMembers = () => {
       alert(`Failed to create Accountant: ${error.message}`);
     }
   };
-
 
   function getUsersByTab() {
     if (activeTab === "Team-leads") return teamLeads;
@@ -698,7 +696,6 @@ const Modal = ({ title, onClose, fields, onSubmit }) => {
          }
     }
 
-
     setFormErrors(errors);
     return isValid;
   }
@@ -718,7 +715,6 @@ const Modal = ({ title, onClose, fields, onSubmit }) => {
       } finally {
            setIsSubmitting(false);
       }
-
 
       // Reset form after successful submission (or handled by parent closing modal)
       // setFormData(initialFormData); // Parent handles closing, so no need to reset here
@@ -799,3 +795,4 @@ const Modal = ({ title, onClose, fields, onSubmit }) => {
 };
 
 export default CreateMembers;
+
