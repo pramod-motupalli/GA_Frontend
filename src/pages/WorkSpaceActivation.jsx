@@ -66,7 +66,7 @@ const ActivatedPayments = () => {
       })
       .then(res => {
         if (Array.isArray(res.data)) {
-          setStaffList(res.data); // ✅ correct
+          setStaffList(res.data);
         } else {
           setStaffList([]);
         }
@@ -118,7 +118,7 @@ const ActivatedPayments = () => {
         headers: { Authorization: `Token ${token}` }
       });
 
-      await axios.patch(`http://localhost:8000/api/users/submissions/${selectedRequest.id}/activate/`, {
+      await axios.patch(`http://localhost:8000/api/users/${selectedRequest.id}/activate/`, {
         is_workspace_activated: true,
       }, {
         headers: { Authorization: `Token ${token}` }
@@ -261,8 +261,8 @@ const ActivatedPayments = () => {
                   onChange={(e) => setAssignSpoc(e.target.value)}
                 >
                   <option value="" disabled>Select SPOC</option>
-                  {teamLeads.map((lead, index) => (
-                    <option key={index} value={lead}>{lead}</option>
+                  {teamLeads.map((spoc, index) => (
+                    <option key={index} value={spoc}>{spoc}</option>
                   ))}
                 </select>
               </div>
@@ -296,9 +296,7 @@ const ActivatedPayments = () => {
                 >
                   <option value="" disabled>Select Staff</option>
                   {staffList.map((staff, index) => (
-                    <option key={index} value={staff.username}>
-                      {staff.username}
-                    </option>
+                    <option key={index} value={staff}>{staff}</option>
                   ))}
                 </select>
               </div>
