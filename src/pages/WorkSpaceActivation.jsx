@@ -16,6 +16,9 @@ const ActivatedPayments = () => {
   const [activeTab, setActiveTab] = useState('new');
 
   const token = localStorage.getItem('accessToken');
+  useEffect(() => {
+  console.log(staffList); // This runs every time staffList updates
+}, [staffList]);
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/users/submissions/')
@@ -67,6 +70,7 @@ const ActivatedPayments = () => {
       .then(res => {
         if (Array.isArray(res.data)) {
           setStaffList(res.data); // ✅ correct
+          console.log(staffList)
         } else {
           setStaffList([]);
         }
@@ -296,8 +300,8 @@ const ActivatedPayments = () => {
                 >
                   <option value="" disabled>Select Staff</option>
                   {staffList.map((staff, index) => (
-                    <option key={index} value={staff.username}>
-                      {staff.username}
+                    <option key={index} value={staff}>
+                      {staff}
                     </option>
                   ))}
                 </select>
