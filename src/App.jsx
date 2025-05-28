@@ -26,6 +26,7 @@ import PaymentRequests from './pages/PaymentRequests';
 // import api from "./api/axiosClient";
 import Main from "./pages/WorkspaceCard";
 import WorkSpaceActivation from './pages/WorkSpaceActivation';
+import WorkspaceCardTeamlead from "./pages/WorkspaceCardTeamlead";
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
         <Route path="/payment-requests" element={<PaymentRequests />} />
         <Route path="/main" element={<Main />} />
         <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />
+        <Route path="/WorkspaceCardTeamlead" element={<WorkspaceCardTeamlead />} />
       </Routes>
     </Router>
   );
