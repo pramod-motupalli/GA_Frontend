@@ -7,10 +7,18 @@ export default function App() {
   const menuRefs = useRef([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/users/domain-hosting/')
-      .then(res => res.json())
-      .then(setData)
-      .catch(err => console.error('Fetch error:', err));
+    const fetchData = () => {
+      fetch('http://localhost:8000/api/users/domain-hosting/')
+        .then(res => res.json())
+        .then(setData)
+        .catch(err => console.error('Fetch error:', err));
+    };
+
+    fetchData(); // initial fetch
+
+    const interval = setInterval(fetchData, 60000); // refetch every 60 seconds
+
+    return () => clearInterval(interval); // cleanup on unmount
   }, []);
 
   useEffect(() => {
@@ -28,14 +36,18 @@ export default function App() {
   }, [openMenuIndex]);
 
   const getRowColorClass = (expiryDate) => {
-    if (!expiryDate) return '';
+    if (!expiryDate) return 'bg-gray-50 text-gray-700';
+
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ignore time part
     const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+
     const diff = (expiry - today) / (1000 * 60 * 60 * 24);
 
-    if (diff < 0) return 'bg-red-100 text-red-800';         // Expired
-    if (diff <= 30) return 'bg-yellow-100 text-yellow-800'; // Expiring soon
-    return 'hover:bg-gray-50';
+    if (diff < 0) return 'bg-red-100 text-red-800';           // Expired
+    if (diff <= 30) return 'bg-yellow-100 text-yellow-800';   // Today or within 30 days
+    return 'bg-white text-gray-900 hover:bg-gray-50';         // Running
   };
 
   const handleEdit = (index) => {
@@ -62,7 +74,7 @@ export default function App() {
             {[
               "Client Name", "Phone Number", "Email ID", "Domain Name", "Domain Provider",
               "Domain Account", "Domain Expire Date", "Hosting Provider", "Hosting Account",
-              "Hosting Expire Date", "Assigned To", "Status"
+              "Hosting Expire Date", "Assigned To", "Status", "H&D Payment Status"
             ].map((col) => (
               <th key={col} className="px-3 py-2 text-left">{col}</th>
             ))}
@@ -103,6 +115,42 @@ export default function App() {
                     <span className="text-gray-400 italic">Unknown</span>
                   )}
                 </td>
+              <td className="px-3 py-2">
+                {['running', 'expiring'].includes(row.status) ? (
+                  <span className="italic text-gray-400">Unavailable</span>
+                ) : (
+                  <select
+                    className="border rounded px-2 py-1 text-sm"
+                    value={row.hd_payment_status || 'pending'}
+                    onChange={(e) => {
+                      const newStatus = e.target.value;
+                      fetch(`http://localhost:8000/api/users/domain-hosting/${row.id}/`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ hd_payment_status: newStatus }),
+                      })
+                        .then(res => {
+                          if (!res.ok) throw new Error('Failed to update H&D status');
+                          return res.json();
+                        })
+                        .then(updated => {
+                          const newData = [...data];
+                          newData[index] = updated;
+                          setData(newData);
+                        })
+                        .catch(err => {
+                          console.error(err);
+                          alert('Error updating H&D status.');
+                        });
+                    }}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="done">Done</option>
+                  </select>
+                )}
+              </td>                
                 <td className="px-3 py-2 text-center">
                   <div className="relative" ref={el => (menuRefs.current[index] = el)}>
                     <button
