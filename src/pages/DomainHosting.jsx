@@ -23,7 +23,7 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
   useEffect(() => {
     const fetchClient = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/users/me/', {
+        const res = await axios.get('http://localhost:8000/api/users/hey/', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
