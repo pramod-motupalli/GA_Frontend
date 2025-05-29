@@ -17,6 +17,7 @@ import emptyImage from "../assets/empty-data-icon.png"; // Ensure this path is c
 import ActivatedPayments from "./WorkSpaceActivation"; // adjust path as needed
 import WorkspaceCard from "./WorkspaceCard"; // adjust path as needed
 import PlanRequests from "./PlanRequests"; // adjust path as needed
+import DomainHostingTableManager from './DomainHostingTableManager';
 
 // Define API_ENDPOINTS with both fetch and create URLs
 const API_ENDPOINTS = {
@@ -513,6 +514,8 @@ const CreateMembers = () => {
           <ActivatedPayments />
         ) : selectedMenuItem === "Dashboard" ? (
             <WorkspaceCard />
+        )  : selectedMenuItem === "clients services" ? (
+              <DomainHostingTableManager />
           ) : selectedMenuItem === "Request" ? (
            <>
     {/* Request Header */}

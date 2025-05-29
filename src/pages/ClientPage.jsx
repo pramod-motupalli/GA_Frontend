@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import PaymentRequests from "./PaymentRequests";
 import WorkspaceCardClient from "./WorkspaceCardClient"
+import DomainHostingTableClient from "./DomainHostingTableClient";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -34,7 +35,7 @@ const ClientDashboard = () => {
       case "Workspace":
         return <div><WorkspaceCardClient /></div>;
       case "My services":
-        return <div>All your services are listed here</div>;
+        return <div><DomainHostingTableClient /></div>;
       case "Rise a Request":
         return <div>Submit a request here</div>;
       case "Transactions":

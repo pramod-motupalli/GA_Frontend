@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal"; 
 import TasksPage from "../pages/TasksPage";
 
