@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -17,64 +17,95 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [userData, setUserData] = useState(null);
+
+  // Fetch client info when modal opens
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/api/users/me/', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        setUserData(res.data);
+      } catch (err) {
+        console.error('Failed to fetch client info:', err);
+      }
+    };
+
+    if (isOpen) {
+      fetchClient();
+    }
+  }, [isOpen]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage('');
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
 
-  try {
-    const payload = {
-      title: selectedPlan?.title || '',
-      price: selectedPlan?.price || '',
-      billing: selectedPlan?.billing || '',
-      features: selectedPlan?.features || [],
-      payment_status: 'Done',
-      domain_hosting: {
-        domainName: form.domainName,
-        domainProvider: form.domainProvider,
-        domainAccount: form.domainAccount,
-        domainExpiry: form.domainExpiry,
-        hostingProvider: form.hostingProvider,
-        hostingProviderName: form.hostingProviderName,
-        hostingExpiry: form.hostingExpiry,
+    try {
+      const payload = {
+        client: {
+          id: userData?.id,
+          name: `${userData?.first_name} ${userData?.last_name}`,
+          email: userData?.email,
+          phone: userData?.phone_number,
+        },
+        title: selectedPlan?.title || '',
+        price: selectedPlan?.price || '',
+        billing: selectedPlan?.billing || '',
+        features: selectedPlan?.features || [],
+        payment_status: 'Done',
+        domain_hosting: {
+          domainName: form.domainName,
+          domainProvider: form.domainProvider,
+          domainAccount: form.domainAccount,
+          domainExpiry: form.domainExpiry,
+          hostingProvider: form.hostingProvider,
+          hostingProviderName: form.hostingProviderName,
+          hostingExpiry: form.hostingExpiry,
+        },
+      };
+
+      const response = await axios.post(
+        'http://localhost:8000/api/users/submissions/',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        setMessage('Domain & hosting info saved successfully!');
+        setForm({
+          domainName: '',
+          domainProvider: '',
+          domainAccount: '',
+          domainExpiry: '',
+          hostingProvider: '',
+          hostingProviderName: '',
+          hostingExpiry: '',
+        });
+        navigate('/payment');
+      } else {
+        setMessage('Unexpected response from server.');
       }
-    };
-
-    const response = await axios.post('http://localhost:8000/api/users/submissions/', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (response.status === 201 || response.status === 200) {
-      setMessage('Domain & hosting info saved successfully!');
-      setForm({
-        domainName: '',
-        domainProvider: '',
-        domainAccount: '',
-        domainExpiry: '',
-        hostingProvider: '',
-        hostingProviderName: '',
-        hostingExpiry: '',
-      });
-
-      // Redirect to payment
-      navigate('/payment');
-    } else {
-      setMessage('Unexpected response from server.');
+    } catch (error) {
+      console.error('Error saving domain hosting info:', error);
+      setMessage('Failed to save data. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error saving domain hosting info:', error);
-    setMessage('Failed to save data. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   const handleClose = () => {
     setForm({
       domainName: '',

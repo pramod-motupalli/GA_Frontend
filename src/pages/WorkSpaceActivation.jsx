@@ -8,87 +8,137 @@ const ActivatedPayments = () => {
   const [workspaceName, setWorkspaceName] = useState('');
   const [description, setDescription] = useState('');
   const [assignSpoc, setAssignSpoc] = useState('');
+  const [teamLeads, setTeamLeads] = useState([]);
+  const [hdLeads, setHdLeads] = useState([]); // <-- NEW
   const [hdMaintenance, setHdMaintenance] = useState('');
   const [assignStaff, setAssignStaff] = useState('');
+  const [staffList, setStaffList] = useState([]);
   const [activeTab, setActiveTab] = useState('new');
 
-useEffect(() => {
-  axios.get('http://localhost:8000/api/users/submissions/')
-    .then(res => {
-      console.log("Full API response:", res.data);
-      const approved = res.data.filter(
-        plan =>
-          (plan.payment_is_approved === true ||
-           plan.payment_is_approved === 'Yes' ||
-           plan.payment_is_approved === 1) &&
-          plan.is_workspace_activated !== true 
-          // plan.is_workspace_activated !== 1 ||
-          // plan.is_workspace_activated !== 'Yes' ||
-          // plan.is_workspace_activated !== 'yes'  // Exclude already activated
-      );
-      console.log("Filtered approved and not activated plans:", approved);
-      setRequests(approved);
-    })
-    .catch(err => {
-      console.error("API error:", err);
-    });
-}, []);
+  const token = localStorage.getItem('accessToken');
+  useEffect(() => {
+  console.log(staffList); // This runs every time staffList updates
+}, [staffList]);
 
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/users/submissions/')
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          const approved = res.data.filter(
+            plan =>
+              (plan.payment_is_approved === true ||
+               plan.payment_is_approved === 'Yes' ||
+               plan.payment_is_approved === 1) &&
+              plan.is_workspace_activated !== true
+          );
+          setRequests(approved);
+        } else {
+          setRequests([]);
+        }
+      })
+      .catch(() => setRequests([]));
+
+    if (token) {
+      axios.get('http://localhost:8000/api/users/team-leads/no-spoc/', {
+        headers: { Authorization: `Token ${token}` }
+      })
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setTeamLeads(res.data);
+        } else {
+          setTeamLeads([]);
+        }
+      })
+      .catch(() => setTeamLeads([]));
+
+      // NEW: Fetch for H&D Maintenance
+      axios.get('http://localhost:8000/api/users/team-leads/', {
+        headers: { Authorization: `Token ${token}` }
+      })
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setHdLeads(res.data);
+        } else {
+          setHdLeads([]);
+        }
+      })
+      .catch(() => setHdLeads([]));
+
+      axios.get('http://localhost:8000/api/users/staff-members/', {
+        headers: { Authorization: `Token ${token}` }
+      })
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setStaffList(res.data);
+          console.log(staffList)
+        } else {
+          setStaffList([]);
+        }
+      })
+      .catch(() => setStaffList([]));
+
+    }
+  }, []);
 
   const handleActivateClick = (req) => {
     setSelectedRequest(req);
     setShowModal(true);
-
-    // Reset form fields on modal open
     setWorkspaceName('');
     setDescription('');
+    setAssignSpoc('');
     setAssignStaff('');
     setHdMaintenance('');
   };
 
-const handleConfirmActivation = async () => {
-  if (!workspaceName || !description || !assignStaff || !hdMaintenance) {
-    alert("Please fill in all required fields.");
-    return;
-  }
+  const handleConfirmActivation = async () => {
+    if (!workspaceName || !description || !assignSpoc || !assignStaff || !hdMaintenance) {
+      alert("Please fill in all required fields.");
+      return;
+    }
 
-  try {
-    const payload = {
-      client_name: selectedRequest.client_name,
-      phone_number: selectedRequest.phone_number,
-      email: selectedRequest.email,
-      workspace_name: workspaceName,
-      description,
-      assign_staff: assignStaff,
-      hd_maintenance: hdMaintenance,
-      is_workspace_activated: true,
-    };
+    if (!token) {
+      alert("Authentication token is missing.");
+      return;
+    }
 
-    // Send data to a new endpoint that stores workspace info
-    await axios.post('http://localhost:8000/api/users/workspaces/create/', payload);
+    try {
+      await axios.post('http://localhost:8000/api/users/assign-spoc/', 
+        { username: assignSpoc }, 
+        { headers: { Authorization: `Token ${token}` } }
+      );
 
-    // Optional: also update user’s submission as activated
-    await axios.patch(`http://localhost:8000/api/users/${selectedRequest.id}/activate/`, {
-      is_workspace_activated: true,
-    });
+      const payload = {
+        client_name: selectedRequest.client_name,
+        phone_number: selectedRequest.phone_number,
+        email: selectedRequest.email,
+        workspace_name: workspaceName,
+        description,
+        assign_staff: assignStaff,
+        hd_maintenance: hdMaintenance,
+        is_workspace_activated: true,
+      };
 
-    setRequests((prev) =>
-      prev.map((r) =>
-        r.id === selectedRequest.id
-          ? { ...r, is_workspace_activated: true }
-          : r
-      )
-    );
-    setShowModal(false);
-  } catch (error) {
-    console.error('Activation failed:', error);
-  }
-};
+      await axios.post('http://localhost:8000/api/users/workspaces/create/', payload, {
+        headers: { Authorization: `Token ${token}` }
+      });
 
+      await axios.patch(`http://localhost:8000/api/users/${selectedRequest.id}/activate/`, {
+        is_workspace_activated: true,
+      }, {
+        headers: { Authorization: `Token ${token}` }
+      });
 
+      setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
+      setShowModal(false);
+      alert('Workspace activated successfully!');
+    } catch (error) {
+      alert(`Activation failed: ${error.response ? JSON.stringify(error.response.data) : error.message}`);
+    }
+  };
 
   return (
     <div className="p-4">
+    {/* ... (rest of your JSX is likely fine, assuming no syntax errors) ... */}
     <div className="flex gap-6 mb-4">
         {['new', 'out', 'monthly'].map((tab) => (
           <button
@@ -105,7 +155,6 @@ const handleConfirmActivation = async () => {
         ))}
       </div>
 
-      {/* Conditional Table Rendering */}
       {activeTab === 'new' && (
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full text-sm text-left">
@@ -121,13 +170,13 @@ const handleConfirmActivation = async () => {
               </tr>
             </thead>
             <tbody>
-              {requests.map(req => (
+              {requests.length > 0 ? requests.map(req => (
                 <tr key={req.id} className="border-t">
                   <td className="px-4 py-3">{req.client_name || 'Unknown'}</td>
                   <td className="px-4 py-3">{req.phone_number || 'N/A'}</td>
                   <td className="px-4 py-3">{req.email || 'N/A'}</td>
                   <td className="px-4 py-3">${req.price}</td>
-                  <td className="px-4 py-3">Category 1</td>
+                  <td className="px-4 py-3">Category 1</td> {/* This is hardcoded, ensure it's intended */}
                   <td className="px-4 py-3">
                     <span className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium w-fit ${
                       req.title === 'Pro' ? 'bg-green-100 text-green-700' :
@@ -151,11 +200,11 @@ const handleConfirmActivation = async () => {
                     </button>
                   </td>
                 </tr>
-              ))}
-              {requests.length === 0 && (
+              )) : (
                 <tr>
                   <td colSpan="7" className="text-center py-4 text-gray-500">
-                    No approved payments to activate.
+                    {/* Changed message to be more generic if requests array is empty for any reason */}
+                    No new purchases to activate.
                   </td>
                 </tr>
               )}
@@ -164,134 +213,112 @@ const handleConfirmActivation = async () => {
         </div>
       )}
 
-      {/* Modal */}
-      {/* Modal */}
-{showModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl relative p-6">
-      {/* Close Button */}
-      <button
-        className="absolute top-4 right-4 text-xl text-gray-600 hover:text-black"
-        onClick={() => setShowModal(false)}
-      >
-        &times;
-      </button>
+      {showModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl relative p-6 overflow-y-auto max-h-[90vh]">
+            <button
+              className="absolute top-4 right-4 text-xl text-gray-600 hover:text-black z-10"
+              onClick={() => setShowModal(false)}
+              aria-label="Close modal" // Accessibility
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-semibold mb-6">Creation of workspace for {selectedRequest.client_name}</h2>
 
-      {/* Modal Header */}
-      <h2 className="text-xl font-semibold mb-6">Creation of workspace</h2>
+            <div className="space-y-4">
+              {/* Workspace Name and Description */}
+              <div>
+                <label htmlFor="workspaceName" className="block font-medium mb-1">
+                  Workspace Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="workspaceName"
+                  type="text"
+                  placeholder="Workspace Name"
+                  className="w-full border rounded px-4 py-2"
+                  required
+                  value={workspaceName}
+                  onChange={(e) => setWorkspaceName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="description" className="block font-medium mb-1">
+                  Description <span className="text-red-600">*</span>
+                </label>
+                <textarea
+                  id="description"
+                  placeholder="Description"
+                  className="w-full border rounded px-4 py-2 h-24"
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="assignSpoc" className="block font-medium mb-1">
+                  Assign SPOC <span className="text-red-600">*</span>
+                </label>
+                <select
+                  id="assignSpoc"
+                  className="w-full border rounded px-4 py-2"
+                  value={assignSpoc}
+                  onChange={(e) => setAssignSpoc(e.target.value)}
+                >
+                  <option value="" disabled>Select SPOC</option>
+                  {teamLeads.map((spoc, index) => (
+                    <option key={index} value={spoc}>{spoc}</option>
+                  ))}
+                </select>
+              </div>
 
-      {/* Workspace Information Section */}
-      <div className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">
-            Workspace Name <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="text"
-            placeholder="Workspace Name"
-            className="w-full border rounded px-4 py-2"
-            required
-            value={workspaceName}
-            onChange={(e) => setWorkspaceName(e.target.value)}
-          />
+              <div>
+                <label htmlFor="hdMaintenance" className="block font-medium mb-1">
+                  H&D Maintenance <span className="text-red-600">*</span>
+                </label>
+                <select
+                  id="hdMaintenance"
+                  className="w-full border rounded px-4 py-2"
+                  value={hdMaintenance}
+                  onChange={(e) => setHdMaintenance(e.target.value)}
+                >
+                  <option value="" disabled>Select Developer Team Lead</option>
+                  {hdLeads.map((lead, index) => (
+                    <option key={index} value={lead}>{lead}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="assignStaff" className="block font-medium mb-1">
+                  Assign Staff <span className="text-red-600">*</span>
+                </label>
+                <select
+                  id="assignStaff"
+                  className="w-full border rounded px-4 py-2"
+                  value={assignStaff}
+                  onChange={(e) => setAssignStaff(e.target.value)}
+                >
+                  <option value="" disabled>Select Staff</option>
+                  {staffList.map((staff, index) => (
+                    <option key={index} value={staff}>
+                      {staff}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-2">
+              <button className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" onClick={handleConfirmActivation}>
+                Create workspace
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
-          <label className="block font-medium mb-1">
-            Description <span className="text-red-600">*</span>
-          </label>
-          <textarea
-            placeholder="Description"
-            className="w-full border rounded px-4 py-2 h-24"
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Assign Spoc */}
-      <div className="mt-6">
-        <label className="block font-medium mb-1">
-          Assign spoc <span className="text-red-600">*</span>
-        </label>
-        <select
-          className="w-full border rounded px-4 py-2"
-          required
-          value={assignSpoc}
-          onChange={(e) => setAssignSpoc(e.target.value)}
-        >
-          <option value="" disabled>
-            Select SPOC
-          </option>
-          <option value="lead1">Team Lead 1</option>
-          <option value="manager">Manager</option>
-          {/* Populate dynamically if needed */}
-        </select>
-      </div>
-
-      {/* H&D Maintenance */}
-      <div className="mt-4">
-        <label className="block font-medium mb-1">
-          H&D Maintenance <span className="text-red-600">*</span>
-        </label>
-        <select
-          className="w-full border rounded px-4 py-2"
-          required
-          value={hdMaintenance}
-          onChange={(e) => setHdMaintenance(e.target.value)}
-        >
-          <option value="" disabled>
-            Select Developer Team Lead
-          </option>
-          <option value="devlead1">Dev Team Lead 1</option>
-          {/* Populate dynamically if needed */}
-        </select>
-      </div>
-
-
-      {/* Assign Staff */}
-      <div className="mt-4">
-        <label className="block font-medium mb-1">
-          Assign Staff <span className="text-red-600">*</span>
-        </label>
-        <select
-          className="w-full border rounded px-4 py-2"
-          required
-          value={assignStaff}
-          onChange={(e) => setAssignStaff(e.target.value)}
-        >
-          <option value="" disabled>
-            Select Staff
-          </option>
-          <option value="staff1">Staff Member 1</option>
-          <option value="staff2">Staff Member 2</option>
-          {/* Populate dynamically if needed */}
-        </select>
-      </div>
-
-
-      {/* Footer */}
-      <div className="mt-6 flex justify-end space-x-2">
-        <button
-          className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
-          onClick={() => setShowModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={handleConfirmActivation}
-          type="submit"
-        >
-          Create workspace
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
-
+      )}
     </div>
   );
 };

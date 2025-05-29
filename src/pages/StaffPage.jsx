@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import logo from "../assets/GA.png";
+import WorkspaceCardStaff from './WorkspaveCardStaff'
 import {
   LayoutDashboard,
   Briefcase,
@@ -26,7 +27,7 @@ const Dashboard = () => {
       case "Dashboard":
         return <div>This is the Dashboard content</div>;
       case "Work Space":
-        return <div>This is the Work Space section</div>;
+        return <div><WorkspaceCardStaff /></div>;
       case "tasks":
         return <div>View and manage tasks.</div>;
       case "Settings":
