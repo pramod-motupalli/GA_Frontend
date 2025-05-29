@@ -24,7 +24,7 @@ import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 
 import AssignMembersModal from "../pages/AssignMembersModal"; 
-
+import TasksPage from "../pages/TasksPage";
 
 function FlowManager({ isOpen, onClose }) {
   const [showHoursModal, setShowHoursModal] = useState(false);
@@ -139,7 +139,6 @@ function FlowManager({ isOpen, onClose }) {
     </>
   );
 }
-
 
 const Dashboard = () => {
     const [clientRequests, setClientRequests] = useState([
@@ -257,7 +256,6 @@ const Dashboard = () => {
       alert("Error: " + error.message);
     }
   };
-
 
   const handleDelete = (index) => {
     const updated = [...staffMembers];
@@ -454,7 +452,6 @@ const Dashboard = () => {
         return [...new Set(range)]; // Remove duplicates if pageCount is small
     };
     const pageNumbers = getPageNumbers();
-
 
     return (
       <>
@@ -713,13 +710,14 @@ const handleScopeDecision = (status) => {
   setShowRequestModal(false); // Close the 'Request Description' modal
 };
 
-
   const renderContent = () => {
     switch (activeTab) {
       case "Create Member":
         return renderCreateMembersContent();
       case "Client Requests":
         return renderClientRequests();
+      case "Tasks TODO":
+        return <TasksPage />;
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
     }
@@ -760,7 +758,6 @@ const handleScopeDecision = (status) => {
       </div>
     );
  };
-
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
@@ -842,3 +839,4 @@ const handleScopeDecision = (status) => {
 
 };
 export default Dashboard;
+
