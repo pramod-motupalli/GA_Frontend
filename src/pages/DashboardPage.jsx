@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal"; 
 
 
@@ -720,6 +721,10 @@ const handleScopeDecision = (status) => {
         return renderCreateMembersContent();
       case "Client Requests":
         return renderClientRequests();
+      case "Work Space":
+        return <WorkspaceCardTeamlead />
+      case "Clients Services":
+        return <DomainHostingTableTeamlead />
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
     }

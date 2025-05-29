@@ -1,10 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Customization = ({ onClose, plan }) => {
   const [features, setFeatures] = useState(['']);
   const [error, setError] = useState('');
+  const [clientData, setClientData] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchClientInfo = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/users/hey/', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+        if (!res.ok) throw new Error('Failed to fetch client info');
+        const data = await res.json();
+        setClientData(data);
+      } catch (err) {
+        console.error('Error fetching client info:', err);
+        setError('Failed to load user info. Please refresh or try again later.');
+      }
+    };
+
+    fetchClientInfo();
+  }, []);
 
   const handleAddFeature = () => {
     setFeatures([...features, '']);
@@ -34,17 +55,31 @@ const Customization = ({ onClose, plan }) => {
       return;
     }
 
+    if (!clientData) {
+      setError('Client info not loaded. Please try again later.');
+      return;
+    }
+
     try {
       const payload = {
         title: plan.title,
         price: plan.price,
         billing: plan.type || 'monthly',
         features,
+        client: {
+          id: clientData.id,
+          name: `${clientData.first_name} ${clientData.last_name}`,
+          email: clientData.email,
+          phone: clientData.phone_number,
+        },
       };
 
-      const response = await fetch('http://127.0.0.1:8000/api/users/submissions/', {
+      const response = await fetch('http://localhost:8000/api/users/submissions/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -55,7 +90,7 @@ const Customization = ({ onClose, plan }) => {
         return;
       }
 
-      console.log('Plan & domain/hosting info submitted successfully');
+      console.log('Plan & client info submitted successfully');
       navigate('/thankyou-custom');
 
     } catch (error) {
@@ -124,7 +159,7 @@ const Customization = ({ onClose, plan }) => {
           <div className="flex justify-between gap-3">
             <button
               type="submit"
-              className="bg-[#447DCB] text-white px-5 py-3 rounded-lg font-semibold text-base hover:bg-[#447DCB]"
+              className="bg-[#447DCB] text-white px-5 py-3 rounded-lg font-semibold text-base hover:bg-[#3a6db3]"
             >
               Raise a Request
             </button>

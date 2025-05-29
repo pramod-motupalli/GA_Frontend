@@ -5,22 +5,22 @@ export default function App() {
   const [data, setData] = useState([]);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [statusMenuIndex, setStatusMenuIndex] = useState(null);
+  const [editIndex, setEditIndex] = useState(null);
+  const [editDates, setEditDates] = useState({});
   const menuRefs = useRef([]);
 
-useEffect(() => {
-  const fetchData = () => {
-    fetch('http://localhost:8000/api/users/domain-hosting/')
-      .then(res => res.json())
-      .then(setData)
-      .catch(err => console.error('Fetch error:', err));
-  };
+  useEffect(() => {
+    const fetchData = () => {
+      fetch('http://localhost:8000/api/users/domain-hosting/')
+        .then(res => res.json())
+        .then(setData)
+        .catch(err => console.error('Fetch error:', err));
+    };
 
-  fetchData(); // initial fetch
-
-  const interval = setInterval(fetchData, 60000); // refetch every 60 seconds
-
-  return () => clearInterval(interval); // cleanup on unmount
-}, []);
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -39,21 +39,45 @@ useEffect(() => {
 
   const getRowColorClass = (expiryDate) => {
     if (!expiryDate) return 'bg-gray-50 text-gray-700';
-
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Ignore time part
+    today.setHours(0, 0, 0, 0);
     const expiry = new Date(expiryDate);
     expiry.setHours(0, 0, 0, 0);
-
     const diff = (expiry - today) / (1000 * 60 * 60 * 24);
-
-    if (diff < 0) return 'bg-red-100 text-red-800';           // Expired
-    if (diff <= 30) return 'bg-yellow-100 text-yellow-800';   // Today or within 30 days
-    return 'bg-white text-gray-900 hover:bg-gray-50';         // Running
+    if (diff < 0) return 'bg-red-100 text-red-800';
+    if (diff <= 30) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-white text-gray-900 hover:bg-gray-50';
   };
+
   const handleEdit = (index) => {
-    alert(`Edit row ${index + 1}`);
+    setEditIndex(index);
+    setEditDates({
+      domain_expiry: data[index].domain_expiry,
+      hosting_expiry: data[index].hosting_expiry,
+    });
     setOpenMenuIndex(null);
+  };
+
+  const saveEditedDates = (rowId, index) => {
+    fetch(`http://localhost:8000/api/users/domain-hosting/${rowId}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(editDates),
+    })
+      .then(res => res.json())
+      .then(updated => {
+        const newData = [...data];
+        newData[index] = updated;
+        setData(newData);
+        setEditIndex(null);
+        alert('Expiry dates updated successfully.');
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error updating expiry dates.");
+      });
   };
 
   const handleRaise = (index) => {
@@ -68,10 +92,7 @@ useEffect(() => {
       },
       body: JSON.stringify({ status }),
     })
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to update status");
-        return res.json();
-      })
+      .then(res => res.json())
       .then(updated => {
         const newData = [...data];
         newData[index] = updated;
@@ -111,9 +132,10 @@ useEffect(() => {
       <tbody>
         {data.map((row, index) => {
           const rowColorClass = getRowColorClass(row.hosting_expiry);
+          const isEditing = editIndex === index;
 
           return (
-            <tr key={index} className={`${rowColorClass}`}>
+            <tr key={index} className={rowColorClass}>
               <td className="px-3 py-2">
                 <input type="checkbox" className="accent-blue-600" />
               </td>
@@ -123,123 +145,129 @@ useEffect(() => {
               <td className="px-3 py-2">{row.domain_name}</td>
               <td className="px-3 py-2">{row.domain_provider}</td>
               <td className="px-3 py-2 whitespace-pre-line">{row.domain_account}</td>
-              <td className="px-3 py-2">{row.domain_expiry}</td>
+              <td className="px-3 py-2">
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={editDates.domain_expiry || ''}
+                    onChange={(e) =>
+                      setEditDates({ ...editDates, domain_expiry: e.target.value })
+                    }
+                    className="border rounded px-2 py-1"
+                  />
+                ) : (
+                  row.domain_expiry
+                )}
+              </td>
               <td className="px-3 py-2">{row.hosting_provider}</td>
               <td className="px-3 py-2">{row.hosting_provider_name}</td>
-              <td className="px-3 py-2 font-medium">{row.hosting_expiry}</td>
-              <td className="px-3 py-2">
-                {row.status ? (
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${row.status === 'running' ? 'bg-green-100 text-green-700'
-                      : row.status === 'expired' ? 'bg-red-200 text-red-700'
-                      : 'bg-yellow-200 text-yellow-800'}`} // thicker yellow
-                  >
-                    {row.status}
-                  </span>
+              <td className="px-3 py-2 font-medium">
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={editDates.hosting_expiry || ''}
+                    onChange={(e) =>
+                      setEditDates({ ...editDates, hosting_expiry: e.target.value })
+                    }
+                    className="border rounded px-2 py-1"
+                  />
                 ) : (
-                  <span className="text-gray-400 italic">Unknown</span>
+                  row.hosting_expiry
                 )}
               </td>
               <td className="px-3 py-2">
-                {['running', 'expiring'].includes(row.status) ? (
-                  <span className="italic text-gray-400">Unavailable</span>
-                ) : (
-                  <select
-                    className="border rounded px-2 py-1 text-sm"
-                    value={row.hd_payment_status || 'pending'}
-                    onChange={(e) => {
-                      const newStatus = e.target.value;
-                      fetch(`http://localhost:8000/api/users/domain-hosting/${row.id}/`, {
-                        method: 'PATCH',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ hd_payment_status: newStatus }),
-                      })
-                        .then(res => {
-                          if (!res.ok) throw new Error('Failed to update H&D status');
-                          return res.json();
-                        })
-                        .then(updated => {
-                          const newData = [...data];
-                          newData[index] = updated;
-                          setData(newData);
-                        })
-                        .catch(err => {
-                          console.error(err);
-                          alert('Error updating H&D status.');
-                        });
-                    }}
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="done">Done</option>
-                  </select>
-                )}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium
+                    ${row.status === 'running' ? 'bg-green-100 text-green-700'
+                    : row.status === 'expired' ? 'bg-red-200 text-red-700'
+                    : 'bg-yellow-200 text-yellow-800'}`}
+                >
+                  {row.status || <span className="text-gray-400 italic">Unknown</span>}
+                </span>
               </td>
-
+              <td className="px-3 py-2">
+                <span className="text-gray-800 font-medium">
+                  {row.hd_payment_status || 'N/A'}
+                </span>
+              </td>
               <td className="px-3 py-2 text-center">
                 <div className="relative" ref={el => (menuRefs.current[index] = el)}>
-                  <button
-                    onClick={() => {
-                      setOpenMenuIndex(openMenuIndex === index ? null : index);
-                      setStatusMenuIndex(null);
-                    }}
-                    className="text-gray-500 hover:text-gray-800 focus:outline-none"
-                    aria-label="Open actions menu"
-                  >
-                    &#8942;
-                  </button>
-
-                  {openMenuIndex === index && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 text-sm">
-                      <ul className="divide-y divide-gray-100">
-                        <li
-                          onClick={() => handleEdit(index)}
-                          className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 cursor-pointer"
-                        >
-                          <Pencil size={16} />
-                          Edit
-                        </li>
-                        <li
-                          onClick={() => handleRaise(index)}
-                          className="flex items-center gap-2 px-4 py-2 text-yellow-600 hover:bg-yellow-50 cursor-pointer relative"
-                        >
-                          <Eye size={16} />
-                          Raise Alert
-                          <svg className="ml-auto h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </li>
-                        {statusMenuIndex === index && (
-                          <div className="ml-4 mt-1 rounded-lg border border-gray-200 bg-gray-50">
-                            {['running', 'expiring', 'expired'].map(status => {
-                              const colorClass = {
-                                running: 'text-green-700 hover:bg-green-100',
-                                expiring: 'text-yellow-800 hover:bg-yellow-200',
-                                expired: 'text-red-700 hover:bg-red-100',
-                              }[status];
-                              return (
-                                <div
-                                  key={status}
-                                  onClick={() => handleStatusUpdate(row.id, index, status)}
-                                  className={`px-4 py-2 cursor-pointer ${colorClass} rounded-md text-sm font-medium transition-colors`}
-                                >
-                                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                        <li
-                          onClick={() => handleDelete(index)}
-                          className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 cursor-pointer"
-                        >
-                          <Trash size={16} />
-                          Delete
-                        </li>
-                      </ul>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => saveEditedDates(row.id, index)}
+                        className="text-green-600 hover:underline text-sm"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditIndex(null)}
+                        className="text-gray-500 hover:underline text-sm"
+                      >
+                        Cancel
+                      </button>
                     </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          setOpenMenuIndex(openMenuIndex === index ? null : index);
+                          setStatusMenuIndex(null);
+                        }}
+                        className="text-gray-500 hover:text-gray-800 focus:outline-none"
+                        aria-label="Open actions menu"
+                      >
+                        &#8942;
+                      </button>
+
+                      {openMenuIndex === index && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 text-sm">
+                          <ul className="divide-y divide-gray-100">
+                            <li
+                              onClick={() => handleEdit(index)}
+                              className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 cursor-pointer"
+                            >
+                              <Pencil size={16} />
+                              Edit Expiry
+                            </li>
+                            <li
+                              onClick={() => handleRaise(index)}
+                              className="flex items-center gap-2 px-4 py-2 text-yellow-600 hover:bg-yellow-50 cursor-pointer relative"
+                            >
+                              <Eye size={16} />
+                              Raise Alert
+                            </li>
+                            {statusMenuIndex === index && (
+                              <div className="ml-4 mt-1 rounded-lg border border-gray-200 bg-gray-50">
+                                {['running', 'expiring', 'expired'].map(status => {
+                                  const colorClass = {
+                                    running: 'text-green-700 hover:bg-green-100',
+                                    expiring: 'text-yellow-800 hover:bg-yellow-200',
+                                    expired: 'text-red-700 hover:bg-red-100',
+                                  }[status];
+                                  return (
+                                    <div
+                                      key={status}
+                                      onClick={() => handleStatusUpdate(row.id, index, status)}
+                                      className={`px-4 py-2 cursor-pointer ${colorClass} rounded-md text-sm font-medium transition-colors`}
+                                    >
+                                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            <li
+                              onClick={() => handleDelete(index)}
+                              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 cursor-pointer"
+                            >
+                              <Trash size={16} />
+                              Delete
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </td>

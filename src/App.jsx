@@ -27,6 +27,8 @@ import PaymentRequests from './pages/PaymentRequests';
 import Main from "./pages/WorkspaceCard";
 import WorkSpaceActivation from './pages/WorkSpaceActivation';
 import WorkspaceCardTeamlead from "./pages/WorkspaceCardTeamlead";
+import DomainHostingTableManager from './pages/DomainHostingTableManager';
+
 
 function App() {
   return (
@@ -58,6 +60,7 @@ function App() {
         <Route path="/main" element={<Main />} />
         <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />
         <Route path="/WorkspaceCardTeamlead" element={<WorkspaceCardTeamlead />} />
+        <Route path="/Domain-Manager" element={<DomainHostingTableManager />} />
       </Routes>
     </Router>
   );
