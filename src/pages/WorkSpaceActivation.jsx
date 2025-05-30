@@ -106,7 +106,7 @@ const ActivatedPayments = () => {
     try {
      await axios.post(
   'http://localhost:8000/api/users/assign-spoc/',
-  { username: assignSpoc },
+  { id: assignSpoc },
   {
     headers: {
       Authorization: `Token ${token}`, // 👈 CORRECT FORMAT
@@ -116,11 +116,13 @@ const ActivatedPayments = () => {
 
 
       const payload = {
-        client_name: selectedRequest.client_name,
-        phone_number: selectedRequest.phone_number,
-        email: selectedRequest.email,
+        client_user_id: selectedRequest.client?.id,
+        client_name: selectedRequest.client?.username,
+        phone_number: selectedRequest.client?.contact_number,
+        email: selectedRequest.client?.email,
         workspace_name: workspaceName,
         description,
+        assign_spoc: assignSpoc,  
         assign_staff: assignStaff,
         hd_maintenance: hdMaintenance,
         is_workspace_activated: true,
@@ -266,53 +268,60 @@ const ActivatedPayments = () => {
                 <label htmlFor="assignSpoc" className="block font-medium mb-1">
                   Assign SPOC <span className="text-red-600">*</span>
                 </label>
-                <select
-                  id="assignSpoc"
-                  className="w-full border rounded px-4 py-2"
-                  value={assignSpoc}
-                  onChange={(e) => setAssignSpoc(e.target.value)}
-                >
-                  <option value="" disabled>Select SPOC</option>
-                  {teamLeads.map((spoc, index) => (
-                    <option key={index} value={spoc}>{spoc}</option>
-                  ))}
-                </select>
+<select
+  id="assignSpoc"
+  className="w-full border rounded px-4 py-2"
+  value={assignSpoc}
+  onChange={(e) => setAssignSpoc(e.target.value)}
+>
+  <option value="" disabled>Select SPOC</option>
+  {teamLeads.map((spoc) => (
+    <option key={spoc.id} value={spoc.id}>
+      {spoc.username}
+    </option>
+  ))}
+</select>
+
               </div>
 
               <div>
                 <label htmlFor="hdMaintenance" className="block font-medium mb-1">
                   H&D Maintenance <span className="text-red-600">*</span>
                 </label>
-                <select
-                  id="hdMaintenance"
-                  className="w-full border rounded px-4 py-2"
-                  value={hdMaintenance}
-                  onChange={(e) => setHdMaintenance(e.target.value)}
-                >
-                  <option value="" disabled>Select Developer Team Lead</option>
-                  {hdLeads.map((lead, index) => (
-                    <option key={index} value={lead}>{lead}</option>
-                  ))}
-                </select>
+<select
+  id="hdMaintenance"
+  className="w-full border rounded px-4 py-2"
+  value={hdMaintenance}
+  onChange={(e) => setHdMaintenance(e.target.value)}
+>
+  <option value="" disabled>Select Developer Team Lead</option>
+  {hdLeads.map((lead) => (
+    <option key={lead.id} value={lead.id}>
+      {lead.username}
+    </option>
+  ))}
+</select>
+
               </div>
 
               <div>
                 <label htmlFor="assignStaff" className="block font-medium mb-1">
                   Assign Staff <span className="text-red-600">*</span>
                 </label>
-                <select
-                  id="assignStaff"
-                  className="w-full border rounded px-4 py-2"
-                  value={assignStaff}
-                  onChange={(e) => setAssignStaff(e.target.value)}
-                >
-                  <option value="" disabled>Select Staff</option>
-                  {staffList.map((staff, index) => (
-                    <option key={index} value={staff}>
-                      {staff}
-                    </option>
-                  ))}
-                </select>
+<select
+  id="assignStaff"
+  className="w-full border rounded px-4 py-2"
+  value={assignStaff}
+  onChange={(e) => setAssignStaff(e.target.value)}
+>
+  <option value="" disabled>Select Staff</option>
+  {staffList.map((staff) => (
+    <option key={staff.id} value={staff.id}>
+      {staff.username}
+    </option>
+  ))}
+</select>
+
               </div>
             </div>
 
