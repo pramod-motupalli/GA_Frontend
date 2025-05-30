@@ -52,9 +52,6 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
       const payload = {
         client: {
           id: userData?.id,
-          name: `${userData?.first_name} ${userData?.last_name}`,
-          email: userData?.email,
-          phone: userData?.phone_number,
         },
         title: selectedPlan?.title || '',
         price: selectedPlan?.price || '',

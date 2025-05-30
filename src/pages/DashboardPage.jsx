@@ -21,11 +21,12 @@ import {
 } from "lucide-react";
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal"; 
 import FlowManager from "./FlowManager"; 
 
-
+import TasksPage from "../pages/TasksPage";
 
 
 const Dashboard = () => {
@@ -144,7 +145,6 @@ const Dashboard = () => {
       alert("Error: " + error.message);
     }
   };
-
 
   const handleDelete = (index) => {
     // Add API call for deletion here if needed
@@ -334,7 +334,6 @@ const Dashboard = () => {
         return [...new Set(range)];
     };
     const pageNumbers = getPageNumbers();
-
 
     return (
       <>
@@ -568,8 +567,14 @@ const Dashboard = () => {
     );
   };
 
-// const handleScopeDecision = (status) => { ... } // This function seems unused after modal integration
-// const renderRequestModal = () => { ... } // This modal seems unused after direct integration
+const handleScopeDecision = (status) => {
+  if (!selectedRequest) return;
+  const updatedRequests = clientRequests.map((req) =>
+    req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req
+  );
+  setClientRequests(updatedRequests);
+  setShowRequestModal(false); // Close the 'Request Description' modal
+};
 
   const renderContent = () => {
     switch (activeTab) {
@@ -577,10 +582,52 @@ const Dashboard = () => {
         return renderCreateMembersContent();
       case "Client Requests":
         return renderClientRequests();
+      case "Tasks TODO":
+        return <TasksPage />;
+      case "Work Space":
+        return <WorkspaceCardTeamlead />;
+      case "Clients Services":
+        return <DomainHostingTableTeamlead />;
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
     }
   };
+
+  // This modal is for viewing request description and making scope decision (different from isRequestModalOpen above)
+  // This specific renderRequestModal was not being used actively for the view/scope from table.
+  // The logic for that is now inside renderClientRequests's modal.
+  // If you need a separate modal triggered by 'showRequestModal', you can use this.
+ const renderRequestModal = () => {
+    if (!showRequestModal || !selectedRequest) return null; // Ensure it only renders when needed
+    return (
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-[400px] max-w-full shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Request Description</h2>
+            <button onClick={() => setShowRequestModal(false)} className="text-xl font-bold text-gray-600">×</button>
+          </div>
+          <p className="text-gray-700 text-sm mb-4">{selectedRequest?.description}</p>
+          <div className="mt-4">
+            <h3 className="text-md font-medium mb-2">View Scope</h3>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleScopeDecision("Within Scope")}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Within Scope
+              </button>
+              <button
+                onClick={() => handleScopeDecision("Out of Scope")}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              >
+              Out of Scope
+            </button>
+          </div>
+          </div>
+        </div>
+      </div>
+    );
+ };
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
@@ -658,3 +705,4 @@ const Dashboard = () => {
 
 };
 export default Dashboard;
+

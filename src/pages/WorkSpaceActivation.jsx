@@ -21,7 +21,9 @@ const ActivatedPayments = () => {
 }, [staffList]);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/users/submissions/')
+    axios.get('http://localhost:8000/api/users/submissions/', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       .then(res => {
         if (Array.isArray(res.data)) {
           const approved = res.data.filter(
@@ -172,9 +174,9 @@ const ActivatedPayments = () => {
             <tbody>
               {requests.length > 0 ? requests.map(req => (
                 <tr key={req.id} className="border-t">
-                  <td className="px-4 py-3">{req.client_name || 'Unknown'}</td>
-                  <td className="px-4 py-3">{req.phone_number || 'N/A'}</td>
-                  <td className="px-4 py-3">{req.email || 'N/A'}</td>
+                  <td className="px-4 py-3">{req.client?.username || 'Unknown'}</td>
+                  <td className="px-4 py-3">{req.client?.contact_number || 'N/A'}</td>
+                  <td className="px-4 py-3">{req.client?.email || 'N/A'}</td>
                   <td className="px-4 py-3">${req.price}</td>
                   <td className="px-4 py-3">Category 1</td> {/* This is hardcoded, ensure it's intended */}
                   <td className="px-4 py-3">

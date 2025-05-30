@@ -5,14 +5,18 @@ export default function ExpiredDomainHosting() {
 
   // Helper function to calculate background and text color based on expiry date
   const getRowColorClass = (expiryDate) => {
-    if (!expiryDate) return '';
+    if (!expiryDate) return 'bg-gray-50 text-gray-700';
+
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ignore time part
     const expiry = new Date(expiryDate);
-    const diff = (expiry - today) / (1000 * 60 * 60 * 24); // difference in days
+    expiry.setHours(0, 0, 0, 0);
+
+    const diff = (expiry - today) / (1000 * 60 * 60 * 24);
 
     if (diff < 0) return 'bg-red-100 text-red-800';           // Expired
-    if (diff <= 30) return 'bg-yellow-100 text-yellow-800';   // Expiring soon (within 30 days)
-    return 'hover:bg-gray-50';                                // Normal
+    if (diff <= 30) return 'bg-yellow-100 text-yellow-800';   // Today or within 30 days
+    return 'bg-white text-gray-900 hover:bg-gray-50';         // Running
   };
 
   useEffect(() => {
