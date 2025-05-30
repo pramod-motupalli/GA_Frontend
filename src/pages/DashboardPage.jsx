@@ -719,6 +719,10 @@ const handleScopeDecision = (status) => {
         return renderClientRequests();
       case "Tasks TODO":
         return <TasksPage />;
+      case "Work Space":
+        return <WorkspaceCardTeamlead />;
+      case "Clients Services":
+        return <DomainHostingTableTeamlead />;
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
     }
