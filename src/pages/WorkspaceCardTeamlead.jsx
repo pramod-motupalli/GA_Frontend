@@ -20,14 +20,14 @@ export default function WorkspaceDashboard() {
   const workspacesPerPage = 9;
   const cardRefs = useRef({});
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/api/users/workspaces/create/')
-      .then(res => {
-        setWorkspaces(res.data);
-        setFilteredWorkspaces(res.data);
-      })
-      .catch(err => console.error('Fetch error:', err));
-  }, []);
+useEffect(() => {
+  const token = localStorage.getItem('accessToken');
+  axios.get('http://localhost:8000/api/users/workspaces/spoc/', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => setWorkspaces(res.data))
+  .catch(() => setWorkspaces([]));
+}, []);
 
   useEffect(() => {
     let temp = [...workspaces];
