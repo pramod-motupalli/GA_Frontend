@@ -137,9 +137,9 @@ Request ID: TASK-${1001 + i}`
   let filteredCustomRequests = [...requests];
   if (type === 'custom' && searchQuery.trim() !== '') {
     filteredCustomRequests = filteredCustomRequests.filter((req) =>
-      (req.client_name && req.client_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (req.client_email && req.client_email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (req.client_phone && req.client_phone.toLowerCase().includes(searchQuery.toLowerCase()))
+      (req.client?.username && req?.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (req.client?.email && req.client?.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (req.client?.contact_number && req.client?.contact_number.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }
 
@@ -421,9 +421,9 @@ Request ID: TASK-${1001 + i}`
           <tbody>
             {paginatedCustomRequests.map((req) => (
               <tr key={req.id} className="border hover:bg-gray-50">
-                <td className="px-4 py-3">{req.client_name}</td>
-                <td className="px-4 py-3">{req.client_phone}</td>
-                <td className="px-4 py-3">{req.client_email}</td>
+                <td className="px-4 py-3">{req.client?.username || 'Unknown'}</td>
+                <td className="px-4 py-3">{req.client?.contact_number || 'N/A'}</td>
+                <td className="px-4 py-3">{req.client?.email || 'N/A'}</td>
                 <td
                   className="px-4 py-3 text-blue-600 font-medium cursor-pointer flex items-center gap-1"
                   onClick={() => {
@@ -505,8 +505,8 @@ Request ID: TASK-${1001 + i}`
           <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl relative">
             <h2 className="text-lg font-semibold mb-4">Request from {selectedRequest.client_name}</h2>
              <div className="mb-3">
-                <p className="text-xs text-gray-500">Email: {selectedRequest.client_email}</p>
-                <p className="text-xs text-gray-500">Phone: {selectedRequest.client_phone}</p>
+                <p className="text-xs text-gray-500">Email: {selectedRequest.client?.email}</p>
+                <p className="text-xs text-gray-500">Phone: {selectedRequest.client?.contact_number}</p>
             </div>
             <p className="text-sm font-medium mb-1">Selected Features:</p>
             <ul className="space-y-1 mb-4 max-h-40 overflow-y-auto text-sm">

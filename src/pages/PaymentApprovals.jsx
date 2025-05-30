@@ -4,10 +4,16 @@ import axios from 'axios';
 const PaymentApprovals = () => {
   const [requests, setRequests] = useState([]);
 
-useEffect(() => {
-  axios.get('http://localhost:8000/api/users/submissions/')
+  // Retrieve token from localStorage or a global state/store
+  const token = localStorage.getItem('accessToken'); // Example: 'Token abc123'
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/users/submissions/', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
     .then(res => {
-      // Filter only unapproved submissions
       const unapproved = res.data.filter(
         req => req.payment_is_approved !== true &&
                req.payment_is_approved !== "Yes" &&
@@ -16,22 +22,25 @@ useEffect(() => {
       setRequests(unapproved);
     })
     .catch(err => console.error(err));
-}, []);
+  }, [token]);
 
-const handleApprove = async (planId) => {
-  try {
-    await axios.post(`http://localhost:8000/api/users/${planId}/approve/`);
-    
-    // Update the specific request's approval status locally without refetching all
-    setRequests((prevRequests) =>
-      prevRequests.map((req) =>
-        req.id === planId ? { ...req, payment_is_approved: "Yes" } : req
-      )
-    );
-  } catch (error) {
-    console.error('Failed to approve payment:', error);
-  }
-};
+  const handleApprove = async (planId) => {
+    try {
+      await axios.post(`http://localhost:8000/api/users/${planId}/approve/`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      setRequests(prev =>
+        prev.map(req =>
+          req.id === planId ? { ...req, payment_is_approved: "Yes" } : req
+        )
+      );
+    } catch (error) {
+      console.error('Failed to approve payment:', error);
+    }
+  };
 
   return (
     <div className="p-4">
@@ -51,9 +60,9 @@ const handleApprove = async (planId) => {
           <tbody>
             {requests.map(req => (
               <tr key={req.id} className="border-t">
-                <td className="px-4 py-3">{req.client_name || 'Unknown'}</td>
-                <td className="px-4 py-3">{req.phone_number || 'N/A'}</td>
-                <td className="px-4 py-3">{req.email || 'N/A'}</td>
+                <td className="px-4 py-3">{req.client?.username || 'Unknown'}</td>
+                <td className="px-4 py-3">{req.client?.contact_number || 'N/A'}</td>
+                <td className="px-4 py-3">{req.client?.email || 'N/A'}</td>
                 <td className="px-4 py-3">${req.price}</td>
                 <td className="px-4 py-3">Category 1</td>
                 <td className="px-4 py-3">

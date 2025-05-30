@@ -10,7 +10,7 @@ const Customization = ({ onClose, plan }) => {
   useEffect(() => {
     const fetchClientInfo = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/users/hey/', {
+        const res = await fetch('http://localhost:8000/api/users/me/', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
