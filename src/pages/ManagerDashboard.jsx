@@ -86,11 +86,13 @@ const CreateMembers = () => {
      if (!token) throw new Error("Access token not found. Please log in.");
     const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
     const res = await fetch(API_ENDPOINTS.fetchStaffMembers, { headers });
+    
     if (!res.ok) throw new Error(`Failed to fetch staff members: ${res.statusText}`);
     const data = await res.json();
     const staff = data.results || data || [];
-    // console.log("Fetched Staff Members:", staff); // Log the fetched data
+    console.log("Fetched Staff Members:", staff); // Log the fetched data
      return staff;
+     
   };
 
   const fetchAccountants = async () => {

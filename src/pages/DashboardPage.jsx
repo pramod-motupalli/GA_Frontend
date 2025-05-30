@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   LayoutDashboard,
   UserCheck,
@@ -83,16 +84,39 @@ const Dashboard = () => {
         console.error("Failed to fetch team leads:", error);
       }
     };
-    setStaffMembers([
-        { id: 'staff1', name: "Ameer", email: "ameer@example.com", teamLead: "Lead A", designation: "Developer" },
-        { id: 'staff2', name: "Jai Teja", email: "jai@example.com", teamLead: "Lead B", designation: "Designer" },
-        { id: 'staff3', name: "Surya", email: "surya@example.com", teamLead: "Lead A", designation: "Developer" },
-    ]);
 
+    
     fetchTeamLeads();
   }, []);
 
-  
+  useEffect(() => {
+    const fetchStaffMembers = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Adjust if using a different auth method
+        const response = await axios.get('http://localhost:8000/api/users/get-staff-members/', {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        // Optional: Add 'teamLead' if needed by mapping
+        const formattedData = response.data.map((staff) => ({
+          // id: staff.id,
+          name: staff.name,
+          email: staff.email,
+          designation: staff.designation,
+          // teamLead: 'N/A', // Add team lead logic if needed
+        }));
+
+        setStaffMembers(formattedData);
+      } catch (error) {
+        console.error('Failed to fetch staff members:', error);
+      }
+    };
+
+    fetchStaffMembers();
+  }, []);
+
   const openModal = (userType, index = null) => {
     setModalUserType(userType);
     setShowModal(true);
