@@ -4,9 +4,9 @@ import {
   UserCheck,
   Briefcase,
   ClipboardList,
-  Search,        
-  Filter,        
-  MoreHorizontal, 
+  Search,
+  Filter,
+  MoreHorizontal,
   Eye,
   Clipboard,
   Settings,
@@ -23,18 +23,18 @@ import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
-import AssignMembersModal from "../pages/AssignMembersModal"; 
-import FlowManager from "./FlowManager"; 
+import AssignMembersModal from "../pages/AssignMembersModal";
+import FlowManager from "./FlowManager";
 
 import TasksPage from "../pages/TasksPage";
 
 
 const Dashboard = () => {
-    
+
     const [clientRequests, setClientRequests] = useState([
-    { id: 1, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 2, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 3, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
+    { id: 1, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "This is a detailed description for Surya's first request regarding the sampledomain.com. We need to implement feature X, fix bug Y, and optimize performance for module Z. The client expects this to be completed by end of next month.", scopeStatus: "" },
+    { id: 2, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Second request description for Surya.", scopeStatus: "" },
+    { id: 3, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Third request.", scopeStatus: "" },
     { id: 4, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
     { id: 5, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
     { id: 6, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
@@ -50,29 +50,33 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [modalContentType, setModalContentType] = useState(null); 
+  const [modalContentType, setModalContentType] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  
-  const [activeTab, setActiveTab] = useState("Client Requests"); 
+
+  const [activeTab, setActiveTab] = useState("Client Requests");
   const [selectedTab, setSelectedTab] = useState("Staff Member");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
   const [modalUserType, setModalUserType] = useState("Client");
   const [formData, setFormData] = useState({ name: "", email: "", teamLead: "", designation: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [staffMembers, setStaffMembers] = useState([]); // KEEP THIS
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-  
-  const [teamLeads, setTeamLeads] = useState([]); 
-  const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] = useState(false); 
+
+  const [teamLeads, setTeamLeads] = useState([]);
+  const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] = useState(false);
 
   const totalPages = Math.ceil(staffMembers.length / itemsPerPage);
   const [clientRequestCurrentPage, setClientRequestCurrentPage] = useState(1);
-  const [clientRequestItemsPerPage, setClientRequestItemsPerPage] = useState(10); 
+  const [clientRequestItemsPerPage, setClientRequestItemsPerPage] = useState(10);
   const [clientSearchTerm, setClientSearchTerm] = useState("");
   const [clientSortOption, setClientSortOption] = useState("");
-  
+
+  // State for the original renderRequestModal (if needed for other purposes)
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
+
   useEffect(() => {
     const fetchTeamLeads = async () => {
       try {
@@ -92,7 +96,7 @@ const Dashboard = () => {
     fetchTeamLeads();
   }, []);
 
-  
+
   const openModal = (userType, index = null) => {
     setModalUserType(userType);
     setShowModal(true);
@@ -155,17 +159,18 @@ const Dashboard = () => {
 
   const handleViewRequest = (request) => {
     setSelectedRequest(request);
-    setModalContentType('request');
-    setIsRequestModalOpen(true); 
+    setModalContentType('request'); // This signals the modal to show combined view
+    setIsRequestModalOpen(true);
   };
 
- const handleViewScope = (request) => {
-    setSelectedRequest(request);
-    setModalContentType('scope');
-    setIsRequestModalOpen(true); 
-  };
+  // handleViewScope is removed as its functionality is merged.
+  // const handleViewScope = (request) => {
+  //   setSelectedRequest(request);
+  //   setModalContentType('scope');
+  //   setIsRequestModalOpen(true);
+  // };
 
-  const renderModal = () => (
+ const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-xl w-96 p-6 max-w-full">
         <div className="flex justify-between items-center mb-4">
@@ -188,7 +193,7 @@ const Dashboard = () => {
             <option value="">Designation</option>
             <option value="Developer">Developer</option>
             <option value="Designer">Designer</option>
-            
+
           </select>
           <input required type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Name" className="w-full border border-gray-300 rounded-md p-2" />
           <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email id" className="w-full border border-gray-300 rounded-md p-2" />
@@ -297,7 +302,7 @@ const Dashboard = () => {
       processedRequests = processedRequests.filter(req =>
         req.clientName.toLowerCase().includes(lowerSearchTerm) ||
         req.domain.toLowerCase().includes(lowerSearchTerm) ||
-        req.raisedDate.toLowerCase().includes(lowerSearchTerm) || 
+        req.raisedDate.toLowerCase().includes(lowerSearchTerm) ||
         (req.scopeStatus && req.scopeStatus.toLowerCase().includes(lowerSearchTerm))
       );
     }
@@ -316,7 +321,7 @@ const Dashboard = () => {
     const getPageNumbers = () => {
         const pageCount = totalClientRequestPages;
         const currentPage = clientRequestCurrentPage;
-        const delta = 1; 
+        const delta = 1;
         const range = [];
         for (let i = Math.max(2, currentPage - delta); i <= Math.min(pageCount - 1, currentPage + delta); i++) {
             range.push(i);
@@ -338,9 +343,9 @@ const Dashboard = () => {
     return (
       <>
         {/* --- Header Section for Client Requests --- (UNCHANGED) */}
-         <div className="mb-6"> 
+         <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="relative w-full md:flex-grow"> 
+            <div className="relative w-full md:flex-grow">
               <input
                 type="text"
                 placeholder="Search..."
@@ -348,7 +353,7 @@ const Dashboard = () => {
                 value={clientSearchTerm}
                 onChange={(e) => {
                   setClientSearchTerm(e.target.value);
-                  setClientRequestCurrentPage(1); 
+                  setClientRequestCurrentPage(1);
                 }}
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -360,7 +365,7 @@ const Dashboard = () => {
                   value={clientSortOption}
                   onChange={(e) => {
                     setClientSortOption(e.target.value);
-                    setClientRequestCurrentPage(1); 
+                    setClientRequestCurrentPage(1);
                   }}
                 >
                   <option value="">Sort by</option>
@@ -381,18 +386,18 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="w-full bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Client Requests</h2> 
+          <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-[1200px] w-full table-auto"> 
-              <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"> 
+            <table className="min-w-[1100px] w-full table-auto"> {/* Adjusted min-width */}
+              <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3">Client Name</th>
                   <th className="px-4 py-3">Domain Name</th>
                   <th className="px-4 py-3">Request Raised Date</th>
                   <th className="px-4 py-3">Client Request</th>
-                  <th className="px-4 py-3">Scope of service</th>
+                  {/* Scope of service column removed */}
                   <th className="px-4 py-3">Scope of service status</th>
                   <th className="px-4 py-3">Task Assigned to</th>
                   <th className="px-4 py-3">Flow Creation</th>
@@ -412,17 +417,13 @@ const Dashboard = () => {
                           <Eye className="w-4 h-4 mr-1" /> View Request
                         </button>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <button onClick={() => handleViewScope(req)} className="flex items-center text-blue-600 hover:text-blue-700">
-                          <Eye className="w-4 h-4 mr-1" /> View Scope
-                        </button>
-                      </td>
+                      {/* Scope of service data cell removed */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         {req.scopeStatus ? (
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                             req.scopeStatus.toLowerCase() === "with in scope" ? "bg-green-100 text-green-800" :
                             req.scopeStatus.toLowerCase() === "out of scope" ? "bg-red-100 text-red-800" :
-                            "bg-yellow-100 text-yellow-800" 
+                            "bg-yellow-100 text-yellow-800"
                           }`}>
                             {req.scopeStatus}
                           </span>
@@ -441,7 +442,7 @@ const Dashboard = () => {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button
                           onClick={() => {
-                            setSelectedRequest(req); 
+                            setSelectedRequest(req);
                             setFlowModalOpen(true);
                           }}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"
@@ -452,7 +453,7 @@ const Dashboard = () => {
                       <td className="px-4 py-3 whitespace-nowrap text-blue-600 text-xs">Working hours</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-                          
+
                           <button className="text-blue-500 underline hover:text-blue-700 text-xs">
                             Rise to manager
                           </button>
@@ -462,25 +463,38 @@ const Dashboard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="10" className="text-center py-10 text-gray-500">
+                    <td colSpan="9" className="text-center py-10 text-gray-500"> {/* Adjusted colSpan */}
                       No client requests found.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
-            
-            {isRequestModalOpen && (
-              <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40">
+
+            {/* MODIFIED MODAL for Client Request Details and Scope Decision */}
+            {isRequestModalOpen && selectedRequest && modalContentType === 'request' && (
+              <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-40 p-4"> {/* Increased z-index and added padding for small screens */}
                 <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
-                  <div className=" flex justify-between items-center mb-4">
-                    <h3 className=" text-xl font-semibold">{modalContentType === "request" ? "Client Request" : "Scope Decision"}</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-semibold">Client Request Details</h3>
                     <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
                   </div>
-                  {modalContentType === "request" ? (
-                    <p className="text-gray-700">{selectedRequest?.description}</p>
-                  ) : (
-                    <div className="flex justify-around items-center pt-2">
+                  
+                  <div className="space-y-1 mb-4">
+                    <p><strong>Client Name:</strong> {selectedRequest.clientName}</p>
+                    <p><strong>Domain Name:</strong> {selectedRequest.domain}</p>
+                    <p><strong>Request Raised Date:</strong> {selectedRequest.raisedDate}</p>
+                  </div>
+                  <div className="mb-4">
+                    <p className="font-semibold mb-1">Description:</p>
+                    <div className="text-gray-700 whitespace-pre-wrap text-sm bg-gray-50 p-3 border rounded max-h-40 overflow-y-auto">
+                        {selectedRequest.description}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-md font-semibold mb-3">Scope of Service Decision</h4>
+                    <div className="flex items-center space-x-4">
                       <button
                         onClick={() => {
                           const updatedRequests = clientRequests.map((r) =>
@@ -489,7 +503,7 @@ const Dashboard = () => {
                           setClientRequests(updatedRequests);
                           setIsRequestModalOpen(false);
                         }}
-                        className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600"
+                        className="bg-green-500 text-white px-5 py-2 rounded-md hover:bg-green-600 text-sm"
                       >
                         With in Scope
                       </button>
@@ -501,12 +515,12 @@ const Dashboard = () => {
                           setClientRequests(updatedRequests);
                           setIsRequestModalOpen(false);
                         }}
-                        className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600"
+                        className="bg-red-500 text-white px-5 py-2 rounded-md hover:bg-red-600 text-sm"
                       >
                         Out of scope
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
@@ -534,10 +548,10 @@ const Dashboard = () => {
                   disabled={clientRequestCurrentPage === 1}
                   className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  
+                  Previous
                 </button>
                 {pageNumbers.map((page, index) => (
-                  <React.Fragment key={index}> 
+                  <React.Fragment key={index}>
                     {typeof page === 'number' ? (
                       <button
                         onClick={() => setClientRequestCurrentPage(page)}
@@ -557,23 +571,26 @@ const Dashboard = () => {
                   disabled={clientRequestCurrentPage === totalClientRequestPages}
                   className="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  
+                  Next
                 </button>
               </div>
             </div>
           )}
         </div>
-      </> 
+      </>
     );
   };
 
 const handleScopeDecision = (status) => {
+  // This function is related to the 'showRequestModal' state, not 'isRequestModalOpen'
+  // It will remain for now, as requested "without removing any other features"
+  // though its current trigger point within the client requests table context has been superseded.
   if (!selectedRequest) return;
   const updatedRequests = clientRequests.map((req) =>
     req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req
   );
   setClientRequests(updatedRequests);
-  setShowRequestModal(false); // Close the 'Request Description' modal
+  setShowRequestModal(false);
 };
 
   const renderContent = () => {
@@ -593,12 +610,10 @@ const handleScopeDecision = (status) => {
     }
   };
 
-  // This modal is for viewing request description and making scope decision (different from isRequestModalOpen above)
-  // This specific renderRequestModal was not being used actively for the view/scope from table.
-  // The logic for that is now inside renderClientRequests's modal.
-  // If you need a separate modal triggered by 'showRequestModal', you can use this.
  const renderRequestModal = () => {
-    if (!showRequestModal || !selectedRequest) return null; // Ensure it only renders when needed
+    // This modal is controlled by 'showRequestModal' state.
+    // It's kept as per the request "without removing any other features".
+    if (!showRequestModal || !selectedRequest) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-[400px] max-w-full shadow-lg">
@@ -611,7 +626,7 @@ const handleScopeDecision = (status) => {
             <h3 className="text-md font-medium mb-2">View Scope</h3>
             <div className="flex gap-4">
               <button
-                onClick={() => handleScopeDecision("Within Scope")}
+                onClick={() => handleScopeDecision("With in Scope")} // Note: "Within Scope" vs "With in Scope"
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
               >
                 Within Scope
@@ -656,9 +671,9 @@ const handleScopeDecision = (status) => {
             ))}
           </div>
           {/* FlowManager call updated with staffList */}
-          <FlowManager 
-            isOpen={flowModalOpen} 
-            onClose={() => setFlowModalOpen(false)} 
+          <FlowManager
+            isOpen={flowModalOpen}
+            onClose={() => setFlowModalOpen(false)}
             staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))}
           />
         </div>
@@ -685,8 +700,12 @@ const handleScopeDecision = (status) => {
       </div>
 
       {/* Modal for Create/Edit Staff Member */}
-      {showModal && renderModal()} 
-      
+      {showModal && renderModal()}
+
+      {/* Original renderRequestModal, controlled by showRequestModal state */}
+      {renderRequestModal()}
+
+
       {/* AssignMembersModal (if still used for other purposes) */}
       {isAssignMembersModalOpen && (
         <AssignMembersModal
@@ -694,7 +713,6 @@ const handleScopeDecision = (status) => {
           onClose={() => setIsAssignMembersModalOpen(false)}
           onSubmit={(assignmentsData) => {
             console.log("Task Assignments (from original AssignMembersModal):", selectedRequest?.id, assignmentsData);
-            // This modal's functionality might need review if its trigger was removed.
             setIsAssignMembersModalOpen(false);
           }}
           staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))}
@@ -705,4 +723,3 @@ const handleScopeDecision = (status) => {
 
 };
 export default Dashboard;
-
