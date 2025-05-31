@@ -130,7 +130,6 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
         >
           ×
         </button>
-
         <h2 className="text-2xl font-semibold text-blue-600 mb-6">
           Domain and Hosting Information
         </h2>
