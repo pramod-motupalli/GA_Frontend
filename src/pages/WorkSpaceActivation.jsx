@@ -102,18 +102,12 @@ const ActivatedPayments = () => {
       alert("Authentication token is missing.");
       return;
     }
-    console.log(token)
-    try {
-     await axios.post(
-  'http://localhost:8000/api/users/assign-spoc/',
-  { id: assignSpoc },
-  {
-    headers: {
-      Authorization: `Token ${token}`, // 👈 CORRECT FORMAT
-    }
-  }
-);
 
+    try {
+      await axios.post('http://localhost:8000/api/users/assign-spoc/', 
+        { id: assignSpoc }, 
+        { headers: { Authorization: `Token ${token}` } }
+      );
 
       const payload = {
         client_user_id: selectedRequest.client?.id,
