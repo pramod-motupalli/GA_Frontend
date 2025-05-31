@@ -9,7 +9,7 @@ const ActivatedPayments = () => {
   const [description, setDescription] = useState('');
   const [assignSpoc, setAssignSpoc] = useState('');
   const [teamLeads, setTeamLeads] = useState([]);
-  const [hdLeads, setHdLeads] = useState([]); // <-- NEW
+  const [hdLeads, setHdLeads] = useState([]);
   const [hdMaintenance, setHdMaintenance] = useState('');
   const [assignStaff, setAssignStaff] = useState('');
   const [staffList, setStaffList] = useState([]);
@@ -17,7 +17,7 @@ const ActivatedPayments = () => {
 
   const token = localStorage.getItem('accessToken');
   useEffect(() => {
-  console.log(staffList); // This runs every time staffList updates
+  console.log(staffList);
 }, [staffList]);
 
   useEffect(() => {
@@ -38,7 +38,8 @@ const ActivatedPayments = () => {
           setRequests([]);
         }
       })
-      .catch(() => setRequests([]));
+      .catch(() => setRequests([])
+    );
 
     if (token) {
       axios.get('http://localhost:8000/api/users/team-leads/no-spoc/', {
@@ -53,7 +54,6 @@ const ActivatedPayments = () => {
       })
       .catch(() => setTeamLeads([]));
 
-      // NEW: Fetch for H&D Maintenance
       axios.get('http://localhost:8000/api/users/team-leads/', {
         headers: { Authorization: `Token ${token}` }
       })
@@ -110,10 +110,7 @@ const ActivatedPayments = () => {
       );
 
       const payload = {
-        client_user_id: selectedRequest.client?.id,
-        client_name: selectedRequest.client?.username,
-        phone_number: selectedRequest.client?.contact_number,
-        email: selectedRequest.client?.email,
+        client: typeof selectedRequest.client === 'object' ? selectedRequest.client.id : selectedRequest.client,
         workspace_name: workspaceName,
         description,
         assign_spoc: assignSpoc,  
@@ -142,7 +139,6 @@ const ActivatedPayments = () => {
 
   return (
     <div className="p-4">
-    {/* ... (rest of your JSX is likely fine, assuming no syntax errors) ... */}
     <div className="flex gap-6 mb-4">
         {['new', 'out', 'monthly'].map((tab) => (
           <button
@@ -180,7 +176,7 @@ const ActivatedPayments = () => {
                   <td className="px-4 py-3">{req.client?.contact_number || 'N/A'}</td>
                   <td className="px-4 py-3">{req.client?.email || 'N/A'}</td>
                   <td className="px-4 py-3">${req.price}</td>
-                  <td className="px-4 py-3">Category 1</td> {/* This is hardcoded, ensure it's intended */}
+                  <td className="px-4 py-3">Category 1</td>
                   <td className="px-4 py-3">
                     <span className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium w-fit ${
                       req.title === 'Pro' ? 'bg-green-100 text-green-700' :
@@ -207,7 +203,6 @@ const ActivatedPayments = () => {
               )) : (
                 <tr>
                   <td colSpan="7" className="text-center py-4 text-gray-500">
-                    {/* Changed message to be more generic if requests array is empty for any reason */}
                     No new purchases to activate.
                   </td>
                 </tr>
@@ -223,14 +218,13 @@ const ActivatedPayments = () => {
             <button
               className="absolute top-4 right-4 text-xl text-gray-600 hover:text-black z-10"
               onClick={() => setShowModal(false)}
-              aria-label="Close modal" // Accessibility
+              aria-label="Close modal"
             >
               ×
             </button>
             <h2 className="text-xl font-semibold mb-6">Creation of workspace for {selectedRequest.client_name}</h2>
 
             <div className="space-y-4">
-              {/* Workspace Name and Description */}
               <div>
                 <label htmlFor="workspaceName" className="block font-medium mb-1">
                   Workspace Name <span className="text-red-600">*</span>
@@ -262,60 +256,57 @@ const ActivatedPayments = () => {
                 <label htmlFor="assignSpoc" className="block font-medium mb-1">
                   Assign SPOC <span className="text-red-600">*</span>
                 </label>
-<select
-  id="assignSpoc"
-  className="w-full border rounded px-4 py-2"
-  value={assignSpoc}
-  onChange={(e) => setAssignSpoc(e.target.value)}
->
-  <option value="" disabled>Select SPOC</option>
-  {teamLeads.map((spoc) => (
-    <option key={spoc.id} value={spoc.id}>
-      {spoc.username}
-    </option>
-  ))}
-</select>
-
+                <select
+                  id="assignSpoc"
+                  className="w-full border rounded px-4 py-2"
+                  value={assignSpoc}
+                  onChange={(e) => setAssignSpoc(e.target.value)}
+                >
+                  <option value="" disabled>Select SPOC</option>
+                  {teamLeads.map((spoc) => (
+                    <option key={spoc.id} value={spoc.id}>
+                      {spoc.username}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label htmlFor="hdMaintenance" className="block font-medium mb-1">
                   H&D Maintenance <span className="text-red-600">*</span>
                 </label>
-<select
-  id="hdMaintenance"
-  className="w-full border rounded px-4 py-2"
-  value={hdMaintenance}
-  onChange={(e) => setHdMaintenance(e.target.value)}
->
-  <option value="" disabled>Select Developer Team Lead</option>
-  {hdLeads.map((lead) => (
-    <option key={lead.id} value={lead.id}>
-      {lead.username}
-    </option>
-  ))}
-</select>
-
+                <select
+                  id="hdMaintenance"
+                  className="w-full border rounded px-4 py-2"
+                  value={hdMaintenance}
+                  onChange={(e) => setHdMaintenance(e.target.value)}
+                >
+                  <option value="" disabled>Select Developer Team Lead</option>
+                  {hdLeads.map((lead) => (
+                    <option key={lead.id} value={lead.id}>
+                      {lead.username}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
                 <label htmlFor="assignStaff" className="block font-medium mb-1">
                   Assign Staff <span className="text-red-600">*</span>
                 </label>
-<select
-  id="assignStaff"
-  className="w-full border rounded px-4 py-2"
-  value={assignStaff}
-  onChange={(e) => setAssignStaff(e.target.value)}
->
-  <option value="" disabled>Select Staff</option>
-  {staffList.map((staff) => (
-    <option key={staff.id} value={staff.id}>
-      {staff.username}
-    </option>
-  ))}
-</select>
-
+                <select
+                  id="assignStaff"
+                  className="w-full border rounded px-4 py-2"
+                  value={assignStaff}
+                  onChange={(e) => setAssignStaff(e.target.value)}
+                >
+                  <option value="" disabled>Select Staff</option>
+                  {staffList.map((staff) => (
+                    <option key={staff.id} value={staff.id}>
+                      {staff.username}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
