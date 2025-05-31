@@ -1,37 +1,36 @@
 // ./TasksPage.js
-import React, { useState, useRef } from 'react'; // Added useRef
+import React, { useState, useRef } from 'react';
 import {
-  Search, 
-  ChevronDown, 
-  Filter, 
-  MoreHorizontal, 
-  Plus, 
+  Search,
+  ChevronDown,
+  Filter,
+  MoreHorizontal,
+  Plus,
   MoreVertical,
-  MessageSquare, 
-  Paperclip, 
-  Flag, 
-  Clock, // Icons for TaskCard and Page Header
-  ArrowLeft, 
-  Link as LinkIcon, 
-  MessageSquarePlus, 
-  FileText, 
-  CalendarDays, 
-  X // Icons for Modal & Small Popups
+  MessageSquare,
+  Paperclip,
+  Flag,
+  Clock,
+  ArrowLeft,
+  Link as LinkIcon,
+  MessageSquarePlus,
+  FileText,
+  CalendarDays,
+  X
 } from 'lucide-react';
 
 // --- Constants for the entire page ---
-// ... (TASK_IMAGE_URL, attachmentImage1, etc., dummyTasks, tagStyleMapping, priorityStyleMapping remain the same)
 const TASK_IMAGE_URL = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGRhdGElMjBmbG93fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=600&q=60';
 const attachmentImage1 = "https://via.placeholder.com/100x150/D1C4E9/673AB7?Text=Wisteria";
 const attachmentImage2 = "https://via.placeholder.com/100x150/B39DDB/512DA8?Text=Anemone";
 const attachmentImage3 = "https://via.placeholder.com/100x150/9575CD/7E57C2?Text=Tulip";
 const avatarPlaceholder = "https://via.placeholder.com/40/78909C/FFFFFF?Text=U";
 
-const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
+const initialDummyTasks = [
     // Backlog
   {
     id: 'b1', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'High', escalation: true,
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Improve cards readability (B1)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
@@ -39,7 +38,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'b2', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Define API endpoints (B2)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -47,7 +46,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'b3', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'Medium', escalation: true,
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'User authentication flow (B3)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -56,15 +55,15 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   // TO-DO
   {
     id: 't1', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Implement new dashboard UI (T1)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
     comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
   },
   {
-    id: 't2', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Low', 
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    id: 't2', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Low',
+    title: 'Write unit tests for X module (T2)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-18',
@@ -72,7 +71,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 't3', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Medium',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Prepare marketing materials (T3)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -81,7 +80,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   // Processing
   {
     id: 'p1', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Code review for feature Y (P1)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
@@ -89,7 +88,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'p2', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Integrate payment gateway (P2)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -97,7 +96,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'p3', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'Medium', escalation: true,
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Performance optimization pass (P3)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -106,7 +105,7 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   // Review
   {
     id: 'r1', column: 'Review', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'QA testing for release 1.2 (R1)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
@@ -114,24 +113,24 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'r2', column: 'Review', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'User acceptance testing (UAT) (R2)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Development', 'Content Writing']
   },
-  {
-    id: 'r2', column: 'Review', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+   { // Note: Original data had duplicate id 'r2', changed to 'r3' for uniqueness
+    id: 'r3', column: 'Review', workspaceName: 'Workspace_Name', priority: 'Medium',
+    title: 'Final design review (R3)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300'],
+    assignees: ['#FF5733', '#FFC300', '#C70039'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
-    comments: 12, files: 0, tags: ['Development', 'Content Writing']
+    comments: 12, files: 0, tags: ['Designing']
   },
   // Done
   {
     id: 'd1', column: 'Done', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Deploy to production (D1)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
@@ -139,32 +138,32 @@ const dummyTasks = [ /* ... (dummyTasks data remains the same) ... */
   },
   {
     id: 'd2', column: 'Done', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Post-release monitoring (D2)', description: 'As a team license owner, I want to use multiplied limits',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Development', 'Content Writing']
   },
 ];
-const tagStyleMapping = { /* ... (tagStyleMapping remains the same) ... */
+const tagStyleMapping = {
   Designing: { dot: 'bg-pink-500', text: 'text-pink-700' },
   Development: { dot: 'bg-blue-500', text: 'text-blue-700' },
   'Content Writing': { dot: 'bg-green-500', text: 'text-green-700' },
 };
-const priorityStyleMapping = { /* ... (priorityStyleMapping remains the same) ... */
+const priorityStyleMapping = {
   High: { bg: 'bg-red-100', text: 'text-red-600', dot: 'bg-red-500' },
   Medium: { bg: 'bg-yellow-100', text: 'text-yellow-600', dot: 'bg-yellow-500' },
   Low: { bg: 'bg-green-100', text: 'text-green-600', dot: 'bg-green-500' },
 };
 
 // --- Generic Small Popup Component ---
-const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => { /* ... (SmallPopup remains the same) ... */
+const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(); 
-    onClose(); 
+    if (onSubmit) onSubmit();
+    // onClose(); // Keep open or close based on onSubmit logic if needed
   };
 
   return (
@@ -181,15 +180,15 @@ const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => { /* ... 
             {children}
           </div>
           <div className="mt-6 flex justify-end space-x-2">
-            <button 
-              type="button" 
-              onClick={onClose} 
+            <button
+              type="button"
+              onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-md border border-gray-300"
             >
               cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
             >
               Submit
@@ -213,13 +212,12 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
   const [commentText, setCommentText] = useState('');
   const [replyText, setReplyText] = useState('');
 
-  // Ref for the hidden file input
   const fileInputRef = useRef(null);
 
   if (!isOpen || !task) return null;
 
   const priorityStyles = priorityStyleMapping[task.priority] || {};
-  const dummyComments = [ /* ... (dummyComments in TaskDetailModal remains the same) ... */
+  const dummyComments = [
     {
       id: 1, user: 'Range', avatar: avatarPlaceholder,
       text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.',
@@ -232,7 +230,7 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
       text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.',
     },
   ];
-  const attachments = [ /* ... (attachments in TaskDetailModal remains the same) ... */
+  const attachments = [
     { type: 'image', url: attachmentImage1, name: 'Wisteria Design.png' },
     { type: 'image', url: attachmentImage2, name: 'Purple Flower.jpg' },
     { type: 'image', url: attachmentImage3, name: 'Tulip Inspiration.png' },
@@ -240,38 +238,32 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
     { type: 'image', url: attachmentImage2, name: 'Anemone Detail.jpg' },
     { type: 'image', url: attachmentImage3, name: 'Tulip Sketch.png' },
   ];
-  const links = [ /* ... (links in TaskDetailModal remains the same) ... */
+  const links = [
     { id: 'l1', name: 'Link 1', url: '#' },
     { id: 'f1', name: 'Filename.exe', url: '#' },
   ];
 
-  const handleAttachLinkSubmit = () => { /* ... */ console.log("Attach Link:", { linkName, linkUrl, taskId: task.id }); setLinkName(''); setLinkUrl('');};
-  const handleAddCommentSubmit = () => { /* ... */ console.log("Add Comment:", { commentText, taskId: task.id }); setCommentText(''); };
-  const handleAddReplySubmit = () => { /* ... */ console.log("Add Reply:", { replyText, commentId: replyingToCommentId, taskId: task.id }); setReplyText(''); setReplyingToCommentId(null); };
+  const handleAttachLinkSubmit = () => { console.log("Attach Link:", { linkName, linkUrl, taskId: task.id }); setLinkName(''); setLinkUrl(''); setShowAttachLinkPopup(false); };
+  const handleAddCommentSubmit = () => { console.log("Add Comment:", { commentText, taskId: task.id }); setCommentText(''); setShowAddCommentPopup(false); };
+  const handleAddReplySubmit = () => { console.log("Add Reply:", { replyText, commentId: replyingToCommentId, taskId: task.id }); setReplyText(''); setReplyingToCommentId(null); setShowAddReplyPopup(false); };
 
-  // Handler for the "Attach File" button click
+
   const handleAttachFileClick = () => {
-    fileInputRef.current.click(); // Programmatically click the hidden file input
+    fileInputRef.current.click();
   };
 
-  // Handler for when a file is selected
   const handleFileSelected = (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       console.log("Selected files:", files);
-      // Here you would typically handle the file upload process
-      // For example, prepare FormData and make an API call
-      // For multiple files: Array.from(files).forEach(file => console.log(file.name));
-      alert(`Selected file: ${files[0].name}`); // Simple feedback
+      alert(`Selected file(s): ${Array.from(files).map(f => f.name).join(', ')}`);
     }
-    // Reset the input value so the same file can be selected again if needed
-    event.target.value = null; 
+    event.target.value = null;
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-10 pb-10 z-50 overflow-y-auto">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 p-6 animate-fadeIn">
-        {/* ... (TaskDetailModal header, title, description, attachments, links - remains the same) ... */}
         <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
           <div className="flex items-center space-x-4">
             <button onClick={onClose} className="hover:text-gray-800">
@@ -315,29 +307,27 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
           ))}
         </div>
 
-        {/* Action Buttons - "Attach File" button updated */}
         <div className="flex flex-wrap gap-3 mb-8">
-          <button 
+          <button
             onClick={() => setShowAttachLinkPopup(true)}
             className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
           >
             <LinkIcon size={16} className="mr-2" /> Attach link
           </button>
-          <button 
-            onClick={handleAttachFileClick} // Updated onClick handler
+          <button
+            onClick={handleAttachFileClick}
             className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
           >
             <Paperclip size={16} className="mr-2" /> Attach File
           </button>
-          {/* Hidden file input */}
-          <input 
-            type="file" 
-            ref={fileInputRef} 
+          <input
+            type="file"
+            ref={fileInputRef}
             onChange={handleFileSelected}
-            className="hidden" 
-            multiple // Allow multiple file selection if needed, remove if not
+            className="hidden"
+            multiple
           />
-          <button 
+          <button
             onClick={() => setShowAddCommentPopup(true)}
             className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
           >
@@ -345,8 +335,6 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
           </button>
         </div>
 
-        {/* Comments Section - Updated Reply button */}
-        {/* ... (Comments section remains the same) ... */}
         <div>
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Comments</h3>
           <div className="space-y-5">
@@ -358,9 +346,9 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
                     <p className="font-semibold text-sm text-gray-700">{comment.user}</p>
                     <p className="text-sm text-gray-600 mt-1">{comment.text}</p>
                     <div className="mt-2 flex items-center space-x-4">
-                      <button 
+                      <button
                         onClick={() => {
-                          setReplyingToCommentId(comment.id); 
+                          setReplyingToCommentId(comment.id);
                           setShowAddReplyPopup(true);
                         }}
                         className="text-xs text-blue-600 hover:underline"
@@ -386,8 +374,6 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
           </div>
         </div>
 
-        {/* Render Small Popups */}
-        {/* ... (SmallPopup instances remain the same) ... */}
         <SmallPopup
           isOpen={showAttachLinkPopup}
           onClose={() => { setShowAttachLinkPopup(false); setLinkName(''); setLinkUrl(''); }}
@@ -432,7 +418,7 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
           onSubmit={handleAddReplySubmit}
         >
           <textarea
-            placeholder="Comment" 
+            placeholder="Comment"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             rows={3}
@@ -446,13 +432,15 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
 
 
 // --- TaskCard Component ---
-const TaskCard = ({ task, onCardClick }) => { /* ... (TaskCard remains the same) ... */
+const TaskCard = ({ task, onCardClick, onDragStartCard }) => { // Added onDragStartCard prop
   const priorityStyles = priorityStyleMapping[task.priority] || {};
 
   return (
     <div
+      draggable="true" // Make the card draggable
+      onDragStart={(e) => onDragStartCard(e, task.id)} // Call parent's drag start handler
       className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-pointer hover:shadow-md transition-shadow ${task.selected ? 'ring-2 ring-blue-500 shadow-lg' : 'border border-gray-200'}`}
-      onClick={() => onCardClick(task)}
+      onClick={() => onCardClick(task)} // Single click still opens modal
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -519,10 +507,12 @@ const TaskCard = ({ task, onCardClick }) => { /* ... (TaskCard remains the same)
 };
 
 // --- TasksPage Component (Main page component) ---
-const TasksPage = () => { /* ... (TasksPage main logic remains the same) ... */
+const TasksPage = () => {
   const columns = ['Backlog', 'TO-DO', 'Processing', 'Review', 'Done'];
+  const [tasks, setTasks] = useState(initialDummyTasks); // Use state for tasks
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTaskForModal, setSelectedTaskForModal] = useState(null);
+  const [draggedOverColumn, setDraggedOverColumn] = useState(null); // For styling drop target
 
   const handleCardClick = (task) => {
     setSelectedTaskForModal(task);
@@ -534,10 +524,41 @@ const TasksPage = () => { /* ... (TasksPage main logic remains the same) ... */
     setSelectedTaskForModal(null);
   };
 
+  // Drag and Drop Handlers
+  const handleDragStartCard = (event, taskId) => {
+    event.dataTransfer.setData("taskId", taskId);
+    // You could add a visual cue for dragging if desired
+    // event.target.style.opacity = '0.5';
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault(); // Necessary to allow dropping
+  };
+
+  const handleDragEnter = (columnName) => {
+    setDraggedOverColumn(columnName);
+  };
+
+  const handleDragLeave = () => {
+    setDraggedOverColumn(null);
+  };
+
+  const handleDrop = (event, targetColumn) => {
+    event.preventDefault();
+    const taskId = event.dataTransfer.getData("taskId");
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, column: targetColumn } : task
+      )
+    );
+    setDraggedOverColumn(null); // Reset visual cue
+    // event.target.style.opacity = '1'; // Reset opacity if changed onDragStart
+  };
+
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-50 p-4 sm:p-6"> {/* Added padding to page */}
       {/* Header */}
-      {/* ... (Header JSX remains the same) ... */}
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl font-semibold text-gray-800">Work Flow</h1>
         <div className="flex flex-grow sm:flex-grow-0 w-full sm:w-auto items-center gap-3">
@@ -551,7 +572,7 @@ const TasksPage = () => { /* ... (TasksPage main logic remains the same) ... */
           </div>
           <div className="relative">
             <select className="appearance-none bg-white border border-gray-300 text-gray-600 py-2.5 px-4 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-gray-400 text-sm">
-              <option>Short by</option>
+              <option>Sort by</option> {/* Corrected "Short by" */}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -566,15 +587,20 @@ const TasksPage = () => { /* ... (TasksPage main logic remains the same) ... */
       </div>
 
       {/* Kanban Board Columns */}
-      {/* ... (Kanban Board Columns JSX remains the same) ... */}
       <div className="flex-1 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
-        <div className="flex space-x-4 h-full py-1">
+        <div className="flex space-x-4 h-full py-1 min-h-[calc(100vh-200px)]"> {/* Ensure columns take height */}
           {columns.map(columnName => (
             <div
               key={columnName}
-              className="bg-gray-100 rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full"
+              className={`rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full transition-colors duration-150 ease-in-out ${
+                draggedOverColumn === columnName ? 'bg-blue-100' : 'bg-gray-100' // Visual feedback for drop target
+              }`}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, columnName)}
+              onDragEnter={() => handleDragEnter(columnName)}
+              onDragLeave={handleDragLeave}
             >
-              <div className="flex justify-between items-center mb-3">
+              <div className="flex justify-between items-center mb-3 px-1">
                 <h2 className="text-sm font-semibold text-gray-700">{columnName}</h2>
                 <div className="flex items-center space-x-1.5">
                   <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200">
@@ -585,14 +611,15 @@ const TasksPage = () => { /* ... (TasksPage main logic remains the same) ... */
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {dummyTasks
+              <div className="flex-1 overflow-y-auto pr-1 space-y-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100/50">
+                {tasks // Use tasks from state
                   .filter(task => task.column === columnName)
                   .map(task => (
                     <TaskCard
                         key={task.id}
                         task={task}
                         onCardClick={handleCardClick}
+                        onDragStartCard={handleDragStartCard} // Pass drag start handler
                     />
                   ))}
               </div>
