@@ -14,7 +14,7 @@ import {
   User,
   LogOut,
   MessageCircle,
-  Bell,
+  Bell, // Keep Bell
   BadgeCheck,
   ChevronDown,
   MoreVertical,
@@ -25,8 +25,9 @@ import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal";
 import FlowManager from "./FlowManager";
-
 import TasksPage from "../pages/TasksPage";
+
+import NotificationsPage from './NotificationsPage'; // <<<--- ADD THIS IMPORT (adjust path if needed)
 
 
 const Dashboard = () => {
@@ -44,7 +45,6 @@ const Dashboard = () => {
     { id: 10, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
     { id: 11, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
     { id: 12, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    // ... other requests
   ]);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,14 +53,15 @@ const Dashboard = () => {
   const [modalContentType, setModalContentType] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("Client Requests");
+  // Default to "Dashboard" or any other initial tab
+  const [activeTab, setActiveTab] = useState("Dashboard"); // <<<--- MODIFIED: Initial active tab
   const [selectedTab, setSelectedTab] = useState("Staff Member");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalUserType, setModalUserType] = useState("Client");
   const [formData, setFormData] = useState({ name: "", email: "", teamLead: "", designation: "" });
   const [editingIndex, setEditingIndex] = useState(null);
-  const [staffMembers, setStaffMembers] = useState([]); // KEEP THIS
+  const [staffMembers, setStaffMembers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -73,7 +74,6 @@ const Dashboard = () => {
   const [clientSearchTerm, setClientSearchTerm] = useState("");
   const [clientSortOption, setClientSortOption] = useState("");
 
-  // State for the original renderRequestModal (if needed for other purposes)
   const [showRequestModal, setShowRequestModal] = useState(false);
 
 
@@ -136,7 +136,7 @@ const Dashboard = () => {
 
       if (editingIndex !== null) {
         const updated = [...staffMembers];
-        updated[editingIndex] = {...formData, id: staffMembers[editingIndex].id }; // Preserve ID on edit
+        updated[editingIndex] = {...formData, id: staffMembers[editingIndex].id };
         setStaffMembers(updated);
       } else {
         setStaffMembers([...staffMembers, { ...formData, id: data.user?.id || data.id || Date.now().toString() }]);
@@ -151,7 +151,6 @@ const Dashboard = () => {
   };
 
   const handleDelete = (index) => {
-    // Add API call for deletion here if needed
     const updated = [...staffMembers];
     updated.splice(index, 1);
     setStaffMembers(updated);
@@ -159,16 +158,9 @@ const Dashboard = () => {
 
   const handleViewRequest = (request) => {
     setSelectedRequest(request);
-    setModalContentType('request'); // This signals the modal to show combined view
+    setModalContentType('request');
     setIsRequestModalOpen(true);
   };
-
-  // handleViewScope is removed as its functionality is merged.
-  // const handleViewScope = (request) => {
-  //   setSelectedRequest(request);
-  //   setModalContentType('scope');
-  //   setIsRequestModalOpen(true);
-  // };
 
  const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
@@ -186,7 +178,7 @@ const Dashboard = () => {
           >
             <option value="">Select the team-lead</option>
             {teamLeads.map((lead) => (
-              <option key={lead.id || lead} value={lead.id || lead}>{lead.name || lead}</option> // Adapt if teamLeads is array of objects
+              <option key={lead.id || lead} value={lead.id || lead}>{lead.name || lead}</option>
             ))}
           </select>
           <select name="designation" value={formData.designation} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-gray-600">
@@ -295,7 +287,6 @@ const Dashboard = () => {
 
 
   const renderClientRequests = () => {
-    // ... (Data Processing and Pagination Calculation for Client Requests - UNCHANGED) ...
     let processedRequests = [...clientRequests];
     if (clientSearchTerm) {
       const lowerSearchTerm = clientSearchTerm.toLowerCase();
@@ -342,7 +333,6 @@ const Dashboard = () => {
 
     return (
       <>
-        {/* --- Header Section for Client Requests --- (UNCHANGED) */}
          <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="relative w-full md:flex-grow">
@@ -390,14 +380,13 @@ const Dashboard = () => {
         <div className="w-full bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-[1100px] w-full table-auto"> {/* Adjusted min-width */}
+            <table className="min-w-[1100px] w-full table-auto">
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3">Client Name</th>
                   <th className="px-4 py-3">Domain Name</th>
                   <th className="px-4 py-3">Request Raised Date</th>
                   <th className="px-4 py-3">Client Request</th>
-                  {/* Scope of service column removed */}
                   <th className="px-4 py-3">Scope of service status</th>
                   <th className="px-4 py-3">Task Assigned to</th>
                   <th className="px-4 py-3">Flow Creation</th>
@@ -417,7 +406,6 @@ const Dashboard = () => {
                           <Eye className="w-4 h-4 mr-1" /> View Request
                         </button>
                       </td>
-                      {/* Scope of service data cell removed */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         {req.scopeStatus ? (
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -453,7 +441,6 @@ const Dashboard = () => {
                       <td className="px-4 py-3 whitespace-nowrap text-blue-600 text-xs">Working hours</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center space-x-2">
-
                           <button className="text-blue-500 underline hover:text-blue-700 text-xs">
                             Rise to manager
                           </button>
@@ -463,7 +450,7 @@ const Dashboard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="9" className="text-center py-10 text-gray-500"> {/* Adjusted colSpan */}
+                    <td colSpan="9" className="text-center py-10 text-gray-500">
                       No client requests found.
                     </td>
                   </tr>
@@ -471,9 +458,8 @@ const Dashboard = () => {
               </tbody>
             </table>
 
-            {/* MODIFIED MODAL for Client Request Details and Scope Decision */}
             {isRequestModalOpen && selectedRequest && modalContentType === 'request' && (
-              <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-40 p-4"> {/* Increased z-index and added padding for small screens */}
+              <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-40 p-4">
                 <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Client Request Details</h3>
@@ -526,7 +512,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* --- Pagination Section for Client Requests --- (UNCHANGED) */}
           {processedRequests.length > 0 && (
             <div className="flex items-center justify-between mt-6 px-1 text-sm text-gray-600">
               <div>
@@ -582,9 +567,6 @@ const Dashboard = () => {
   };
 
 const handleScopeDecision = (status) => {
-  // This function is related to the 'showRequestModal' state, not 'isRequestModalOpen'
-  // It will remain for now, as requested "without removing any other features"
-  // though its current trigger point within the client requests table context has been superseded.
   if (!selectedRequest) return;
   const updatedRequests = clientRequests.map((req) =>
     req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req
@@ -595,6 +577,8 @@ const handleScopeDecision = (status) => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case "Dashboard": // <<<--- ADDED/MODIFIED: Default dashboard view
+        return <div className="text-center pt-10">Main Dashboard Content Here</div>; // Replace with actual dashboard content
       case "Create Member":
         return renderCreateMembersContent();
       case "Client Requests":
@@ -605,14 +589,15 @@ const handleScopeDecision = (status) => {
         return <WorkspaceCardTeamlead />;
       case "Clients Services":
         return <DomainHostingTableTeamlead />;
+      case "Notifications": // <<<--- ADDED THIS CASE
+        return <NotificationsPage />;
       default:
+        // setActiveTab("Dashboard"); // Optionally reset to Dashboard if tab is unknown
         return <div className="text-center pt-10">Select a menu item</div>;
     }
   };
 
  const renderRequestModal = () => {
-    // This modal is controlled by 'showRequestModal' state.
-    // It's kept as per the request "without removing any other features".
     if (!showRequestModal || !selectedRequest) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -626,7 +611,7 @@ const handleScopeDecision = (status) => {
             <h3 className="text-md font-medium mb-2">View Scope</h3>
             <div className="flex gap-4">
               <button
-                onClick={() => handleScopeDecision("With in Scope")} // Note: "Within Scope" vs "With in Scope"
+                onClick={() => handleScopeDecision("With in Scope")}
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
               >
                 Within Scope
@@ -646,7 +631,7 @@ const handleScopeDecision = (status) => {
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
-      {/* Sidebar - UNCHANGED */}
+      {/* Sidebar */}
       <div className="w-60 h-11/12 bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div>
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
@@ -670,7 +655,6 @@ const handleScopeDecision = (status) => {
               </button>
             ))}
           </div>
-          {/* FlowManager call updated with staffList */}
           <FlowManager
             isOpen={flowModalOpen}
             onClose={() => setFlowModalOpen(false)}
@@ -687,26 +671,55 @@ const handleScopeDecision = (status) => {
         </div>
       </div>
 
-      {/* Main Content Area - UNCHANGED */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
-        <div className="flex justify-end items-center gap-4 mb-6">
-          {[MessageCircle, Bell, User].map((Icon, i) => (
-            <div key={i} className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
-              <Icon className="w-6 h-6 text-gray-800" />
+        {/* Top Bar with Title and Icons */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            {/* --- MODIFIED: Dynamic Page Title --- */}
+            {activeTab === "Notifications" ? "Notifications" : 
+             activeTab === "Dashboard" ? "welcome, Team lead" : // Example for dashboard
+             activeTab} {/* Fallback to activeTab name or set specific titles */}
+          </h1>
+          <div className="flex items-center gap-4">
+            <div key="message-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
+                <MessageCircle className="w-6 h-6 text-gray-800" />
+                <span className="absolute top-1 right-1 flex h-5 w-5">
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">02</span>
+                </span>
             </div>
-          ))}
+            <div 
+              key="bell-icon" 
+              className={`relative w-12 h-12 p-3 rounded-full outline outline-1 flex justify-center items-center cursor-pointer transition-colors duration-150
+                          ${activeTab === "Notifications" 
+                            ? "bg-blue-100 text-blue-600 border-blue-300 outline-blue-300" 
+                            : "bg-white text-gray-800 border-neutral-300 outline-neutral-300 hover:bg-gray-100"
+                          }`}
+              onClick={() => setActiveTab("Notifications")} 
+            >
+                <Bell 
+                    className={`w-6 h-6 
+                                ${activeTab === "Notifications" ? "text-blue-600" : "text-gray-800"}`} 
+                />
+                <span className={`absolute top-1 right-1 flex h-5 w-5`}>
+                    <span className={`relative inline-flex rounded-full h-4 w-4 text-xs items-center justify-center
+                                    ${activeTab === "Notifications" ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}> {/* Badge color remains blue for now */}
+                        02
+                    </span>
+                </span>
+            </div>
+            <div key="user-profile-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
+                <User className="w-6 h-6 text-gray-800" />
+            </div>
+          </div>
         </div>
+        
+        {/* Content Area */}
         <div className="flex-1">{renderContent()}</div>
       </div>
 
-      {/* Modal for Create/Edit Staff Member */}
       {showModal && renderModal()}
-
-      {/* Original renderRequestModal, controlled by showRequestModal state */}
       {renderRequestModal()}
-
-
-      {/* AssignMembersModal (if still used for other purposes) */}
       {isAssignMembersModalOpen && (
         <AssignMembersModal
           isOpen={isAssignMembersModalOpen}
