@@ -28,6 +28,7 @@ import Main from "./pages/WorkspaceCard";
 import WorkSpaceActivation from './pages/WorkSpaceActivation';
 import WorkspaceCardTeamlead from "./pages/WorkspaceCardTeamlead";
 import DomainHostingTableManager from './pages/DomainHostingTableManager';
+import OutOfScope from './pages/outOfScope';
 
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
         <Route path="/WorkSpaceActivation" element={<WorkSpaceActivation />} />
         <Route path="/WorkspaceCardTeamlead" element={<WorkspaceCardTeamlead />} />
         <Route path="/Domain-Manager" element={<DomainHostingTableManager />} />
+        <Route path="/OutOfScope" element={<OutOfScope />} />
       </Routes>
     </Router>
   );
