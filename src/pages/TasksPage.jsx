@@ -1,5 +1,4 @@
-// ./TasksPage.js
-import React, { useState, useRef, useCallback } from 'react'; // useRef, useCallback are already here, useState is key
+import React, { useState, useRef, useCallback } from 'react'; 
 import {
   Search, 
   ChevronDown, 
@@ -17,11 +16,10 @@ import {
   FileText, 
   CalendarDays, 
   X,
-  UploadCloud, // Icon for File Upload Dialog
-  Trash2,      // Icon for removing selected files
+  UploadCloud, 
+  Trash2,      
 } from 'lucide-react';
 
-// --- Constants for the entire page ---
 export const TASK_IMAGE_URL = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGRhdGElMjBmbG93fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=600&q=60';
 export const attachmentImage1 = "https://via.placeholder.com/100x150/D1C4E9/673AB7?Text=Wisteria";
 export const attachmentImage2 = "https://via.placeholder.com/100x150/B39DDB/512DA8?Text=Anemone";
@@ -204,7 +202,6 @@ export const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
   );
 };
 
-// --- FileUploadDialog Component ---
 export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);

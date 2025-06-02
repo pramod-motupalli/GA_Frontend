@@ -1,13 +1,10 @@
-// ./components/WorkspaceTaskApprovalsTable.js
 import React, { useState } from 'react';
 import { Search, Filter, MoreHorizontal, Eye, ChevronDown, UserCircle } from 'lucide-react';
 
-// Dummy data for Workspace Task Approvals - ADD MORE FOR PAGINATION TESTING
 const dummyWorkspaceApprovals = [
   { id: 'wta1', taskId: 'b1', requestFrom: 'Jaitej', domainName: 'Sampledomain.com', workspaceName: 'GADOMES', clientRequestId: 'cr1',  status: 'Pending' },
   { id: 'wta2', taskId: 't1', requestFrom: 'Surya', domainName: 'Anotherdomain.net', workspaceName: 'ClientX Project', clientRequestId: 'cr2', status: 'Pending' },
   { id: 'wta3', taskId: 'b2', requestFrom: 'Ameer', domainName: 'Techsolutions.io', workspaceName: 'Internal Tools', clientRequestId: 'cr3',  status: 'Approved' },
-  // Add 7-10 more dummy items to test pagination
   { id: 'wta4', taskId: 'p1', requestFrom: 'Ravi', domainName: 'Webservices.com', workspaceName: 'API Dev', clientRequestId: 'cr4',  status: 'Pending' },
   { id: 'wta5', taskId: 'd1', requestFrom: 'Kiran', domainName: 'Mobileapp.dev', workspaceName: 'UX Design', clientRequestId: 'cr5', status: 'Pending' },
   { id: 'wta6', taskId: 'r1', requestFrom: 'Kumar', domainName: 'Dataanalysis.org', workspaceName: 'Reporting', clientRequestId: 'cr6', status: 'Approved' },
@@ -23,12 +20,10 @@ const WorkspaceTaskApprovalsTable = ({ onViewTask, onViewClientRequest, staffMem
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Or a smaller number like 5 for testing
 
-  // --- Assignment State ---
-  // Store assignment per approval item ID
   const [assignments, setAssignments] = useState(() => {
     const initialAssignments = {};
     dummyWorkspaceApprovals.forEach(item => {
-      initialAssignments[item.id] = item.assignedToId || ''; // Initialize with existing or empty
+      initialAssignments[item.id] = item.assignedToId || ''; 
     });
     return initialAssignments;
   });
@@ -36,7 +31,7 @@ const WorkspaceTaskApprovalsTable = ({ onViewTask, onViewClientRequest, staffMem
   const handleAssignMember = (approvalId, staffId) => {
     setAssignments(prev => ({ ...prev, [approvalId]: staffId }));
     if (onAssignTask) {
-        onAssignTask(approvalId, staffId); // Callback to parent if needed for backend update
+        onAssignTask(approvalId, staffId); 
     }
     console.log(`Assigned staff ${staffId} to approval ${approvalId}`);
   };
@@ -65,7 +60,7 @@ const WorkspaceTaskApprovalsTable = ({ onViewTask, onViewClientRequest, staffMem
   const handleApprove = (itemId) => {
     console.log("Approved item:", itemId);
     alert(`Item ${itemId} marked as Approved (locally).`);
-    // In a real app, update backend and refresh data or update local state
+    
   };
 
   return (

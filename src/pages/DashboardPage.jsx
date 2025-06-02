@@ -17,30 +17,22 @@ import {
   Bell,
   BadgeCheck,
   ChevronDown,
-  X // For modal close buttons
-} from "lucide-react"; // Removed MoreVertical as it's usually handled by specific components
+  X 
+} from "lucide-react"; 
 
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; // Ensure this path is correct
-import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; // Ensure this path is correct
-import AssignMembersModal from "../pages/AssignMembersModal"; // Ensure this path is correct
-import FlowManager from "./FlowManager"; // Ensure this path is correct
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; 
+import AssignMembersModal from "../pages/AssignMembersModal"; 
+import FlowManager from "./FlowManager"; 
 
-// Import TasksPage (default export) and specific exports from TasksPage
 import TasksPage, {
-  TaskDetailModal, // Named export for the modal
-  initialDummyTasks as tasksPageInitialTasks, // Aliased for clarity
-  // If TaskDetailModal uses SmallPopup, FileUploadDialog, etc., and they are exported from TasksPage.js:
-  // SmallPopup,
-  // FileUploadDialog,
-  // priorityStyleMapping, // and other necessary constants/mappings
-  // avatarPlaceholder,
-} from "../pages/TasksPage"; // Ensure this path is correct
-
-// Import new approval tables
-import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable"; // Adjust path
-import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";     // Adjust path
+  TaskDetailModal, 
+  initialDummyTasks as tasksPageInitialTasks, 
+} from "../pages/TasksPage"; 
+import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable"; 
+import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";    
 
 const Dashboard = () => {
   // --- Existing States ---
@@ -65,31 +57,28 @@ const Dashboard = () => {
   const [modalContentType, setModalContentType] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("Dashboard"); // Default to Dashboard or Client Requests
-  const [selectedTab, setSelectedTab] = useState("Staff Member"); // For Create Member section
-  const [showDropdown, setShowDropdown] = useState(false); // For Add User dropdown
-  const [showModal, setShowModal] = useState(false); // For Staff Member creation/edit modal
+  const [activeTab, setActiveTab] = useState("Dashboard"); 
+  const [selectedTab, setSelectedTab] = useState("Staff Member"); 
+  const [showDropdown, setShowDropdown] = useState(false); 
+  const [showModal, setShowModal] = useState(false); 
   const [modalUserType, setModalUserType] = useState("Client");
   const [formData, setFormData] = useState({ name: "", email: "", teamLead: "", designation: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [staffMembers, setStaffMembers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // For Staff Member pagination
-  const itemsPerPage = 8; // For Staff Member pagination
+  const [currentPage, setCurrentPage] = useState(1); 
+  const itemsPerPage = 8; 
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] = useState(false);
 
-  // Pagination and search for Client Requests table
   const [clientRequestCurrentPage, setClientRequestCurrentPage] = useState(1);
   const [clientRequestItemsPerPage, setClientRequestItemsPerPage] = useState(10);
   const [clientSearchTerm, setClientSearchTerm] = useState("");
   const [clientSortOption, setClientSortOption] = useState("");
 
-  // State for the original renderRequestModal (if needed for other purposes)
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  // --- New state for Approvals section ---
-  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace"); // "workspace" or "team"
+  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace"); 
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null);
 
@@ -116,7 +105,7 @@ const Dashboard = () => {
     setModalUserType(userType);
     setShowModal(true);
     setEditingIndex(index);
-    if (index !== null && staffMembers[index]) { // Check if staffMembers[index] exists
+    if (index !== null && staffMembers[index]) { 
       setFormData(staffMembers[index]);
     } else {
       setFormData({ name: "", email: "", teamLead: "", designation: "" });
@@ -206,11 +195,8 @@ const Dashboard = () => {
   }
 };
 
-// Optional: Handler for when a task is assigned (if you want Dashboard to know)
 const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     console.log(`${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}`);
-    // If you need to update a central state or make an API call from Dashboard.js, do it here.
-    // For now, the select dropdown's state is managed within the table components.
 };
   const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">

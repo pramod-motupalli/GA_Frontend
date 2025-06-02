@@ -1,13 +1,10 @@
-// ./components/TeamTaskApprovalsTable.js
 import React, { useState } from 'react';
 import { Search, Filter, MoreHorizontal, Eye, ChevronDown, UserCircle, AlertTriangle, X } from 'lucide-react';
 
-// Dummy data for Team Task Approvals - ADD MORE FOR PAGINATION TESTING
 const dummyTeamApprovals = [
   { id: 'tta1', domainName: 'Sampledomain.com', workspace: 'Sampledomain.com', clientRequest: 'Req ID 123', managerApproval: 'Pending', reason: null, assignedToId: null, deadline: '04-05-2025', summaryLink: '#' },
   { id: 'tta2', domainName: 'Sampledomain.com', workspace: 'Sampledomain.com', clientRequest: 'Req ID 124', managerApproval: 'Approved', reason: null, assignedToId: null, deadline: '10-05-2025', summaryLink: '#' },
   { id: 'tta3', domainName: 'Otherdomain.net', workspace: 'Project X', clientRequest: 'Req ID 125', managerApproval: 'Escalate', reason: 'Client budget exceeded initial scope significantly.', assignedToId: null, deadline: '15-05-2025', summaryLink: '#' },
-  // Add 7-10 more for testing
   { id: 'tta4', domainName: 'Webservices.com', workspace: 'API Dev', clientRequest: 'Req ID 126', managerApproval: 'Pending', reason: null, assignedToId: null, deadline: '20-05-2025', summaryLink: '#' },
   { id: 'tta5', domainName: 'Mobileapp.dev', workspace: 'UX Design', clientRequest: 'Req ID 127', managerApproval: 'Approved', reason: null, assignedToId: null, deadline: '22-05-2025', summaryLink: '#' },
   { id: 'tta6', domainName: 'Dataanalysis.org', workspace: 'Reporting', clientRequest: 'Req ID 128', managerApproval: 'Pending', reason: null, assignedToId: null, deadline: '25-05-2025', summaryLink: '#' },
@@ -21,11 +18,10 @@ const dummyTeamApprovals = [
 const TeamTaskApprovalsTable = ({ staffMembers, onAssignTask }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Or 5 for testing
+  const itemsPerPage = 10; // 
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState('');
 
-  // --- Assignment State ---
   const [assignments, setAssignments] = useState(() => {
     const initialAssignments = {};
     dummyTeamApprovals.forEach(item => {
