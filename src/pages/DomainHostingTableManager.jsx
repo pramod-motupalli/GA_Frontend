@@ -6,17 +6,30 @@ export default function App() {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const menuRefs = useRef([]);
 
-  useEffect(() => {
-    const fetchData = () => {
-      fetch('http://localhost:8000/api/users/domain-hosting/')
-        .then(res => res.json())
-        .then(setData)
-        .catch(err => console.error('Fetch error:', err));
-    };
+  const token = localStorage.getItem('accessToken');
 
-    fetchData(); // initial fetch
-    const interval = setInterval(fetchData, 60000); // refetch every 60 seconds
-    return () => clearInterval(interval); // cleanup
+  const fetchData = () => {
+    if (!token) {
+      alert("You are not logged in. Please login first.");
+      return;
+    }
+
+    fetch('http://localhost:8000/api/users/domain-hosting/', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Unauthorized or fetch error");
+        return res.json();
+      })
+      .then(setData)
+      .catch((err) => console.error('Fetch error:', err));
+  };
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -73,9 +86,9 @@ export default function App() {
                 <td className="px-3 py-2">
                   <input type="checkbox" className="accent-blue-600" disabled />
                 </td>
-                <td className="px-3 py-2">{row.client_name || 'Unknown'}</td>
-                <td className="px-3 py-2">{row.phone_number || 'N/A'}</td>
-                <td className="px-3 py-2">{row.email || 'N/A'}</td>
+                <td>{row.client?.username || "Unknown Client"}</td>
+                <td>{row.client?.contact_number || "N/A"}</td>
+                <td>{row.client?.email || "N/A"}</td>
                 <td className="px-3 py-2">{row.domain_name}</td>
                 <td className="px-3 py-2">{row.domain_provider}</td>
                 <td className="px-3 py-2 whitespace-pre-line">{row.domain_account}</td>

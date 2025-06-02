@@ -23,7 +23,7 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
   useEffect(() => {
     const fetchClient = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/users/hey/', {
+        const res = await axios.get('http://localhost:8000/api/users/me/', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -52,9 +52,6 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
       const payload = {
         client: {
           id: userData?.id,
-          name: `${userData?.first_name} ${userData?.last_name}`,
-          email: userData?.email,
-          phone: userData?.phone_number,
         },
         title: selectedPlan?.title || '',
         price: selectedPlan?.price || '',
@@ -133,7 +130,6 @@ const DomainHosting = ({ isOpen, onClose, selectedPlan }) => {
         >
           ×
         </button>
-
         <h2 className="text-2xl font-semibold text-blue-600 mb-6">
           Domain and Hosting Information
         </h2>

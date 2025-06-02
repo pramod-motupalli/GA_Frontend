@@ -79,15 +79,21 @@ export default function Main() {
 
 
   // Fetch initial workspaces
-  useEffect(() => {
-    axios
-      .get('http://localhost:8000/api/users/workspaces/create/') // Assuming this is your workspace list endpoint
-      .then(res => {
-        setWorkspaces(res.data);
-        setFilteredWorkspaces(res.data);
-      })
-      .catch(err => console.error('Failed to fetch workspaces:', err));
-  }, []);
+useEffect(() => {
+  const token = localStorage.getItem('accessToken');
+  axios.get('http://localhost:8000/api/users/workspaces/client/', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => {
+    setWorkspaces(res.data);
+    setFilteredWorkspaces(res.data); // ✅ Add this line
+  })
+  .catch(() => {
+    setWorkspaces([]);
+    setFilteredWorkspaces([]); // Also clear this on error
+  });
+}, []);
+
 
   // Fetch tasks when selectedWorkspace changes and in tableMode
  useEffect(() => {
