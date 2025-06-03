@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, MoreHorizontal, Eye, ChevronDown, UserCircle, AlertTriangle, X } from 'lucide-react';
+
 const dummyTeamApprovals = [
 { id: 'tta1', domainName: 'Sampledomain.com', workspace: 'Sampledomain.com', clientRequest: 'Req ID 123', managerApproval: 'Pending', reason: null, assignedToId: null, deadline: '04-05-2025', summaryLink: '#' },
 { id: 'tta2', domainName: 'Sampledomain.com', workspace: 'Sampledomain.com', clientRequest: 'Req ID 124', managerApproval: 'Approved', reason: null, assignedToId: null, deadline: '10-05-2025', summaryLink: '#' },

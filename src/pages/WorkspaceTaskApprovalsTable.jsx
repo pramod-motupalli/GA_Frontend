@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, MoreHorizontal, Eye, ChevronDown, UserCircle } from 'lucide-react';
+
 const dummyWorkspaceApprovals = [
 { id: 'wta1', taskId: 'b1', requestFrom: 'Jaitej', domainName: 'Sampledomain.com', workspaceName: 'GADOMES', clientRequestId: 'cr1',  status: 'Pending' },
 { id: 'wta2', taskId: 't1', requestFrom: 'Surya', domainName: 'Anotherdomain.net', workspaceName: 'ClientX Project', clientRequestId: 'cr2', status: 'Pending' },
