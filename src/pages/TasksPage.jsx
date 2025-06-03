@@ -1,5 +1,4 @@
-// ./TasksPage.js
-import React, { useState, useRef, useCallback } from 'react'; // Added useRef, useCallback
+import React, { useState, useRef, useCallback } from 'react'; 
 import {
   Search, 
   ChevronDown, 
@@ -17,18 +16,17 @@ import {
   FileText, 
   CalendarDays, 
   X,
-  UploadCloud, // Icon for File Upload Dialog
-  Trash2,      // Icon for removing selected files
+  UploadCloud, 
+  Trash2,      
 } from 'lucide-react';
 
-// --- Constants for the entire page ---
-const TASK_IMAGE_URL = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGRhdGElMjBmbG93fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=600&q=60';
-const attachmentImage1 = "https://via.placeholder.com/100x150/D1C4E9/673AB7?Text=Wisteria";
-const attachmentImage2 = "https://via.placeholder.com/100x150/B39DDB/512DA8?Text=Anemone";
-const attachmentImage3 = "https://via.placeholder.com/100x150/9575CD/7E57C2?Text=Tulip";
-const avatarPlaceholder = "https://via.placeholder.com/40/78909C/FFFFFF?Text=U";
+export const TASK_IMAGE_URL = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGRhdGElMjBmbG93fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=600&q=60';
+export const attachmentImage1 = "https://via.placeholder.com/100x150/D1C4E9/673AB7?Text=Wisteria";
+export const attachmentImage2 = "https://via.placeholder.com/100x150/B39DDB/512DA8?Text=Anemone";
+export const attachmentImage3 = "https://via.placeholder.com/100x150/9575CD/7E57C2?Text=Tulip";
+export const avatarPlaceholder = "https://via.placeholder.com/40/78909C/FFFFFF?Text=U";
 
-const dummyTasks = [
+export const initialDummyTasks = [ // Renamed to initialDummyTasks
     // Backlog
   {
     id: 'b1', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'High', escalation: true,
@@ -148,20 +146,20 @@ const dummyTasks = [
   },
 ];
 
-const tagStyleMapping = {
+export const tagStyleMapping = {
   Designing: { dot: 'bg-pink-500', text: 'text-pink-700' },
   Development: { dot: 'bg-blue-500', text: 'text-blue-700' },
   'Content Writing': { dot: 'bg-green-500', text: 'text-green-700' },
 };
 
-const priorityStyleMapping = {
+export const priorityStyleMapping = {
   High: { bg: 'bg-red-100', text: 'text-red-600', dot: 'bg-red-500' },
   Medium: { bg: 'bg-yellow-100', text: 'text-yellow-600', dot: 'bg-yellow-500' },
   Low: { bg: 'bg-green-100', text: 'text-green-600', dot: 'bg-green-500' },
 };
 
 // --- Generic Small Popup Component ---
-const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
+export const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
@@ -204,8 +202,7 @@ const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
   );
 };
 
-// --- FileUploadDialog Component ---
-const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
+export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -239,7 +236,7 @@ const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
         const newFiles = files.filter(f => !prevFiles.some(pf => pf.name === f.name && pf.lastModified === f.lastModified && pf.size === f.size));
         return [...prevFiles, ...newFiles];
     });
-    e.target.value = null; // Reset file input to allow selecting the same file again
+    e.target.value = null; // Reset file input
   };
 
   const removeFile = (fileNameToRemove) => {
@@ -254,19 +251,19 @@ const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
     if (onFilesConfirm && selectedFiles.length > 0) {
         onFilesConfirm(selectedFiles);
     }
-    setSelectedFiles([]); // Clear selection after confirm
+    setSelectedFiles([]);
     onClose();
   };
   
   const handleCancel = () => {
-    setSelectedFiles([]); // Clear selection on cancel
+    setSelectedFiles([]);
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[70]"> {/* Increased z-index */}
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[70]">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg mx-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">Upload Files</h3>
@@ -282,7 +279,7 @@ const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={!isDragging ? handleBrowseClick : undefined} // Only allow click if not dragging
+          onClick={!isDragging ? handleBrowseClick : undefined}
         >
           <input
             type="file"
@@ -301,9 +298,9 @@ const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
         {selectedFiles.length > 0 && (
           <div className="mb-4 max-h-48 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
             <h4 className="text-sm font-medium text-gray-700 mb-1">Selected files:</h4>
-            {selectedFiles.map((file, index) => ( // Added index for key if names are not unique enough temporarily
-              <div key={`${file.name}-${index}`} className="flex items-center justify-between bg-gray-50 p-2 rounded-md text-sm">
-                <div className="flex items-center overflow-hidden min-w-0"> {/* Added min-w-0 for better truncation */}
+            {selectedFiles.map((file, index) => (
+              <div key={`${file.name}-${file.lastModified}-${index}`} className="flex items-center justify-between bg-gray-50 p-2 rounded-md text-sm">
+                <div className="flex items-center overflow-hidden min-w-0">
                   <FileText size={16} className="mr-2 text-gray-500 flex-shrink-0" />
                   <span className="truncate" title={file.name}>{file.name}</span>
                   <span className="ml-2 text-gray-500 text-xs flex-shrink-0">({(file.size / 1024).toFixed(1)} KB)</span>
@@ -339,7 +336,7 @@ const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
 };
 
 // --- TaskDetailModal Component (defined within TasksPage.js) ---
-const TaskDetailModal = ({ isOpen, onClose, task }) => {
+export const TaskDetailModal = ({ isOpen, onClose, task }) => {
   const [showAttachLinkPopup, setShowAttachLinkPopup] = useState(false);
   const [showAddCommentPopup, setShowAddCommentPopup] = useState(false);
   const [showAddReplyPopup, setShowAddReplyPopup] = useState(false);
@@ -348,54 +345,27 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
   const [linkUrl, setLinkUrl] = useState('');
   const [commentText, setCommentText] = useState('');
   const [replyText, setReplyText] = useState('');
-
-  // State for the new file upload dialog
   const [showFileUploadDialog, setShowFileUploadDialog] = useState(false);
 
   if (!isOpen || !task) return null;
 
   const priorityStyles = priorityStyleMapping[task.priority] || {};
   const dummyComments = [
-    {
-      id: 1, user: 'Range', avatar: avatarPlaceholder,
-      text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.',
-      repliesCount: '02',
-    },
+    { id: 1, user: 'Range', avatar: avatarPlaceholder, text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.', repliesCount: '02'},
     { id: 2, user: 'Range', avatar: avatarPlaceholder, text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa.' },
-    { id: 3, user: 'Range', avatar: avatarPlaceholder, text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa.' },
-    {
-      id: 4, user: 'Range', avatar: avatarPlaceholder,
-      text: 'Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.',
-    },
   ];
   const attachments = [
-    { type: 'image', url: attachmentImage1, name: 'Wisteria Design.png' },
-    { type: 'image', url: attachmentImage2, name: 'Purple Flower.jpg' },
-    { type: 'image', url: attachmentImage3, name: 'Tulip Inspiration.png' },
-    { type: 'image', url: attachmentImage1, name: 'Wisteria Alt.png' },
-    { type: 'image', url: attachmentImage2, name: 'Anemone Detail.jpg' },
-    { type: 'image', url: attachmentImage3, name: 'Tulip Sketch.png' },
+    { type: 'image', url: attachmentImage1, name: 'Wisteria Design.png' }, { type: 'image', url: attachmentImage2, name: 'Purple Flower.jpg' }, { type: 'image', url: attachmentImage3, name: 'Tulip Inspiration.png' },
+    { type: 'image', url: attachmentImage1, name: 'Wisteria Alt.png' }, { type: 'image', url: attachmentImage2, name: 'Anemone Detail.jpg' }, { type: 'image', url: attachmentImage3, name: 'Tulip Sketch.png' },
   ];
-  const links = [
-    { id: 'l1', name: 'Link 1', url: '#' },
-    { id: 'f1', name: 'Filename.exe', url: '#' },
-  ];
+  const links = [ { id: 'l1', name: 'Link 1', url: '#' }, { id: 'f1', name: 'Filename.exe', url: '#' },];
 
   const handleAttachLinkSubmit = () => { console.log("Attach Link:", { linkName, linkUrl, taskId: task.id }); setLinkName(''); setLinkUrl('');};
   const handleAddCommentSubmit = () => { console.log("Add Comment:", { commentText, taskId: task.id }); setCommentText(''); };
   const handleAddReplySubmit = () => { console.log("Add Reply:", { replyText, commentId: replyingToCommentId, taskId: task.id }); setReplyText(''); setReplyingToCommentId(null); };
-
-  // Handler for when files are confirmed from FileUploadDialog
   const handleFilesAttachment = (files) => {
-    console.log("Files to attach from dialog:", files);
-    // Here you would typically handle the file upload process
-    // For example, prepare FormData and make an API call for each file or as a batch
-    files.forEach(file => {
-      console.log(`Preparing to upload ${file.name} (${(file.size/1024).toFixed(1)}KB) for task ${task.id}`);
-    });
-    // You might want to update the UI to show these files are being uploaded or add them to a list of attachments.
-    // For now, just an alert.
-    alert(`${files.length} file(s) selected for attachment. Check the console for details. In a real app, these would be uploaded and displayed.`);
+    console.log("Files to attach from dialog:", files.map(f => ({name: f.name, size: f.size})));
+    alert(`${files.length} file(s) selected for attachment. Check console.`);
   };
 
   return (
@@ -404,27 +374,15 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
         <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 p-6 animate-fadeIn">
           <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
             <div className="flex items-center space-x-4">
-              <button onClick={onClose} className="hover:text-gray-800 p-1">
-                <ArrowLeft size={20} />
-              </button>
+              <button onClick={onClose} className="hover:text-gray-800 p-1"> <ArrowLeft size={20} /> </button>
               <span className="font-semibold text-gray-800">{task.daysLeft || 'D-X'}</span>
-              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-md font-medium">
-                {task.workspaceName}
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-md font-medium flex items-center ${priorityStyles.bg} ${priorityStyles.text}`}>
-                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${priorityStyles.dot}`}></span>
-                {task.priority}
-              </span>
-              <span className="flex items-center">
-                  <CalendarDays size={14} className="mr-1 text-gray-500" />
-                  {task.dateInfo}
-              </span>
+              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-md font-medium"> {task.workspaceName} </span>
+              <span className={`text-xs px-2 py-0.5 rounded-md font-medium flex items-center ${priorityStyles.bg} ${priorityStyles.text}`}> <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${priorityStyles.dot}`}></span> {task.priority} </span>
+              <span className="flex items-center"> <CalendarDays size={14} className="mr-1 text-gray-500" /> {task.dateInfo} </span>
             </div>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-2">{task.title}</h2>
-          <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-            {task.description} Lorem ipsum dolor sit amet consectetur. Volutpat amet pulvinar morbi nisl viverra cursus ornare. Amet sed elementum nisl malesuada ullamcorper velit mauris. Lobortis neque amet tellus nisl aliquam aenean eget at sit. Pharetra pellentesque a adipiscing volutpat eget. Phasellus eleifend in pretium enim nunc suspendisse.
-          </p>
+          <p className="text-gray-600 text-sm mb-6 leading-relaxed"> {task.description} Lorem ipsum dolor sit amet consectetur. Volutpat amet pulvinar morbi nisl viverra cursus ornare. Amet sed elementum nisl malesuada ullamcorper velit mauris. Lobortis neque amet tellus nisl aliquam aenean eget at sit. Pharetra pellentesque a adipiscing volutpat eget. Phasellus eleifend in pretium enim nunc suspendisse. </p>
           {attachments.length > 0 && (
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-gray-700 mb-2">Attachments</h4>
@@ -432,9 +390,7 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
                 {attachments.map((att, index) => (
                   <div key={index} className="aspect-[2/3] bg-gray-200 rounded overflow-hidden group relative">
                     <img src={att.url} alt={att.name} className="w-full h-full object-cover" />
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate opacity-0 group-hover:opacity-100 transition-opacity">
-                      {att.name}
-                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate opacity-0 group-hover:opacity-100 transition-opacity"> {att.name} </div>
                   </div>
                 ))}
               </div>
@@ -445,42 +401,18 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Links</h4>
                 <div className="flex flex-wrap gap-3">
                     {links.map(link => (
-                    <button 
-                        key={link.id} 
-                        onClick={() => window.open(link.url, '_blank')}
-                        className="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md border border-gray-300"
-                    >
-                        {link.id.startsWith('l') ? <LinkIcon size={16} className="mr-2" /> : <FileText size={16} className="mr-2" />}
-                        {link.name}
+                    <button key={link.id} onClick={() => window.open(link.url, '_blank')} className="flex items-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md border border-gray-300" >
+                        {link.id.startsWith('l') ? <LinkIcon size={16} className="mr-2" /> : <FileText size={16} className="mr-2" />} {link.name}
                     </button>
                     ))}
                 </div>
             </div>
           )}
-
-          {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 mb-8">
-            <button 
-              onClick={() => setShowAttachLinkPopup(true)}
-              className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
-            >
-              <LinkIcon size={16} className="mr-2" /> Attach link
-            </button>
-            <button 
-              onClick={() => setShowFileUploadDialog(true)} // Open the new file upload dialog
-              className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
-            >
-              <Paperclip size={16} className="mr-2" /> Attach File
-            </button>
-            <button 
-              onClick={() => setShowAddCommentPopup(true)}
-              className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"
-            >
-              <MessageSquarePlus size={16} className="mr-2" /> Add Comment
-            </button>
+            <button onClick={() => setShowAttachLinkPopup(true)} className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"> <LinkIcon size={16} className="mr-2" /> Attach link </button>
+            <button onClick={() => setShowFileUploadDialog(true)} className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"> <Paperclip size={16} className="mr-2" /> Attach File </button>
+            <button onClick={() => setShowAddCommentPopup(true)} className="flex items-center text-sm bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 px-4 py-2 rounded-md"> <MessageSquarePlus size={16} className="mr-2" /> Add Comment </button>
           </div>
-
-          {/* Comments Section */}
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Comments</h3>
             <div className="space-y-5">
@@ -492,25 +424,12 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
                       <p className="font-semibold text-sm text-gray-700">{comment.user}</p>
                       <p className="text-sm text-gray-600 mt-1">{comment.text}</p>
                       <div className="mt-2 flex items-center space-x-4">
-                        <button 
-                          onClick={() => {
-                            setReplyingToCommentId(comment.id); 
-                            setShowAddReplyPopup(true);
-                          }}
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          Reply
-                        </button>
+                        <button onClick={() => { setReplyingToCommentId(comment.id); setShowAddReplyPopup(true); }} className="text-xs text-blue-600 hover:underline" > Reply </button>
                         {comment.repliesCount && (
-                          <>
-                           <div className="relative flex items-center">
+                          <div className="relative flex items-center">
                               <span className="text-xs text-blue-600 mr-2 cursor-pointer hover:underline">View replies</span>
-                              <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium">
-                                {comment.repliesCount}
-                              </span>
-                            </div>
-                            {/* <div className="h-0.5 bg-blue-500 w-20 rounded-full"></div> */} {/* Decorative line, can be removed or styled */}
-                          </>
+                              <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-medium"> {comment.repliesCount} </span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -519,79 +438,41 @@ const TaskDetailModal = ({ isOpen, onClose, task }) => {
               ))}
             </div>
           </div>
-
-          {/* Render Small Popups */}
-          <SmallPopup
-            isOpen={showAttachLinkPopup}
-            onClose={() => { setShowAttachLinkPopup(false); setLinkName(''); setLinkUrl(''); }}
-            title="Attach Link"
-            onSubmit={handleAttachLinkSubmit}
-          >
-            <input
-              type="text"
-              placeholder="Link name"
-              value={linkName}
-              onChange={(e) => setLinkName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <input
-              type="text"
-              placeholder="Paste the link"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+          <SmallPopup isOpen={showAttachLinkPopup} onClose={() => { setShowAttachLinkPopup(false); setLinkName(''); setLinkUrl(''); }} title="Attach Link" onSubmit={handleAttachLinkSubmit} >
+            <input type="text" placeholder="Link name" value={linkName} onChange={(e) => setLinkName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <input type="text" placeholder="Paste the link" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
           </SmallPopup>
-
-          <SmallPopup
-            isOpen={showAddCommentPopup}
-            onClose={() => { setShowAddCommentPopup(false); setCommentText('');}}
-            title="Add comment"
-            onSubmit={handleAddCommentSubmit}
-          >
-            <textarea
-              placeholder="Comment"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+          <SmallPopup isOpen={showAddCommentPopup} onClose={() => { setShowAddCommentPopup(false); setCommentText('');}} title="Add comment" onSubmit={handleAddCommentSubmit} >
+            <textarea placeholder="Comment" value={commentText} onChange={(e) => setCommentText(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
           </SmallPopup>
-
-          <SmallPopup
-            isOpen={showAddReplyPopup}
-            onClose={() => { setShowAddReplyPopup(false); setReplyText(''); setReplyingToCommentId(null);}}
-            title="Add Reply"
-            onSubmit={handleAddReplySubmit}
-          >
-            <textarea
-              placeholder="Your reply..." 
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+          <SmallPopup isOpen={showAddReplyPopup} onClose={() => { setShowAddReplyPopup(false); setReplyText(''); setReplyingToCommentId(null);}} title="Add Reply" onSubmit={handleAddReplySubmit} >
+            <textarea placeholder="Your reply..." value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" />
           </SmallPopup>
         </div>
       </div>
-      {/* Render FileUploadDialog */}
-      <FileUploadDialog
-        isOpen={showFileUploadDialog}
-        onClose={() => setShowFileUploadDialog(false)}
-        onFilesConfirm={handleFilesAttachment}
-      />
+      <FileUploadDialog isOpen={showFileUploadDialog} onClose={() => setShowFileUploadDialog(false)} onFilesConfirm={handleFilesAttachment} />
     </>
   );
 };
 
 // --- TaskCard Component ---
-const TaskCard = ({ task, onCardClick }) => {
+const TaskCard = ({ task, onCardClick, onDragStartItem, onDragEndItem, isBeingDragged }) => { // Added D&D props
   const priorityStyles = priorityStyleMapping[task.priority] || {};
 
   return (
     <div
-      className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-pointer hover:shadow-md transition-shadow ${task.selected ? 'ring-2 ring-blue-500 shadow-lg' : 'border border-gray-200'}`}
-      onClick={() => onCardClick(task)}
+      draggable="true" // Make the card draggable
+      onDragStart={onDragStartItem} // Attach drag start handler
+      onDragEnd={onDragEndItem}     // Attach drag end handler
+      className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-grab hover:shadow-md transition-shadow 
+                  ${task.selected ? 'ring-2 ring-blue-500 shadow-lg' : 'border border-gray-200'}
+                  ${isBeingDragged ? 'opacity-50 ring-2 ring-blue-400 scale-105' : ''}`} // Style for dragged item + cursor changed to grab
+      onClick={() => {
+        // Prevent click if a drag operation might be starting (this is a simple check, browser often handles this)
+        if (!isBeingDragged) { // Only open modal if not currently in a drag state (might need more robust check)
+          onCardClick(task);
+        }
+      }}
     >
       <div className="flex justify-between items-start mb-2">
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -660,10 +541,20 @@ const TaskCard = ({ task, onCardClick }) => {
 // --- TasksPage Component (Main page component) ---
 const TasksPage = () => {
   const columns = ['Backlog', 'TO-DO', 'Processing', 'Review', 'Done'];
+  const [tasks, setTasks] = useState(initialDummyTasks); // Use state for tasks
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTaskForModal, setSelectedTaskForModal] = useState(null);
 
+  // State for drag and drop
+  const [draggedTask, setDraggedTask] = useState(null); // ID of the task being dragged
+  const [draggingOverColumn, setDraggingOverColumn] = useState(null); // Name of column being dragged over
+
   const handleCardClick = (task) => {
+    // A safety check: if a drag was just completed, draggedTask might still be set briefly.
+    // However, standard D&D usually prevents click events on the source after a successful drag.
+    // This check ensures modal doesn't open if for some reason click fires during/after drag.
+    if (draggedTask === task.id) return; 
+
     setSelectedTaskForModal(task);
     setIsModalOpen(true);
   };
@@ -672,6 +563,61 @@ const TasksPage = () => {
     setIsModalOpen(false);
     setSelectedTaskForModal(null);
   };
+
+  // --- Drag and Drop Handlers ---
+  const handleDragStart = (e, taskId) => {
+    e.dataTransfer.setData('taskId', taskId);
+    setDraggedTask(taskId);
+    // Optional: add a class to body to indicate dragging is happening
+    // document.body.classList.add('dragging');
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); // Necessary to allow dropping
+  };
+
+  const handleDragEnterColumn = (columnName) => {
+    if (draggedTask) { // Only highlight if a task is actually being dragged
+        setDraggingOverColumn(columnName);
+    }
+  };
+
+  const handleDragLeaveColumn = (e, columnName) => {
+    // Check if the mouse is truly leaving the column or just moving over a child element
+    if (e.currentTarget.contains(e.relatedTarget)) {
+        return;
+    }
+    if (draggingOverColumn === columnName) {
+        setDraggingOverColumn(null);
+    }
+  };
+
+  const handleDrop = (e, targetColumnName) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    
+    // Check if the task exists and is not already in the target column (optional optimization)
+    const taskToMove = tasks.find(t => t.id === taskId);
+    if (taskToMove && taskToMove.column !== targetColumnName) {
+        setTasks(prevTasks =>
+            prevTasks.map(task =>
+            task.id === taskId ? { ...task, column: targetColumnName } : task
+            )
+        );
+    }
+    // Cleanup
+    setDraggedTask(null);
+    setDraggingOverColumn(null);
+    // document.body.classList.remove('dragging');
+  };
+  
+  const handleDragEnd = () => {
+    // This event fires on the source element after the drag operation.
+    setDraggedTask(null);
+    setDraggingOverColumn(null); // Ensure highlighting is cleared
+    // document.body.classList.remove('dragging');
+  };
+
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-6 flex flex-col">
@@ -707,14 +653,19 @@ const TasksPage = () => {
 
       {/* Kanban Board Columns */}
       <div className="flex-1 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
-        <div className="flex space-x-4 h-full py-1 min-w-max"> {/* min-w-max for horizontal scroll */}
+        <div className="flex space-x-4 h-full py-1 min-w-max">
           {columns.map(columnName => (
             <div
               key={columnName}
-              className="bg-gray-100 rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full"
+              className={`rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full transition-colors duration-150
+                          ${draggingOverColumn === columnName ? 'bg-blue-100 border-2 border-blue-400' : 'bg-gray-100 border-2 border-transparent'}`} // Dynamic styling for drop zone
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, columnName)}
+              onDragEnter={() => handleDragEnterColumn(columnName)}
+              onDragLeave={(e) => handleDragLeaveColumn(e, columnName)}
             >
               <div className="flex justify-between items-center mb-3 px-1">
-                <h2 className="text-sm font-semibold text-gray-700">{columnName.toUpperCase()} ({dummyTasks.filter(t => t.column === columnName).length})</h2>
+                <h2 className="text-sm font-semibold text-gray-700">{columnName.toUpperCase()} ({tasks.filter(t => t.column === columnName).length})</h2>
                 <div className="flex items-center space-x-1.5">
                   <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200">
                     <Plus size={18} />
@@ -724,17 +675,20 @@ const TasksPage = () => {
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-h-[calc(100vh-200px)]"> {/* Ensure columns can scroll */}
-                {dummyTasks
+              <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-h-[calc(100vh-200px)]">
+                {tasks // Use state variable 'tasks' here
                   .filter(task => task.column === columnName)
                   .map(task => (
                     <TaskCard
                         key={task.id}
                         task={task}
                         onCardClick={handleCardClick}
+                        onDragStartItem={(e) => handleDragStart(e, task.id)} // Pass handler
+                        onDragEndItem={handleDragEnd} // Pass handler
+                        isBeingDragged={draggedTask === task.id} // Pass boolean
                     />
                   ))}
-                  {dummyTasks.filter(task => task.column === columnName).length === 0 && (
+                  {tasks.filter(task => task.column === columnName).length === 0 && (
                     <div className="text-center text-sm text-gray-500 py-4">No tasks in this column.</div>
                   )}
               </div>
@@ -755,4 +709,3 @@ const TasksPage = () => {
 };
 
 export default TasksPage;
-
