@@ -440,7 +440,7 @@ const token = localStorage.getItem("accessToken")
           headers: {
             'Content-Type': 'multipart/form-data',
             // If you use token auth, add it here or globally:
-             'Authorization': `Bearer ${token}`
+             Authorization: `Bearer ${token}`
           },
         }
       );

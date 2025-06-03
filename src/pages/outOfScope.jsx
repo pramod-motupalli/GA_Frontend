@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { Eye, X, Pencil, PaintRoller } from 'lucide-react';
 
 const scopeData = [
-  { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 1000 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 1500 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 1200 },
+  { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 200 },
+  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 250 },
+  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 300 },
 ];
 
 export default function RequestTable() {
   const [popupType, setPopupType] = useState(null);
   const [hours, setHours] = useState({ design: 0, content: 0, dev: 0 });
   const [requestRaised, setRequestRaised] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
 
   const requests = Array.from({ length: 5 }).map(() => ({
     requestFrom: 'Mamatha',
@@ -22,7 +23,7 @@ export default function RequestTable() {
 
   const totalHours = Object.values(hours).reduce((sum, h) => sum + Number(h), 0);
   const totalPrice =
-    hours.design * 10000 + hours.content * 20000 + hours.dev * 30000;
+    hours.design * 200 + hours.content * 250 + hours.dev * 300;
 
   const randomScopeStatus = () => (Math.random() > 0.5 ? 'within scope' : 'out of scope');
 
@@ -55,7 +56,10 @@ export default function RequestTable() {
                 <td className="px-4 py-3 text-blue-600 cursor-pointer" onClick={() => setPopupType('view-scope')}>
                   View Scope
                 </td>
-                <td className="px-4 py-3 text-blue-600 cursor-pointer" onClick={() => setPopupType('working-hours')}>
+                <td className="px-4 py-3 text-blue-600 cursor-pointer" onClick={() => {
+                  setPopupType('working-hours');
+                  setIsEditable(false);
+                }}>
                   Working hours
                 </td>
                 <td className="px-4 py-3">
@@ -98,6 +102,7 @@ export default function RequestTable() {
                       type="number"
                       className="border px-2 py-1 w-[60px] rounded-md"
                       value={hours[field]}
+                      readOnly={!isEditable}
                       onChange={(e) =>
                         setHours({ ...hours, [field]: e.target.value })
                       }
@@ -112,6 +117,33 @@ export default function RequestTable() {
                   <span>
                     {totalHours} HRS - ₹{totalPrice.toLocaleString()}
                   </span>
+                </div>
+
+                {/* Button Logic */}
+                <div className="pt-4 flex justify-end gap-2">
+                  {!isEditable ? (
+                    <>
+                      <button
+                        className="px-4 py-1 text-sm rounded-md border border-gray-400 hover:bg-gray-100"
+                        onClick={() => setPopupType(null)}
+                      >
+                        OK
+                      </button>
+                      <button
+                        className="px-4 py-1 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                        onClick={() => setIsEditable(true)}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="px-4 py-1 text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
+                      onClick={() => setIsEditable(false)}
+                    >
+                      Save
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
