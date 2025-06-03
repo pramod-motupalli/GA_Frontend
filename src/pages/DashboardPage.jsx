@@ -17,8 +17,8 @@ import {
   Bell, // Keep Bell
   BadgeCheck,
   ChevronDown,
-  X 
-} from "lucide-react"; 
+  X
+} from "lucide-react";
 
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
@@ -28,15 +28,15 @@ import AssignMembersModal from "../pages/AssignMembersModal";
 import FlowManager from "./FlowManager"; 
 import NotificationsPage from './NotificationsPage';
 import TasksPage, {
-  TaskDetailModal, 
-  initialDummyTasks as tasksPageInitialTasks, 
-} from "../pages/TasksPage"; 
-import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable"; 
-import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";    
+  TaskDetailModal,
+  initialDummyTasks as tasksPageInitialTasks,
+} from "../pages/TasksPage";
+import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
+import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
 const Dashboard = () => {
-  // --- Existing States ---
   const [clientRequests, setClientRequests] = useState([
+    // Removed estimatedHours, assuming FlowManager handles this
     { id: 1, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "This is a detailed description for Surya's first request regarding the sampledomain.com. We need to implement feature X, fix bug Y, and optimize performance for module Z. The client expects this to be completed by end of next month.", scopeStatus: "" },
     { id: 2, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Second request description for Surya.", scopeStatus: "" },
     { id: 3, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Third request.", scopeStatus: "" },
@@ -51,22 +51,22 @@ const Dashboard = () => {
     { id: 12, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  // ... (other existing states)
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [modalContentType, setModalContentType] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null); // This will be passed to FlowManager
 
-  const [activeTab, setActiveTab] = useState("Dashboard"); 
-  const [selectedTab, setSelectedTab] = useState("Staff Member"); 
-  const [showDropdown, setShowDropdown] = useState(false); 
-  const [showModal, setShowModal] = useState(false); 
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [selectedTab, setSelectedTab] = useState("Staff Member");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [modalUserType, setModalUserType] = useState("Client");
   const [formData, setFormData] = useState({ name: "", email: "", teamLead: "", designation: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [staffMembers, setStaffMembers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); 
-  const itemsPerPage = 8; 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] = useState(false);
@@ -78,9 +78,13 @@ const Dashboard = () => {
 
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace"); 
+  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace");
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null);
+
+  // --- NEW STATE for FlowManager starting point ---
+  const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default'); // 'default' or 'scopeOfHours'
+
 
   useEffect(() => {
     const fetchTeamLeads = async () => {
@@ -105,7 +109,7 @@ const Dashboard = () => {
     setModalUserType(userType);
     setShowModal(true);
     setEditingIndex(index);
-    if (index !== null && staffMembers[index]) { 
+    if (index !== null && staffMembers[index]) {
       setFormData(staffMembers[index]);
     } else {
       setFormData({ name: "", email: "", teamLead: "", designation: "" });
@@ -164,12 +168,11 @@ const Dashboard = () => {
       setShowTaskDetailModal(true);
     } else {
       console.warn(`Task with ID ${taskId} not found in TasksPage initial tasks.`);
-      // Fallback: show a simplified task if not found, ensure TaskDetailModal can handle this
       setSelectedTaskForDetail({
         id: taskId,
         title: `Task (ID: ${taskId})`,
         description: "Detailed information for this task could not be fully loaded. Please check the task board for more details.",
-        priority: "Medium", // Default or indicate unknown
+        priority: "Medium",
         workspaceName: "Unknown Workspace",
         daysLeft: "N/A",
         dateInfo: "N/A",
@@ -177,7 +180,6 @@ const Dashboard = () => {
         files: 0,
         assignees: [],
         tags: [],
-        // Add any other properties TaskDetailModal minimally requires
       });
       setShowTaskDetailModal(true);
     }
@@ -186,9 +188,8 @@ const Dashboard = () => {
   const requestToView = clientRequests.find(req => req.id.toString() === clientRequestId.toString());
   if (requestToView) {
     setSelectedRequest(requestToView);
-    setModalContentType('request_approval_view'); // Use a distinct type if needed, or reuse 'request'
+    setModalContentType('request_approval_view');
     setIsRequestModalOpen(true);
-    console.log("Viewing client request from approval context:", clientRequestId, requestToView);
   } else {
     console.warn("Client Request not found for ID (from approval):", clientRequestId);
     alert("Client request details not found.");
@@ -198,6 +199,8 @@ const Dashboard = () => {
 const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     console.log(`${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}`);
 };
+
+
   const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-xl w-96 p-6 max-w-full">
@@ -280,7 +283,6 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                 </div>
               ))}
             </div>
-            {/* Pagination for Staff Members */}
             <div className="flex justify-between items-center mt-6">
               <div className="text-sm text-gray-600">
                 Page{" "}
@@ -323,11 +325,11 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     else if (clientSortOption === 'name_desc') processedRequests.sort((a, b) => b.clientName.localeCompare(a.clientName));
     else if (clientSortOption === 'date_new') processedRequests.sort((a, b) => new Date(b.raisedDate) - new Date(a.raisedDate));
     else if (clientSortOption === 'date_old') processedRequests.sort((a, b) => new Date(a.raisedDate) - new Date(b.raisedDate));
-    
+
     const totalClientRequestPages = Math.ceil(processedRequests.length / clientRequestItemsPerPage) || 1;
     const clientRequestStartIdx = (clientRequestCurrentPage - 1) * clientRequestItemsPerPage;
     const paginatedClientRequests = processedRequests.slice(clientRequestStartIdx, clientRequestStartIdx + clientRequestItemsPerPage);
-    
+
     const getPageNumbers = () => {
         const pageCount = totalClientRequestPages; const currentPage = clientRequestCurrentPage; const delta = 1; const range = [];
         for (let i = Math.max(2, currentPage - delta); i <= Math.min(pageCount - 1, currentPage + delta); i++) range.push(i);
@@ -404,10 +406,25 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                         </select>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <button onClick={() => { setSelectedRequest(req); setFlowModalOpen(true); }}
+                        <button onClick={() => {
+                            setSelectedRequest(req);
+                            setFlowManagerInitialScreen('default'); // Normal flow start
+                            setFlowModalOpen(true);
+                          }}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> Create Flow </button>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-blue-600 text-xs">Working hours</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <button
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            setFlowManagerInitialScreen('scopeOfHours'); // Start FlowManager at scope of hours
+                            setFlowModalOpen(true);
+                          }}
+                          className="text-blue-600 hover:underline text-xs focus:outline-none"
+                        >
+                          Working hours
+                        </button>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
@@ -415,11 +432,13 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                   )) : ( <tr> <td colSpan="9" className="text-center py-10 text-gray-500"> No client requests found. </td> </tr> )}
               </tbody>
             </table>
-            {isRequestModalOpen && selectedRequest && modalContentType === 'request' && (
+            {isRequestModalOpen && selectedRequest && (modalContentType === 'request' || modalContentType === 'request_approval_view') && (
               <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-40 p-4">
                 <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Client Request Details</h3>
+                    <h3 className="text-xl font-semibold">
+                        {modalContentType === 'request_approval_view' ? "Client Request (Approval View)" : "Client Request Details"}
+                    </h3>
                     <button onClick={() => setIsRequestModalOpen(false)} className="text-gray-500 hover:text-black font-bold text-xl">×</button>
                   </div>
                   <div className="space-y-1 mb-4">
@@ -433,15 +452,24 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                         {selectedRequest.description}
                     </div>
                   </div>
-                  <div>
-                    <h4 className="text-md font-semibold mb-3">Scope of Service Decision</h4>
-                    <div className="flex items-center space-x-4">
-                      <button onClick={() => { const updatedRequests = clientRequests.map((r) => r.id === selectedRequest.id ? { ...r, scopeStatus: "With in Scope" } : r ); setClientRequests(updatedRequests); setIsRequestModalOpen(false); }}
-                        className="bg-green-500 text-white px-5 py-2 rounded-md hover:bg-green-600 text-sm" > With in Scope </button>
-                      <button onClick={() => { const updatedRequests = clientRequests.map((r) => r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of scope" } : r ); setClientRequests(updatedRequests); setIsRequestModalOpen(false); }}
-                        className="bg-red-500 text-white px-5 py-2 rounded-md hover:bg-red-600 text-sm" > Out of scope </button>
+                   {modalContentType === 'request' && (
+                     <div>
+                        <h4 className="text-md font-semibold mb-3">Scope of Service Decision</h4>
+                        <div className="flex items-center space-x-4">
+                        <button onClick={() => { const updatedRequests = clientRequests.map((r) => r.id === selectedRequest.id ? { ...r, scopeStatus: "With in Scope" } : r ); setClientRequests(updatedRequests); setIsRequestModalOpen(false); }}
+                            className="bg-green-500 text-white px-5 py-2 rounded-md hover:bg-green-600 text-sm" > With in Scope </button>
+                        <button onClick={() => { const updatedRequests = clientRequests.map((r) => r.id === selectedRequest.id ? { ...r, scopeStatus: "Out of scope" } : r ); setClientRequests(updatedRequests); setIsRequestModalOpen(false); }}
+                            className="bg-red-500 text-white px-5 py-2 rounded-md hover:bg-red-600 text-sm" > Out of scope </button>
+                        </div>
                     </div>
-                  </div>
+                   )}
+                   {modalContentType === 'request_approval_view' && (
+                     <div className="mt-4 flex justify-end">
+                        <button onClick={() => setIsRequestModalOpen(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">
+                            Close
+                        </button>
+                     </div>
+                   )}
                 </div>
               </div>
             )}
@@ -478,10 +506,10 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     if (!selectedRequest) return;
     const updatedRequests = clientRequests.map((req) => req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req );
     setClientRequests(updatedRequests);
-    setShowRequestModal(false); // This modal is controlled by 'showRequestModal'
+    setShowRequestModal(false);
   };
 
-  const renderRequestModal = () => { // Original modal, kept as requested
+  const renderRequestModal = () => {
     if (!showRequestModal || !selectedRequest) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
@@ -503,19 +531,16 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     );
  };
 
-  // --- New function to render Approvals content ---
+
   const renderApprovalsContent = () => (
   <div className="w-full h-full bg-white rounded-xl shadow flex flex-col">
     <div className="px-6 pt-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-4">Approvals</h1>
       <div className="flex items-center border-b border-gray-200">
-        {/* ... your tab buttons ... */}
         <button onClick={() => setActiveApprovalTab("workspace")}
          className={`px-5 py-3 text-sm font-medium focus:outline-none ${ activeApprovalTab === "workspace" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"}`}>
          Workspace Task Approvals
          <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-           {/* Placeholder for dynamic count - You might need to import dummyWorkspaceApprovals or get count */}
-           {/* For now, let's assume a static count or that table handles its own display needs */}
            02
          </span>
        </button>
@@ -529,16 +554,13 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       {activeApprovalTab === "workspace" ? (
         <WorkspaceTaskApprovalsTable
           onViewTask={handleViewTaskApproval}
-          // ADD THIS PROP:
           onViewClientRequest={handleViewClientRequestForApproval}
           staffMembers={staffMembers}
-          // ADD THIS PROP (OPTIONAL):
           onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Workspace')}
         />
       ) : (
         <TeamTaskApprovalsTable
           staffMembers={staffMembers}
-          // ADD THIS PROP (OPTIONAL):
           onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Team')}
         />
       )}
@@ -548,7 +570,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Dashboard": return <div className="text-center p-10 text-xl">Dashboard Content Area</div>; // Placeholder for actual dashboard
+      case "Dashboard": return <div className="text-center p-10 text-xl">Dashboard Content Area</div>;
       case "Create Member": return renderCreateMembersContent();
       case "Client Requests": return renderClientRequests();
       case "Tasks TODO": return <TasksPage />;
@@ -654,13 +676,22 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
           onSubmit={(assignmentsData) => { console.log("Assignments:", selectedRequest?.id, assignmentsData); setIsAssignMembersModalOpen(false); }}
           staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))} />
       )}
+      {/* FlowManager now receives initialScreen and selectedClientRequest props */}
       <FlowManager
         isOpen={flowModalOpen}
-        onClose={() => setFlowModalOpen(false)}
+        onClose={() => {
+            setFlowModalOpen(false);
+            setFlowManagerInitialScreen('default'); // Reset to default when closed
+            setSelectedRequest(null); // Clear selected request
+        }}
         staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))}
+        initialScreen={flowManagerInitialScreen} // <-- NEW PROP
+        // Pass the selected client request to FlowManager so it has context
+        // The FlowManager component will need to be adapted to use this prop
+        clientRequest={selectedRequest} // <-- NEW PROP (or similar name)
+        // Add any other props FlowManager might need, like onSave, onUpdate, etc.
       />
 
-      {/* Task Detail Modal for Approvals */}
       {showTaskDetailModal && selectedTaskForDetail && (
         <TaskDetailModal
             isOpen={showTaskDetailModal}
