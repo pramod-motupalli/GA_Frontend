@@ -372,7 +372,9 @@ const CreateMembers = () => {
                 if (typeof item.team_lead === 'object' && item.team_lead !== null) {
                     leadName = item.team_lead.name || item.team_lead.username || "N/A";
                 } else if (item.team_lead) { 
+                 
                     const foundLead = teamLeads.find(lead => lead.id === item.team_lead);
+                    //  console.log(lead);
                     leadName = foundLead?.name || foundLead?.user?.username || "N/A";
                 }
             } else if (item.team_lead_name) { 
@@ -460,11 +462,11 @@ const CreateMembers = () => {
     { type: "text", placeholder: "Name", name: "name", required: true },
     { type: "email", placeholder: "Email id", name: "email", required: true },
   ], []);
-
+  // console.log(teamLeads);
   const staffCreateFields = useMemo(() => [
     {
       type: "select", placeholder: "Select Team Lead",
-      options: teamLeads.map(tl => ({ value: tl.id, label: tl.name || tl.user?.username || `Lead ID: ${tl.id}` })),
+      options: teamLeads.map(tl => ({ value: tl.id, label: tl.username })),
       name: "team_lead", required: true
     },
     { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },

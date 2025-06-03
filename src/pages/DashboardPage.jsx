@@ -88,7 +88,7 @@ const Dashboard = () => {
     
     fetchTeamLeads();
   }, []);
-
+  console.log(teamLeads);
   useEffect(() => {
     const fetchStaffMembers = async () => {
       try {
