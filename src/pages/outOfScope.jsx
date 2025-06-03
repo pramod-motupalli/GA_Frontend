@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Eye, X, Pencil, PaintRoller } from 'lucide-react';
 
 const scopeData = [
-  { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 10000 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 20000 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 30000 },
+  { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 1000 },
+  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 1500 },
+  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 1200 },
 ];
 
 export default function RequestTable() {

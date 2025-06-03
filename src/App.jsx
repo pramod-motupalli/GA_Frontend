@@ -29,6 +29,9 @@ import WorkSpaceActivation from './pages/WorkSpaceActivation';
 import WorkspaceCardTeamlead from "./pages/WorkspaceCardTeamlead";
 import DomainHostingTableManager from './pages/DomainHostingTableManager';
 import OutOfScope from './pages/outOfScope';
+import OutOfScope1 from './pages/OutofScope1';
+import OutOfScope2 from './pages/OutofScope2';
+import OutOfScope3 from './pages/OutofScope3';
 
 
 function App() {
@@ -63,6 +66,9 @@ function App() {
         <Route path="/WorkspaceCardTeamlead" element={<WorkspaceCardTeamlead />} />
         <Route path="/Domain-Manager" element={<DomainHostingTableManager />} />
         <Route path="/OutOfScope" element={<OutOfScope />} />
+        <Route path="/OutOfScope1" element={<OutOfScope1 />} />
+        <Route path="/OutOfScope2" element={<OutOfScope2 />} />
+        <Route path="/OutOfScope3" element={<OutOfScope3 />} />
       </Routes>
     </Router>
   );
