@@ -17,22 +17,22 @@ import {
   Bell,
   BadgeCheck,
   ChevronDown,
-  X 
-} from "lucide-react"; 
+  X
+} from "lucide-react";
 
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
-import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; 
-import AssignMembersModal from "../pages/AssignMembersModal"; 
-import FlowManager from "./FlowManager"; 
-
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead';
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
+import AssignMembersModal from "../pages/AssignMembersModal";
+import FlowManager from "./FlowManager";
+import SlideInPanel from "./SlideInPanel";
 import TasksPage, {
-  TaskDetailModal, 
-  initialDummyTasks as tasksPageInitialTasks, 
-} from "../pages/TasksPage"; 
-import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable"; 
-import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";    
+  TaskDetailModal,
+  initialDummyTasks as tasksPageInitialTasks,
+} from "../pages/TasksPage";
+import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
+import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
 const Dashboard = () => {
   // --- Existing States ---
@@ -57,16 +57,16 @@ const Dashboard = () => {
   const [modalContentType, setModalContentType] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("Dashboard"); 
-  const [selectedTab, setSelectedTab] = useState("Staff Member"); 
-  const [showDropdown, setShowDropdown] = useState(false); 
-  const [showModal, setShowModal] = useState(false); 
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [selectedTab, setSelectedTab] = useState("Staff Member");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [modalUserType, setModalUserType] = useState("Client");
   const [formData, setFormData] = useState({ name: "", email: "", teamLead: "", designation: "" });
   const [editingIndex, setEditingIndex] = useState(null);
   const [staffMembers, setStaffMembers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); 
-  const itemsPerPage = 8; 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const [teamLeads, setTeamLeads] = useState([]);
   const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] = useState(false);
@@ -78,7 +78,7 @@ const Dashboard = () => {
 
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace"); 
+  const [activeApprovalTab, setActiveApprovalTab] = useState("workspace");
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null);
 
@@ -105,7 +105,7 @@ const Dashboard = () => {
     setModalUserType(userType);
     setShowModal(true);
     setEditingIndex(index);
-    if (index !== null && staffMembers[index]) { 
+    if (index !== null && staffMembers[index]) {
       setFormData(staffMembers[index]);
     } else {
       setFormData({ name: "", email: "", teamLead: "", designation: "" });
@@ -164,12 +164,11 @@ const Dashboard = () => {
       setShowTaskDetailModal(true);
     } else {
       console.warn(`Task with ID ${taskId} not found in TasksPage initial tasks.`);
-      // Fallback: show a simplified task if not found, ensure TaskDetailModal can handle this
       setSelectedTaskForDetail({
         id: taskId,
         title: `Task (ID: ${taskId})`,
         description: "Detailed information for this task could not be fully loaded. Please check the task board for more details.",
-        priority: "Medium", // Default or indicate unknown
+        priority: "Medium",
         workspaceName: "Unknown Workspace",
         daysLeft: "N/A",
         dateInfo: "N/A",
@@ -177,7 +176,6 @@ const Dashboard = () => {
         files: 0,
         assignees: [],
         tags: [],
-        // Add any other properties TaskDetailModal minimally requires
       });
       setShowTaskDetailModal(true);
     }
@@ -186,7 +184,7 @@ const Dashboard = () => {
   const requestToView = clientRequests.find(req => req.id.toString() === clientRequestId.toString());
   if (requestToView) {
     setSelectedRequest(requestToView);
-    setModalContentType('request_approval_view'); // Use a distinct type if needed, or reuse 'request'
+    setModalContentType('request_approval_view');
     setIsRequestModalOpen(true);
     console.log("Viewing client request from approval context:", clientRequestId, requestToView);
   } else {
@@ -323,11 +321,11 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     else if (clientSortOption === 'name_desc') processedRequests.sort((a, b) => b.clientName.localeCompare(a.clientName));
     else if (clientSortOption === 'date_new') processedRequests.sort((a, b) => new Date(b.raisedDate) - new Date(a.raisedDate));
     else if (clientSortOption === 'date_old') processedRequests.sort((a, b) => new Date(a.raisedDate) - new Date(b.raisedDate));
-    
+
     const totalClientRequestPages = Math.ceil(processedRequests.length / clientRequestItemsPerPage) || 1;
     const clientRequestStartIdx = (clientRequestCurrentPage - 1) * clientRequestItemsPerPage;
     const paginatedClientRequests = processedRequests.slice(clientRequestStartIdx, clientRequestStartIdx + clientRequestItemsPerPage);
-    
+
     const getPageNumbers = () => {
         const pageCount = totalClientRequestPages; const currentPage = clientRequestCurrentPage; const delta = 1; const range = [];
         for (let i = Math.max(2, currentPage - delta); i <= Math.min(pageCount - 1, currentPage + delta); i++) range.push(i);
@@ -407,7 +405,18 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                         <button onClick={() => { setSelectedRequest(req); setFlowModalOpen(true); }}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> Create Flow </button>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-blue-600 text-xs">Working hours</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {/* MODIFIED LINE BELOW */}
+                        <button
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            setFlowModalOpen(true);
+                          }}
+                          className="text-blue-600 hover:underline text-xs focus:outline-none"
+                        >
+                          Working hours
+                        </button>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
@@ -478,10 +487,10 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     if (!selectedRequest) return;
     const updatedRequests = clientRequests.map((req) => req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req );
     setClientRequests(updatedRequests);
-    setShowRequestModal(false); // This modal is controlled by 'showRequestModal'
+    setShowRequestModal(false);
   };
 
-  const renderRequestModal = () => { // Original modal, kept as requested
+  const renderRequestModal = () => {
     if (!showRequestModal || !selectedRequest) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
@@ -503,19 +512,15 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     );
  };
 
-  // --- New function to render Approvals content ---
   const renderApprovalsContent = () => (
   <div className="w-full h-full bg-white rounded-xl shadow flex flex-col">
     <div className="px-6 pt-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-4">Approvals</h1>
       <div className="flex items-center border-b border-gray-200">
-        {/* ... your tab buttons ... */}
         <button onClick={() => setActiveApprovalTab("workspace")}
          className={`px-5 py-3 text-sm font-medium focus:outline-none ${ activeApprovalTab === "workspace" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"}`}>
          Workspace Task Approvals
          <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-           {/* Placeholder for dynamic count - You might need to import dummyWorkspaceApprovals or get count */}
-           {/* For now, let's assume a static count or that table handles its own display needs */}
            02
          </span>
        </button>
@@ -529,16 +534,13 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       {activeApprovalTab === "workspace" ? (
         <WorkspaceTaskApprovalsTable
           onViewTask={handleViewTaskApproval}
-          // ADD THIS PROP:
           onViewClientRequest={handleViewClientRequestForApproval}
           staffMembers={staffMembers}
-          // ADD THIS PROP (OPTIONAL):
           onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Workspace')}
         />
       ) : (
         <TeamTaskApprovalsTable
           staffMembers={staffMembers}
-          // ADD THIS PROP (OPTIONAL):
           onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Team')}
         />
       )}
@@ -548,14 +550,13 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "Dashboard": return <div className="text-center p-10 text-xl">Dashboard Content Area</div>; // Placeholder for actual dashboard
+      case "Dashboard": return <div className="text-center p-10 text-xl">Dashboard Content Area</div>;
       case "Create Member": return renderCreateMembersContent();
       case "Client Requests": return renderClientRequests();
       case "Tasks TODO": return <TasksPage />;
       case "Work Space": return <WorkspaceCardTeamlead />;
       case "Clients Services": return <DomainHostingTableTeamlead />;
-      case "Approvals": return renderApprovalsContent(); // <<< ADDED
-      // Add cases for "Rise by Manager" and "Settings" if they have content
+      case "Approvals": return renderApprovalsContent();
       case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
       case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
       default:
@@ -624,7 +625,6 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
         staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))}
       />
 
-      {/* Task Detail Modal for Approvals */}
       {showTaskDetailModal && selectedTaskForDetail && (
         <TaskDetailModal
             isOpen={showTaskDetailModal}
