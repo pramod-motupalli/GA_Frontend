@@ -5,6 +5,10 @@ import userLogo from '../assets/logos/user.svg';
 import dotsverticalLogo from '../assets/logos/dots-vertical.svg';
 import PlanList from './planSelectionPopup'; // Assuming this is the correct path
 
+// Import ReactQuill and its styles
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Snow theme CSS
+
 // Helper to get CSRF token if your Django setup uses it for POST requests from JS
 function getCookie(name) {
   let cookieValue = null;
@@ -47,7 +51,7 @@ export default function Main() {
 
   const [showCreateRequestModal, setShowCreateRequestModal] = useState(false);
   const [requestSubject, setRequestSubject] = useState('');
-  const [requestDescription, setRequestDescription] = useState('');
+  const [requestDescription, setRequestDescription] = useState(''); // This will now store HTML
   const [requestFiles, setRequestFiles] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -58,7 +62,7 @@ export default function Main() {
 
 
   const currentUserAvatar = 'https://i.pravatar.cc/40?img=68';
-  // const filePreviewImage = 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwY2hhcnR8ZW58MHx8MHx8&auto=format&fit=crop&w=130&h=80&q=80';
+  const filePreviewImage = 'https://images.unsplash.com/photo-1555774698-0b77e0d5fac6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwY2hhcnR8ZW58MHx8MHx8&auto=format&fit=crop&w=130&h=80&q=80'; // Uncommented this
 
   const billingType = isMonthly ? 'monthly' : 'yearly';
   const monthlyPlans = [
@@ -86,11 +90,11 @@ useEffect(() => {
   })
   .then(res => {
     setWorkspaces(res.data);
-    setFilteredWorkspaces(res.data); // ✅ Add this line
+    setFilteredWorkspaces(res.data);
   })
   .catch(() => {
     setWorkspaces([]);
-    setFilteredWorkspaces([]); // Also clear this on error
+    setFilteredWorkspaces([]);
   });
 }, []);
 
@@ -129,12 +133,16 @@ useEffect(() => {
   };
 
   const handleSave = async (id) => {
+    const token = localStorage.getItem('accessToken');
     try {
       const res = await axios.patch(`http://localhost:8000/api/users/workspaces/create/${id}/`, {
         workspace_name: editValues.name,
         description: editValues.description,
+      }, {
+        headers: { Authorization: `Bearer ${token}` } // Assuming edit needs auth
       });
       setWorkspaces(prev => prev.map(ws => (ws.id === id ? { ...ws, ...res.data } : ws)));
+      setFilteredWorkspaces(prev => prev.map(ws => (ws.id === id ? { ...ws, ...res.data } : ws))); // Also update filtered
       setEditId(null);
       setEditValues({});
     } catch (err) {
@@ -143,8 +151,11 @@ useEffect(() => {
   };
 
   const handleDelete = async (id) => {
+    const token = localStorage.getItem('accessToken');
     try {
-      await axios.delete(`http://localhost:8000/api/users/workspaces/create/${id}/`);
+      await axios.delete(`http://localhost:8000/api/users/workspaces/create/${id}/`, {
+        headers: { Authorization: `Bearer ${token}` } // Assuming delete needs auth
+      });
       setWorkspaces(prev => prev.filter(ws => ws.id !== id));
       setFilteredWorkspaces(prev => prev.filter(ws => ws.id !== id));
       setMenuOpenId(null);
@@ -409,8 +420,9 @@ useEffect(() => {
   const handleRemoveFile = (fileIdToRemove) => {
     setRequestFiles(prevFiles => prevFiles.filter(file => file.id !== fileIdToRemove));
   };
-const token = localStorage.getItem("accessToken")
+
   const handleCreateRequestSubmit = async () => {
+    const token = localStorage.getItem("accessToken"); // Moved token retrieval here
     if (!selectedWorkspace) {
       setSubmitError("No workspace selected. Cannot create request.");
       console.error("No workspace selected to associate the request with.");
@@ -420,32 +432,27 @@ const token = localStorage.getItem("accessToken")
 
     const formData = new FormData();
     formData.append('title', requestSubject);
-    formData.append('description', requestDescription);
+    formData.append('description', requestDescription); // This will now be HTML from Quill
 
-    // Append files. Ensure your backend TaskSerializer is set up to handle
-    // a list of files under the key 'attachments'.
     if (requestFiles.length > 0) {
       requestFiles.forEach(file => {
-        formData.append('attachments', file.fileObject, file.name); // Key 'attachments'
+        formData.append('attachments', file.fileObject, file.name);
       });
     }
-    // If your backend expects a different key for files (e.g. 'attachments_input' or 'files'), change it above.
 
     try {
-      // IMPORTANT: Adjust the URL to match your Django URL configuration for WorkspaceTaskListCreateView (POST part)
       const response = await axios.post(
         `http://localhost:8000/api/users/workspaces/${selectedWorkspace.id}/tasks/`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            // If you use token auth, add it here or globally:
-             'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           },
         }
       );
       console.log('Request submitted successfully:', response.data);
-      setTasksForWorkspace(prevTasks => [response.data, ...prevTasks]); // Add new task to the top of the list
+      setTasksForWorkspace(prevTasks => [response.data, ...prevTasks]);
       handleCloseCreateRequestModal();
     } catch (error) {
       console.error('Error submitting request:', error.response ? error.response.data : error.message);
@@ -455,6 +462,30 @@ const token = localStorage.getItem("accessToken")
       setSubmitError(`Failed to create request: ${errorMsg}`);
     }
   };
+
+  // Quill editor modules and formats
+  const quillModules = {
+    toolbar: [
+      [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+      [{size: []}],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{'list': 'ordered'}, {'list': 'bullet'},
+       {'indent': '-1'}, {'indent': '+1'}],
+      ['link', 'image'], // 'image' and 'video' might require custom handlers for server-side upload
+      ['clean']
+    ],
+    // You can add more modules here, like image resizing, etc.
+    // clipboard: {
+    //   matchVisual: false, // important for pasting from Word, etc.
+    // }
+  };
+
+  const quillFormats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike', 'blockquote',
+    'list', 'bullet', 'indent',
+    'link', 'image', // 'video'
+  ];
 
   const renderCreateRequestModal = () => {
     if (!showCreateRequestModal) return null;
@@ -476,9 +507,19 @@ const token = localStorage.getItem("accessToken")
               <input type="text" value={requestSubject} onChange={(e) => setRequestSubject(e.target.value)} placeholder="Subject" className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4C74DA] focus:border-[#4C74DA] sm:text-sm" />
             </div>
             <div>
-              <textarea value={requestDescription} onChange={(e) => setRequestDescription(e.target.value)} placeholder="Describe the Problem (text Editors)" rows="8" className="mt-1 block w-full px-3 py-2.5 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#4C74DA] focus:border-[#4C74DA] sm:text-sm resize-none" />
+              {/* Replace textarea with ReactQuill */}
+              <ReactQuill
+                theme="snow"
+                value={requestDescription}
+                onChange={setRequestDescription} // Directly sets the HTML content
+                placeholder="Describe the Problem"
+                modules={quillModules}
+                formats={quillFormats}
+                className="mt-1 block w-full sm:text-sm"
+                style={{ height: '200px', marginBottom: '40px' }} // Quill needs explicit height; margin for toolbar
+              />
             </div>
-            <div className="flex flex-wrap gap-3 my-3">
+            <div className="flex flex-wrap gap-3 my-3 pt-6"> {/* Added pt-6 to avoid overlap with Quill toolbar */}
               {requestFiles.map((file) => (
                 <div key={file.id} className="relative border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col w-[130px]">
                   <div className="relative h-[80px] bg-gray-100">
