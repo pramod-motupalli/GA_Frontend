@@ -1,30 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Eye, X, Pencil, PaintRoller } from 'lucide-react';
-
-const scopeData = [
-  { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 200 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 250 },
-  { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 300 },
-];
 
 export default function RequestTable() {
   const [popupType, setPopupType] = useState(null);
   const [hours, setHours] = useState({ design: 0, content: 0, dev: 0 });
   const [requestRaised, setRequestRaised] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
+  const [workItems, setWorkItems] = useState([]);
+  const [selectedItemId, setSelectedItemId] = useState(null); // NEW
 
-  const requests = Array.from({ length: 5 }).map(() => ({
-    requestFrom: 'Mamatha',
-    clientName: 'Elon Musk',
-    domain: 'Sampledomain.com',
-    date: '04-05-2025',
-    updatedTime: 'Working hours',
-  }));
+  useEffect(() => {
+    fetchWorkItems();
+  }, []);
+
+  const fetchWorkItems = () => {
+    axios.get('http://localhost:8000/api/users/workitems/')
+      .then(res => setWorkItems(res.data))
+      .catch(err => console.error('Failed to fetch work items', err));
+  };
+
+  const scopeData = [
+    { icon: <PaintRoller className="w-4 h-4 text-gray-400" />, label: 'For Designing', field: 'design', rate: 200 },
+    { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'Content Writing', field: 'content', rate: 250 },
+    { icon: <Pencil className="w-4 h-4 text-gray-400" />, label: 'For Development', field: 'dev', rate: 300 },
+  ];
 
   const totalHours = Object.values(hours).reduce((sum, h) => sum + Number(h), 0);
-  const totalPrice =
-    hours.design * 200 + hours.content * 250 + hours.dev * 300;
-
+  const totalPrice = hours.design * 200 + hours.content * 250 + hours.dev * 300;
   const randomScopeStatus = () => (Math.random() > 0.5 ? 'within scope' : 'out of scope');
 
   return (
@@ -33,23 +36,23 @@ export default function RequestTable() {
         <table className="min-w-full text-sm text-left border-collapse">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-3 font-medium text-gray-600">Request from</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Client Name</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Domain Name</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Request Raised Date</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Client Request</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Scope of service</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Updated work Time</th>
-              <th className="px-4 py-3 font-medium text-gray-600">Request to Client</th>
+              <th className="px-4 py-3">Request from</th>
+              <th className="px-4 py-3">Client Name</th>
+              <th className="px-4 py-3">Domain Name</th>
+              <th className="px-4 py-3">Request Raised Date</th>
+              <th className="px-4 py-3">Client Request</th>
+              <th className="px-4 py-3">Scope of service</th>
+              <th className="px-4 py-3">Updated work Time</th>
+              <th className="px-4 py-3">Request to Client</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {requests.map((req, index) => (
+            {workItems.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-4 py-3">{req.requestFrom}</td>
-                <td className="px-4 py-3">{req.clientName}</td>
-                <td className="px-4 py-3">{req.domain}</td>
-                <td className="px-4 py-3">{req.date}</td>
+                <td className="px-4 py-3">{item.steps[0]?.user_name || 'N/A'}</td>
+                <td className="px-4 py-3">{item.client_name}</td>
+                <td className="px-4 py-3">{item.domain}</td>
+                <td className="px-4 py-3">{new Date(item.created_at).toLocaleDateString()}</td>
                 <td className="px-4 py-3 text-blue-600 cursor-pointer flex items-center gap-1" onClick={() => setPopupType('view-request')}>
                   <Eye className="w-4 h-4 text-blue-500" /> View Request
                 </td>
@@ -59,6 +62,12 @@ export default function RequestTable() {
                 <td className="px-4 py-3 text-blue-600 cursor-pointer" onClick={() => {
                   setPopupType('working-hours');
                   setIsEditable(false);
+                  setSelectedItemId(item.id); // track selected work item
+                  setHours({
+                    design: item.working_hours_design || 0,
+                    content: item.working_hours_content || 0,
+                    dev: item.working_hours_dev || 0,
+                  });
                 }}>
                   Working hours
                 </td>
@@ -139,7 +148,22 @@ export default function RequestTable() {
                   ) : (
                     <button
                       className="px-4 py-1 text-sm rounded-md bg-green-600 text-white hover:bg-green-700"
-                      onClick={() => setIsEditable(false)}
+                      onClick={() => {
+                        axios.patch(`http://localhost:8000/api/users/workitems/${selectedItemId}/update/`, {
+                          working_hours_design: hours.design,
+                          working_hours_content: hours.content,
+                          working_hours_dev: hours.dev,
+                        })
+                        .then(() => {
+                          setIsEditable(false);
+                          setPopupType(null);
+                          fetchWorkItems(); // refresh table
+                        })
+                        .catch(err => {
+                          console.error('Failed to update hours', err);
+                          alert('Failed to save hours. Please try again.');
+                        });
+                      }}
                     >
                       Save
                     </button>
