@@ -8,7 +8,7 @@ export default function RequestTable() {
   const [requestRaised, setRequestRaised] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
   const [workItems, setWorkItems] = useState([]);
-  const [selectedItemId, setSelectedItemId] = useState(null); // NEW
+  const [selectedItemId, setSelectedItemId] = useState(null);
 
   useEffect(() => {
     fetchWorkItems();
@@ -62,7 +62,7 @@ export default function RequestTable() {
                 <td className="px-4 py-3 text-blue-600 cursor-pointer" onClick={() => {
                   setPopupType('working-hours');
                   setIsEditable(false);
-                  setSelectedItemId(item.id); // track selected work item
+                  setSelectedItemId(item.id);
                   setHours({
                     design: item.working_hours_design || 0,
                     content: item.working_hours_content || 0,
@@ -151,17 +151,20 @@ export default function RequestTable() {
                       onClick={() => {
                         axios.patch(`http://localhost:8000/api/users/workitems/${selectedItemId}/update/`, {
                           working_hours_design: hours.design,
+                          price_design: Number(hours.design) * 200,
                           working_hours_content: hours.content,
+                          price_content: Number(hours.content) * 250,
                           working_hours_dev: hours.dev,
+                          price_dev: Number(hours.dev) * 300,
                         })
                         .then(() => {
                           setIsEditable(false);
                           setPopupType(null);
-                          fetchWorkItems(); // refresh table
+                          fetchWorkItems();
                         })
                         .catch(err => {
-                          console.error('Failed to update hours', err);
-                          alert('Failed to save hours. Please try again.');
+                          console.error('Failed to update hours and prices', err);
+                          alert('Failed to save data. Please try again.');
                         });
                       }}
                     >
