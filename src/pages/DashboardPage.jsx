@@ -15,18 +15,28 @@ import {
   User,
   LogOut,
   MessageCircle,
-  Bell,
+  Bell, // Keep Bell
   BadgeCheck,
   ChevronDown,
   X // X icon is imported but not used explicitly in this snippet, keep if needed elsewhere
 } from "lucide-react";
 
+<<<<<<< HEAD
 import logo from "../assets/GA.png"; // Ensure this path is correct
 import emptyDataIcon from "../assets/empty-data-icon.png"; // Ensure this path is correct
 import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; // Ensure component exists
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; // Ensure component exists
 import AssignMembersModal from "../pages/AssignMembersModal"; // Ensure component exists
 import FlowManager from "./FlowManager"; // Ensure component exists and props are handled
+=======
+import logo from "../assets/GA.png";
+import emptyDataIcon from "../assets/empty-data-icon.png";
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; 
+import AssignMembersModal from "../pages/AssignMembersModal"; 
+import FlowManager from "./FlowManager"; 
+import NotificationsPage from './NotificationsPage';
+>>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
 import TasksPage, {
   TaskDetailModal,
   // initialDummyTasks as tasksPageInitialTasks, // Using API data instead of dummy
@@ -788,8 +798,15 @@ const Dashboard = () => {
       case "Work Space": return <div className="bg-white rounded-xl shadow p-1"><WorkspaceCardTeamlead /></div>;
       case "Clients Services": return <div className="bg-white rounded-xl shadow p-1"><DomainHostingTableTeamlead /></div>;
       case "Approvals": return renderApprovalsContent();
+<<<<<<< HEAD
       case "Rise by Manager": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Rise by Manager Content Area</div>;
       case "Settings": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Settings Content Area</div>;
+=======
+      case "Notifications": return <NotificationsPage />; // <<< ADDED
+      // Add cases for "Rise by Manager" and "Settings" if they have content
+      case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
+      case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
+>>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
       default:
         return <div className="text-center pt-10 bg-white rounded-xl shadow">Select a menu item</div>;
     }
@@ -838,13 +855,55 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
+<<<<<<< HEAD
         <div className="flex justify-end items-center gap-4 mb-6">
           {[MessageCircle, Bell, User].map((Icon, i) => (
             <div key={i} className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer">
               <Icon className="w-6 h-6 text-gray-800" />
+=======
+        {/* Top Bar with Title and Icons */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">
+            {/* --- MODIFIED: Dynamic Page Title --- */}
+            {activeTab === "Notifications" ? "Notifications" : 
+             activeTab === "Dashboard" ? "welcome, Team lead" : // Example for dashboard
+             activeTab} {/* Fallback to activeTab name or set specific titles */}
+          </h1>
+          <div className="flex items-center gap-4">
+            <div key="message-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
+                <MessageCircle className="w-6 h-6 text-gray-800" />
+                <span className="absolute top-1 right-1 flex h-5 w-5">
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">02</span>
+                </span>
+>>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
             </div>
-          ))}
+            <div 
+              key="bell-icon" 
+              className={`relative w-12 h-12 p-3 rounded-full outline outline-1 flex justify-center items-center cursor-pointer transition-colors duration-150
+                          ${activeTab === "Notifications" 
+                            ? "bg-blue-100 text-blue-600 border-blue-300 outline-blue-300" 
+                            : "bg-white text-gray-800 border-neutral-300 outline-neutral-300 hover:bg-gray-100"
+                          }`}
+              onClick={() => setActiveTab("Notifications")} 
+            >
+                <Bell 
+                    className={`w-6 h-6 
+                                ${activeTab === "Notifications" ? "text-blue-600" : "text-gray-800"}`} 
+                />
+                <span className={`absolute top-1 right-1 flex h-5 w-5`}>
+                    <span className={`relative inline-flex rounded-full h-4 w-4 text-xs items-center justify-center
+                                    ${activeTab === "Notifications" ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}> {/* Badge color remains blue for now */}
+                        02
+                    </span>
+                </span>
+            </div>
+            <div key="user-profile-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
+                <User className="w-6 h-6 text-gray-800" />
+            </div>
+          </div>
         </div>
+        
+        {/* Content Area */}
         <div className="flex-1">{renderContent()}</div>
       </div>
 
