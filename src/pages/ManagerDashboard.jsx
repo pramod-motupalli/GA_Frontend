@@ -712,7 +712,7 @@ const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButto
         setFormData(data);
         setFormErrors({});
         setIsSubmitting(false);
-    }, [fields, title, initialData]);
+    }, [/*fields, title, initialData*/]);
 
 
   const handleChange = (e) => {
