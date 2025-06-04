@@ -21,14 +21,6 @@ import {
   X // X icon is imported but not used explicitly in this snippet, keep if needed elsewhere
 } from "lucide-react";
 
-<<<<<<< HEAD
-import logo from "../assets/GA.png"; // Ensure this path is correct
-import emptyDataIcon from "../assets/empty-data-icon.png"; // Ensure this path is correct
-import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; // Ensure component exists
-import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; // Ensure component exists
-import AssignMembersModal from "../pages/AssignMembersModal"; // Ensure component exists
-import FlowManager from "./FlowManager"; // Ensure component exists and props are handled
-=======
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
@@ -36,7 +28,6 @@ import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal"; 
 import FlowManager from "./FlowManager"; 
 import NotificationsPage from './NotificationsPage';
->>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
 import TasksPage, {
   TaskDetailModal,
   // initialDummyTasks as tasksPageInitialTasks, // Using API data instead of dummy
@@ -574,8 +565,8 @@ const Dashboard = () => {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {task.scopeStatus ? (
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            task.scopeStatus.toLowerCase() === "completed" ? "bg-green-100 text-green-800" :
-                            task.scopeStatus.toLowerCase() === "in_progress" ? "bg-blue-100 text-blue-800" :
+                            task.scopeStatus.toLowerCase() === "In Scope" ? "bg-green-100 text-green-800" :
+                            task.scopeStatus.toLowerCase() === "Out Of Scope" ? "bg-blue-100 text-red-800" :
                             task.scopeStatus.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-800" : 
                             "bg-gray-100 text-gray-800" // Default for other statuses
                           }`}>
@@ -682,17 +673,17 @@ const Dashboard = () => {
               <h4 className="text-md font-semibold mb-3">Update Task Status (Scope Decision)</h4>
               <div className="flex flex-wrap items-center gap-2"> {/* Use gap-2 and flex-wrap */}
                 <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'in_progress')}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm">
-                  Mark as "In Progress"
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 text-sm">
+                  In Scope
                 </button>
                 <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'completed')}
-                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 text-sm">
-                  Mark as "Completed"
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm">
+                  Out Of Scope
                 </button>
-                <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'pending')}
+                {/* <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'pending')}
                   className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 text-sm">
                   Mark as "Pending"
-                </button>
+                </button> */}
                 {/* Add more status update buttons if needed, e.g., for 'out_of_scope' if it's a distinct status */}
               </div>
             </div>
@@ -798,15 +789,10 @@ const Dashboard = () => {
       case "Work Space": return <div className="bg-white rounded-xl shadow p-1"><WorkspaceCardTeamlead /></div>;
       case "Clients Services": return <div className="bg-white rounded-xl shadow p-1"><DomainHostingTableTeamlead /></div>;
       case "Approvals": return renderApprovalsContent();
-<<<<<<< HEAD
-      case "Rise by Manager": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Rise by Manager Content Area</div>;
-      case "Settings": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Settings Content Area</div>;
-=======
       case "Notifications": return <NotificationsPage />; // <<< ADDED
       // Add cases for "Rise by Manager" and "Settings" if they have content
       case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
       case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
->>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
       default:
         return <div className="text-center pt-10 bg-white rounded-xl shadow">Select a menu item</div>;
     }
@@ -855,12 +841,6 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
-<<<<<<< HEAD
-        <div className="flex justify-end items-center gap-4 mb-6">
-          {[MessageCircle, Bell, User].map((Icon, i) => (
-            <div key={i} className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer">
-              <Icon className="w-6 h-6 text-gray-800" />
-=======
         {/* Top Bar with Title and Icons */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">
@@ -875,7 +855,6 @@ const Dashboard = () => {
                 <span className="absolute top-1 right-1 flex h-5 w-5">
                     <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">02</span>
                 </span>
->>>>>>> 9e43b90a9e4bdf5bcbef215137fcd7b169f4e5ea
             </div>
             <div 
               key="bell-icon" 
