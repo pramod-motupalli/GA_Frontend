@@ -14,18 +14,22 @@ import {
   User,
   LogOut,
   MessageCircle,
-  Bell, // Keep Bell
+  Bell,
   BadgeCheck,
   ChevronDown,
-  X
+  X, 
+  Calendar, 
+  Clock,    
+  Plus      
 } from "lucide-react";
 
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
-import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; 
-import AssignMembersModal from "../pages/AssignMembersModal"; 
-import FlowManager from "./FlowManager"; 
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead';
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
+import AssignMembersModal from "../pages/AssignMembersModal";
+
+import FlowManager from "./FlowManager";
 import NotificationsPage from './NotificationsPage';
 import TasksPage, {
   TaskDetailModal,
@@ -34,28 +38,242 @@ import TasksPage, {
 import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
 import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
+// TaskInfoModal Component  
+const TaskInfoModal = ({ isOpen, onClose, clientRequest, staffMembers, onSubmitTask }) => {
+  const [taskPriority, setTaskPriority] = useState('Low');
+  const [taskDeadline, setTaskDeadline] = useState('');
+  const [assignedMembers, setAssignedMembers] = useState([
+    { id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' } 
+  ]);
+
+  useEffect(() => {
+    if (isOpen) {
+        setTaskPriority('Low');
+        setTaskDeadline('');
+        setAssignedMembers([{ id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+    }
+  }, [isOpen, clientRequest]);
+
+
+  if (!isOpen) return null;
+
+  const handlePriorityChange = (priority) => {
+    setTaskPriority(priority);
+  };
+
+  const handleMemberChange = (id, field, value) => {
+    const updatedMembers = assignedMembers.map(member =>
+      member.id === id ? { ...member, [field]: value } : member
+    );
+    setAssignedMembers(updatedMembers);
+  };
+
+  const addMemberRow = () => {
+    setAssignedMembers([...assignedMembers, { id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+  };
+
+  const removeMemberRow = (idToRemove) => {
+    if (assignedMembers.length > 1) {
+      const updatedMembers = assignedMembers.filter((member) => member.id !== idToRemove);
+      setAssignedMembers(updatedMembers);
+    } else {
+      // Clear the fields of the last row
+      setAssignedMembers([{ id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+    }
+  };
+  
+  const handleSubmit = () => {
+    const taskData = {
+      clientRequestId: clientRequest?.id,
+      clientName: clientRequest?.clientName,
+      domain: clientRequest?.domain,
+      priority: taskPriority,
+      overallDeadline: taskDeadline,
+      members: assignedMembers.filter(m => m.designation && m.memberName), 
+    };
+    if (onSubmitTask) {
+        onSubmitTask(taskData);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl my-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">Task Info</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Task Priority</label>
+          <div className="flex items-center space-x-2 border border-gray-300 rounded-md p-1 max-w-xs">
+            {['Low', 'Medium', 'High'].map((priority) => (
+              <button
+                key={priority}
+                type="button"
+                onClick={() => handlePriorityChange(priority)}
+                className={`flex-1 py-1.5 px-3 text-sm rounded-md transition-colors
+                  ${taskPriority === priority
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                <span className={`inline-block w-2 h-2 rounded-full mr-2 
+                  ${priority === 'Low' && taskPriority === 'Low' ? 'bg-white' : 
+                    priority === 'Low' ? 'bg-blue-500' :
+                    priority === 'Medium' && taskPriority === 'Medium' ? 'bg-white' : 
+                    priority === 'Medium' ? 'bg-yellow-500' :
+                    priority === 'High' && taskPriority === 'High' ? 'bg-white' : 'bg-red-500' 
+                  }`}></span>
+                {priority}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <label htmlFor="taskOverallDeadline" className="block text-sm font-medium text-gray-700 mb-2">Task Deadline</label>
+          <div className="relative">
+            <input
+              type="date"
+              id="taskOverallDeadline"
+              value={taskDeadline}
+              onChange={(e) => setTaskDeadline(e.target.value)}
+              className="w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              
+            />
+            <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
+        
+        <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
+                 <h3 className="text-lg font-medium text-gray-800">Add members</h3>
+            </div>
+
+          {assignedMembers.map((member) => (
+            <div key={member.id} className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 items-end mb-4 p-3 border border-gray-200 rounded-md relative">
+              <div className="md:col-span-3">
+                <label htmlFor={`designation-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Designation</label>
+                <select
+                  id={`designation-${member.id}`}
+                  value={member.designation}
+                  onChange={(e) => handleMemberChange(member.id, 'designation', e.target.value)}
+                  className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Select</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Developer">Developer</option>
+                  <option value="Content Writer">Content Writer</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-3">
+                <label htmlFor={`memberName-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Member Name</label>
+                <select
+                  id={`memberName-${member.id}`}
+                  value={member.memberName}
+                  onChange={(e) => handleMemberChange(member.id, 'memberName', e.target.value)}
+                  className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  disabled={!member.designation}
+                >
+                  <option value="">Select</option>
+                  
+                  {staffMembers
+                    .filter(staff => !member.designation || staff.designation === member.designation)
+                    .map(staff => <option key={staff.id} value={staff.id}>{staff.name}</option>)}
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor={`timeEstimation-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Time Estimation</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id={`timeEstimation-${member.id}`}
+                    placeholder="00:00"
+                    value={member.timeEstimation}
+                    onChange={(e) => handleMemberChange(member.id, 'timeEstimation', e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <Clock size={16} className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="md:col-span-3">
+                <label htmlFor={`deadline-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Deadline</label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    id={`deadline-${member.id}`}
+                    value={member.deadline}
+                    onChange={(e) => handleMemberChange(member.id, 'deadline', e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <Calendar size={16} className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              
+              <div className="md:col-span-1 flex items-end justify-end md:justify-start pb-0.5">
+                {assignedMembers.length > 0 && (
+                     <button 
+                        type="button" 
+                        onClick={() => removeMemberRow(member.id)} 
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove member"
+                    >
+                        <X size={18}/>
+                    </button>
+                )}
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addMemberRow}
+            className="flex items-center text-sm text-blue-600 hover:text-blue-700 border border-dashed border-gray-400 rounded-md px-4 py-2 hover:bg-gray-50 w-full justify-center"
+          >
+            <Plus size={16} className="mr-2" /> Add member
+          </button>
+        </div>
+
+        <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200 mt-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-md border border-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm"
+          >
+            Create Task
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const Dashboard = () => {
   const [clientRequests, setClientRequests] = useState([
-    // Removed estimatedHours, assuming FlowManager handles this
     { id: 1, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "This is a detailed description for Surya's first request regarding the sampledomain.com. We need to implement feature X, fix bug Y, and optimize performance for module Z. The client expects this to be completed by end of next month.", scopeStatus: "" },
     { id: 2, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Second request description for Surya.", scopeStatus: "" },
-    { id: 3, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "Third request.", scopeStatus: "" },
-    { id: 4, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 5, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 6, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 7, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 8, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 9, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 10, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
-    { id: 11, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
+    // ... (rest of your clientRequests data)
     { id: 12, clientName: "Surya", domain: "Sampledomain.com", raisedDate: "2025-05-04", description: "...", scopeStatus: "" },
   ]);
 
-  // ... (other existing states)
-  const [flowModalOpen, setFlowModalOpen] = useState(false);
+  const [flowModalOpen, setFlowModalOpen] = useState(false); // Kept for potential other uses of FlowManager
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [modalContentType, setModalContentType] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null); // This will be passed to FlowManager
+  const [selectedRequest, setSelectedRequest] = useState(null);
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedTab, setSelectedTab] = useState("Staff Member");
@@ -76,14 +294,13 @@ const Dashboard = () => {
   const [clientSearchTerm, setClientSearchTerm] = useState("");
   const [clientSortOption, setClientSortOption] = useState("");
 
-  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const [activeApprovalTab, setActiveApprovalTab] = useState("workspace");
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null);
 
-  // --- NEW STATE for FlowManager starting point ---
-  const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default'); // 'default' or 'scopeOfHours'
+  const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default');
+    const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -200,6 +417,20 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     console.log(`${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}`);
 };
 
+  // --- Function to open the new TaskInfoModal ---
+  const openNewTaskInfoModal = (request) => {
+    setSelectedRequest(request); // Set the context for the modal
+    setIsTaskInfoModalOpen(true);
+  };
+
+  // --- Function to handle submission from TaskInfoModal ---
+  const handleCreateTaskFromInfoModal = (taskData) => {
+    console.log("Task to be created from TaskInfoModal:", taskData);
+    // Add logic here to send taskData to backend / update state
+    alert(`Task creation initiated for client: ${taskData.clientName}. Data in console.`);
+    setIsTaskInfoModalOpen(false); // Close modal after handling
+  };
+
 
   const renderModal = () => (
     <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
@@ -214,7 +445,10 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
             {teamLeads.map((lead) => ( <option key={lead.id || lead} value={lead.id || lead}>{lead.name || lead}</option> ))}
           </select>
           <select name="designation" value={formData.designation} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-gray-600">
-            <option value="">Designation</option> <option value="Developer">Developer</option> <option value="Designer">Designer</option>
+            <option value="">Designation</option> 
+            <option value="Developer">Developer</option> 
+            <option value="Designer">Designer</option>
+            <option value="Conntent Writer">Content Writer</option>
           </select>
           <input required type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Name" className="w-full border border-gray-300 rounded-md p-2" />
           <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email id" className="w-full border border-gray-300 rounded-md p-2" />
@@ -335,7 +569,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
         for (let i = Math.max(2, currentPage - delta); i <= Math.min(pageCount - 1, currentPage + delta); i++) range.push(i);
         if (currentPage - delta > 2) range.unshift("...");
         if (currentPage + delta < pageCount - 1) range.push("...");
-        range.unshift(1); if (pageCount > 1) range.push(pageCount);
+        range.unshift(1); if (pageCount > 1 && !range.includes(pageCount)) range.push(pageCount); 
         return [...new Set(range)];
     };
     const pageNumbers = getPageNumbers();
@@ -367,16 +601,19 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
             </div>
           </div>
         </div>
-
         <div className="w-full bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">Client Requests</h2>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-[1100px] w-full table-auto">
+            <table className="min-w-[900px] w-full table-auto"> 
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <tr>
-                  <th className="px-4 py-3">Client Name</th> <th className="px-4 py-3">Domain Name</th> <th className="px-4 py-3">Request Raised Date</th>
-                  <th className="px-4 py-3">Client Request</th> <th className="px-4 py-3">Scope of service status</th> <th className="px-4 py-3">Task Assigned to</th>
-                  <th className="px-4 py-3">Flow Creation</th> <th className="px-4 py-3">Workhours</th> <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3">Client Name</th>
+                  <th className="px-4 py-3">Domain Name</th>
+                  <th className="px-4 py-3">Request Raised Date</th>
+                  <th className="px-4 py-3">Client Request</th>
+                  <th className="px-4 py-3">Scope of service status</th>
+                  <th className="px-4 py-3">Flow Creation</th>
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -400,40 +637,18 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                         ) : ( <span className="text-gray-400 italic">Pending</span> )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                          <option>Select</option>
-                          {staffMembers.map(staff => ( <option key={staff.id} value={staff.id}>{staff.name}</option> ))}
-                        </select>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <button onClick={() => {
-                            setSelectedRequest(req);
-                            setFlowManagerInitialScreen('default'); // Normal flow start
-                            setFlowModalOpen(true);
-                          }}
+                        <button onClick={() => openNewTaskInfoModal(req)}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> Create Flow </button>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <button
-                          onClick={() => {
-                            setSelectedRequest(req);
-                            setFlowManagerInitialScreen('scopeOfHours'); // Start FlowManager at scope of hours
-                            setFlowModalOpen(true);
-                          }}
-                          className="text-blue-600 hover:underline text-xs focus:outline-none"
-                        >
-                          Working hours
-                        </button>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
                     </tr>
-                  )) : ( <tr> <td colSpan="9" className="text-center py-10 text-gray-500"> No client requests found. </td> </tr> )}
+                  )) : ( <tr> <td colSpan="7" className="text-center py-10 text-gray-500"> No client requests found. </td> </tr> )}
               </tbody>
             </table>
             {isRequestModalOpen && selectedRequest && (modalContentType === 'request' || modalContentType === 'request_approval_view') && (
-              <div className="fixed inset-0 flex items-center justify-center z-[60] bg-black bg-opacity-40 p-4">
+              <div className="fixed inset-0 flex items-center justify-center z-[80] bg-black bg-opacity-40 p-4"> {/* Increased z-index */}
                 <div className="bg-white p-6 rounded-lg shadow-xl max-w-lg w-full">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">
@@ -501,37 +716,6 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       </>
     );
   };
-
-  const handleScopeDecision = (status) => {
-    if (!selectedRequest) return;
-    const updatedRequests = clientRequests.map((req) => req.id === selectedRequest.id ? { ...req, scopeStatus: status } : req );
-    setClientRequests(updatedRequests);
-    setShowRequestModal(false);
-  };
-
-  const renderRequestModal = () => {
-    if (!showRequestModal || !selectedRequest) return null;
-    return (
-      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-        <div className="bg-white rounded-lg p-6 w-[400px] max-w-full shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Request Description</h2>
-            <button onClick={() => setShowRequestModal(false)} className="text-xl font-bold text-gray-600">×</button>
-          </div>
-          <p className="text-gray-700 text-sm mb-4">{selectedRequest?.description}</p>
-          <div className="mt-4">
-            <h3 className="text-md font-medium mb-2">View Scope</h3>
-            <div className="flex gap-4">
-              <button onClick={() => handleScopeDecision("With in Scope")} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"> Within Scope </button>
-              <button onClick={() => handleScopeDecision("Out of Scope")} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"> Out of Scope </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
- };
-
-
   const renderApprovalsContent = () => (
   <div className="w-full h-full bg-white rounded-xl shadow flex flex-col">
     <div className="px-6 pt-6">
@@ -541,7 +725,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
          className={`px-5 py-3 text-sm font-medium focus:outline-none ${ activeApprovalTab === "workspace" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"}`}>
          Workspace Task Approvals
          <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-           02
+           02 {/* This count should be dynamic */}
          </span>
        </button>
        <button onClick={() => setActiveApprovalTab("team")}
@@ -554,7 +738,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       {activeApprovalTab === "workspace" ? (
         <WorkspaceTaskApprovalsTable
           onViewTask={handleViewTaskApproval}
-          onViewClientRequest={handleViewClientRequestForApproval}
+          onViewClientRequest={handleViewClientRequestForApproval} // This prop might not be needed if slide-over handles it
           staffMembers={staffMembers}
           onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Workspace')}
         />
@@ -577,8 +761,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       case "Work Space": return <WorkspaceCardTeamlead />;
       case "Clients Services": return <DomainHostingTableTeamlead />;
       case "Approvals": return renderApprovalsContent();
-      case "Notifications": return <NotificationsPage />; // <<< ADDED
-      // Add cases for "Rise by Manager" and "Settings" if they have content
+      case "Notifications": return <NotificationsPage />;
       case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
       case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
       default:
@@ -589,7 +772,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
       {/* Sidebar */}
-      <div className="w-60 h-11/12 bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
+      <div className="w-60 h-full bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div>
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
             <img src={logo} alt="GA Digital Solutions" className="h-14 object-contain" />
@@ -621,13 +804,11 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
-        {/* Top Bar with Title and Icons */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">
-            {/* --- MODIFIED: Dynamic Page Title --- */}
             {activeTab === "Notifications" ? "Notifications" : 
-             activeTab === "Dashboard" ? "welcome, Team lead" : // Example for dashboard
-             activeTab} {/* Fallback to activeTab name or set specific titles */}
+             activeTab === "Dashboard" ? "welcome, Team lead" : 
+             activeTab}
           </h1>
           <div className="flex items-center gap-4">
             <div key="message-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
@@ -651,7 +832,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
                 />
                 <span className={`absolute top-1 right-1 flex h-5 w-5`}>
                     <span className={`relative inline-flex rounded-full h-4 w-4 text-xs items-center justify-center
-                                    ${activeTab === "Notifications" ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}> {/* Badge color remains blue for now */}
+                                    ${activeTab === "Notifications" ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}>
                         02
                     </span>
                 </span>
@@ -662,13 +843,10 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
           </div>
         </div>
         
-        {/* Content Area */}
         <div className="flex-1">{renderContent()}</div>
       </div>
-
-      {/* Modals */}
       {showModal && renderModal()}
-      {renderRequestModal()}
+      
       {isAssignMembersModalOpen && (
         <AssignMembersModal
           isOpen={isAssignMembersModalOpen}
@@ -676,21 +854,16 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
           onSubmit={(assignmentsData) => { console.log("Assignments:", selectedRequest?.id, assignmentsData); setIsAssignMembersModalOpen(false); }}
           staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))} />
       )}
-      {/* FlowManager now receives initialScreen and selectedClientRequest props */}
-      <FlowManager
-        isOpen={flowModalOpen}
-        onClose={() => {
-            setFlowModalOpen(false);
-            setFlowManagerInitialScreen('default'); // Reset to default when closed
-            setSelectedRequest(null); // Clear selected request
-        }}
-        staffList={staffMembers.map(member => ({ id: member.id || member.email, name: member.name }))}
-        initialScreen={flowManagerInitialScreen} // <-- NEW PROP
-        // Pass the selected client request to FlowManager so it has context
-        // The FlowManager component will need to be adapted to use this prop
-        clientRequest={selectedRequest} // <-- NEW PROP (or similar name)
-        // Add any other props FlowManager might need, like onSave, onUpdate, etc.
-      />
+
+      {isTaskInfoModalOpen && selectedRequest && (
+        <TaskInfoModal
+          isOpen={isTaskInfoModalOpen}
+          onClose={() => setIsTaskInfoModalOpen(false)}
+          clientRequest={selectedRequest}
+          staffMembers={staffMembers}
+          onSubmitTask={handleCreateTaskFromInfoModal}
+        />
+      )}
 
       {showTaskDetailModal && selectedTaskForDetail && (
         <TaskDetailModal
@@ -702,5 +875,4 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
     </div>
   );
 };
-
 export default Dashboard;
