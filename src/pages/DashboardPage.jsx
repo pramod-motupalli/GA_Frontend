@@ -18,6 +18,10 @@ import {
   Bell,
   BadgeCheck,
   ChevronDown,
+  X,
+  Calendar,
+  Clock,
+  Plus
   // X icon removed as it wasn't used as a Lucide component
 } from "lucide-react";
 
@@ -34,9 +38,233 @@ import TasksPage, {
 import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
 import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
+// --------------- TaskInfoModal Component (Embedded) ---------------
+const TaskInfoModal = ({ isOpen, onClose, clientRequest, staffMembers, onSubmitTask }) => {
+  const [taskPriority, setTaskPriority] = useState('Low');
+  const [taskDeadline, setTaskDeadline] = useState('');
+  const [assignedMembers, setAssignedMembers] = useState([
+    { id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' } // Added unique ID for key prop
+  ]);
+const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
+  useEffect(() => {
+    // Reset form when modal opens or clientRequest changes, if desired
+    if (isOpen) {
+        setTaskPriority('Low');
+        setTaskDeadline('');
+        setAssignedMembers([{ id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+    }
+  }, [isOpen, clientRequest]);
+
+
+  if (!isOpen) return null;
+
+  const handlePriorityChange = (priority) => {
+    setTaskPriority(priority);
+  };
+
+  const handleMemberChange = (id, field, value) => {
+    const updatedMembers = assignedMembers.map(member =>
+      member.id === id ? { ...member, [field]: value } : member
+    );
+    setAssignedMembers(updatedMembers);
+  };
+
+  const addMemberRow = () => {
+    setAssignedMembers([...assignedMembers, { id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+  };
+
+  const removeMemberRow = (idToRemove) => {
+    if (assignedMembers.length > 1) {
+      const updatedMembers = assignedMembers.filter((member) => member.id !== idToRemove);
+      setAssignedMembers(updatedMembers);
+    } else {
+      // Clear the fields of the last row
+      setAssignedMembers([{ id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }]);
+    }
+  };
+  
+  const handleSubmit = () => {
+    const taskData = {
+      clientRequestId: clientRequest?.id,
+      clientName: clientRequest?.clientName,
+      domain: clientRequest?.domain,
+      priority: taskPriority,
+      overallDeadline: taskDeadline,
+      members: assignedMembers.filter(m => m.designation && m.memberName), // Only submit members with designation and name
+    };
+    if (onSubmitTask) {
+        onSubmitTask(taskData);
+    }
+    // onClose(); // Parent will handle closing after submission logic
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl my-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">Task Info</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Task Priority</label>
+          <div className="flex items-center space-x-2 border border-gray-300 rounded-md p-1 max-w-xs">
+            {['Low', 'Medium', 'High'].map((priority) => (
+              <button
+                key={priority}
+                type="button"
+                onClick={() => handlePriorityChange(priority)}
+                className={`flex-1 py-1.5 px-3 text-sm rounded-md transition-colors
+                  ${taskPriority === priority
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                <span className={`inline-block w-2 h-2 rounded-full mr-2 
+                  ${priority === 'Low' && taskPriority === 'Low' ? 'bg-white' : 
+                    priority === 'Low' ? 'bg-blue-500' :
+                    priority === 'Medium' && taskPriority === 'Medium' ? 'bg-white' : 
+                    priority === 'Medium' ? 'bg-yellow-500' :
+                    priority === 'High' && taskPriority === 'High' ? 'bg-white' : 'bg-red-500' 
+                  }`}></span>
+                {priority}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <label htmlFor="taskOverallDeadline" className="block text-sm font-medium text-gray-700 sr-only">Task Deadline</label>
+          <div className="relative">
+            <input
+              type="date"
+              id="taskOverallDeadline"
+              value={taskDeadline}
+              onChange={(e) => setTaskDeadline(e.target.value)}
+              className="w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              placeholder="Task deadline: DD-MM-YYYY" // Note: placeholder might not show for type="date"
+            />
+            <Calendar size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
+        
+        <div className="mb-6">
+            <div className="flex justify-between items-center mb-3">
+                 <h3 className="text-lg font-medium text-gray-800">Add members</h3>
+            </div>
+
+          {assignedMembers.map((member) => (
+            <div key={member.id} className="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 items-end mb-4 p-3 border border-gray-200 rounded-md relative">
+              <div className="md:col-span-3">
+                <label htmlFor={`designation-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Designation</label>
+                <select
+                  id={`designation-${member.id}`}
+                  value={member.designation}
+                  onChange={(e) => handleMemberChange(member.id, 'designation', e.target.value)}
+                  className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Select</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Developer">Developer</option>
+                  <option value="QA">QA</option>
+                  <option value="Project Manager">Project Manager</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-3">
+                <label htmlFor={`memberName-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Member Name</label>
+                <select
+                  id={`memberName-${member.id}`}
+                  value={member.memberName}
+                  onChange={(e) => handleMemberChange(member.id, 'memberName', e.target.value)}
+                  className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  disabled={!member.designation}
+                >
+                  <option value="">Select</option>
+                  {staffMembers
+                    .filter(staff => !member.designation || staff.designation === member.designation)
+                    .map(staff => <option key={staff.id} value={staff.id}>{staff.name}</option>)}
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label htmlFor={`timeEstimation-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Time Estimation</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id={`timeEstimation-${member.id}`}
+                    placeholder="00:00"
+                    value={member.timeEstimation}
+                    onChange={(e) => handleMemberChange(member.id, 'timeEstimation', e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <Clock size={16} className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="md:col-span-3">
+                <label htmlFor={`deadline-${member.id}`} className="block text-xs font-medium text-gray-600 mb-1">Deadline</label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    id={`deadline-${member.id}`}
+                    value={member.deadline}
+                    onChange={(e) => handleMemberChange(member.id, 'deadline', e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <Calendar size={16} className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              
+              <div className="md:col-span-1 flex items-end justify-end md:justify-start pb-0.5">
+                {assignedMembers.length > 0 && ( // Changed condition to always show if at least one row
+                     <button 
+                        type="button" 
+                        onClick={() => removeMemberRow(member.id)} 
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove member"
+                    >
+                        <X size={18}/>
+                    </button>
+                )}
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={addMemberRow}
+            className="flex items-center text-sm text-blue-600 hover:text-blue-700 border border-dashed border-gray-400 rounded-md px-4 py-2 hover:bg-gray-50 w-full justify-center"
+          >
+            <Plus size={16} className="mr-2" /> Add member
+          </button>
+        </div>
+
+        <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200 mt-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 rounded-md border border-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm"
+          >
+            Create Task
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 const Dashboard = () => {
   const [clientRequests, setClientRequests] = useState([]); // This state now holds tasks
-
+const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
   // --- useEffect to fetch initial tasks ---
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -254,7 +482,18 @@ const Dashboard = () => {
       alert("Error: " + (error.response?.data?.detail || error.message || "Could not save staff member."));
     }
   };
+ const openNewTaskInfoModal = (request) => {
+    setSelectedRequest(request); // Set the context for the modal
+    setIsTaskInfoModalOpen(true);
+  };
 
+  // --- Function to handle submission from TaskInfoModal ---
+  const handleCreateTaskFromInfoModal = (taskData) => {
+    console.log("Task to be created from TaskInfoModal:", taskData);
+    // Add logic here to send taskData to backend / update state
+    alert(`Task creation initiated for client: ${taskData.clientName}. Data in console.`);
+    setIsTaskInfoModalOpen(false); // Close modal after handling
+  };
   // Staff deletion
   const handleDelete = async (staffMemberOriginalIndex) => {
     if (staffMemberOriginalIndex === null || !staffMembers[staffMemberOriginalIndex]) return;
@@ -545,7 +784,7 @@ const Dashboard = () => {
                 <tr>
                   <th className="px-4 py-3">Client Name</th> <th className="px-4 py-3">Domain Name</th> <th className="px-4 py-3">Raised Date</th>
                   <th className="px-4 py-3">Task Details</th> <th className="px-4 py-3">Status</th> <th className="px-4 py-3">Assigned To</th>
-                  <th className="px-4 py-3">Flow/Hours</th> <th className="px-4 py-3">Workhours</th> <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3">Flow/Hours</th>  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -586,14 +825,10 @@ const Dashboard = () => {
                         </select>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <button onClick={() => {
-                            setSelectedRequest(task); // Pass the task to FlowManager
-                            setFlowManagerInitialScreen('default');
-                            setFlowModalOpen(true);
-                          }}
-                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> Manage Flow </button>
+                         <button onClick={() => openNewTaskInfoModal(task)}
+                          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> create Flow </button>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      {/* <td className="px-4 py-3 whitespace-nowrap">
                         <button
                           onClick={() => {
                             setSelectedRequest(task);
@@ -604,7 +839,7 @@ const Dashboard = () => {
                         >
                           Scope Hours
                         </button>
-                      </td>
+                      </td> */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
@@ -857,24 +1092,21 @@ const Dashboard = () => {
         />
       )}
 
-      <FlowManager
-        isOpen={flowModalOpen}
-        onClose={() => {
-            setFlowModalOpen(false);
-            setFlowManagerInitialScreen('default');
-            setSelectedRequest(null); // Clear selected task when FlowManager closes
-        }}
-        staffList={staffMembers.map(member => ({ id: member.id, name: member.name }))}
-        initialScreen={flowManagerInitialScreen}
-        clientRequest={selectedRequest} // Pass the whole task object
-      />
+       {isTaskInfoModalOpen && selectedRequest && (
+        <TaskInfoModal
+          isOpen={isTaskInfoModalOpen}
+          onClose={() => setIsTaskInfoModalOpen(false)}
+          clientRequest={selectedRequest}
+          staffMembers={staffMembers}
+          onSubmitTask={handleCreateTaskFromInfoModal}
+        />
+      )}
 
-      {/* TaskDetailModal from TasksPage (used for approvals view) */}
       {showTaskDetailModal && selectedTaskForDetail && (
         <TaskDetailModal
             isOpen={showTaskDetailModal}
             onClose={() => { setShowTaskDetailModal(false); setSelectedTaskForDetail(null); }}
-            task={selectedTaskForDetail} // Ensure TaskDetailModal can handle this task structure
+            task={selectedTaskForDetail}
         />
       )}
     </div>
