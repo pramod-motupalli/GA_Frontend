@@ -15,25 +15,24 @@ import {
   User,
   LogOut,
   MessageCircle,
-  Bell, // Keep Bell
+  Bell,
   BadgeCheck,
   ChevronDown,
-  X // X icon is imported but not used explicitly in this snippet, keep if needed elsewhere
+  // X icon removed as it wasn't used as a Lucide component
 } from "lucide-react";
 
 import logo from "../assets/GA.png";
 import emptyDataIcon from "../assets/empty-data-icon.png";
-import WorkspaceCardTeamlead from './WorkspaceCardTeamlead'; 
-import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead"; 
-import AssignMembersModal from "../pages/AssignMembersModal"; 
-import FlowManager from "./FlowManager"; 
+import WorkspaceCardTeamlead from './WorkspaceCardTeamlead';
+import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
+import AssignMembersModal from "../pages/AssignMembersModal";
+import FlowManager from "./FlowManager";
 import NotificationsPage from './NotificationsPage';
 import TasksPage, {
   TaskDetailModal,
-  // initialDummyTasks as tasksPageInitialTasks, // Using API data instead of dummy
-} from "../pages/TasksPage"; // Ensure component exists
-import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable"; // Ensure component exists
-import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";    // Ensure component exists
+} from "../pages/TasksPage";
+import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
+import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
 const Dashboard = () => {
   const [clientRequests, setClientRequests] = useState([]); // This state now holds tasks
@@ -68,6 +67,34 @@ const Dashboard = () => {
       });
   }, []);
 
+  const handleAssignStaff = async (taskId, staffId) => {
+    if (!staffId) {
+        console.warn("No staff selected for assignment.");
+        return;
+    }
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:8000/api/users/tasks/${taskId}/assign-staff/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({ assigned_to: staffId }), // Ensure staffId is the correct format expected by backend (e.g., number or string)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Task assigned successfully:', data);
+        // Optionally, update local state to reflect assignment if backend doesn't auto-refresh or if needed for UI
+      } else {
+        console.error('Assignment failed:', data);
+        alert(`Assignment failed: ${data.detail || JSON.stringify(data)}`);
+      }
+    } catch (err) {
+      console.error('Assignment error:', err);
+      alert('An error occurred during assignment.');
+    }
+  };
 
   const [flowModalOpen, setFlowModalOpen] = useState(false);
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false); // Controls the main task detail/scope modal
@@ -93,11 +120,6 @@ const Dashboard = () => {
   const [clientRequestItemsPerPage, setClientRequestItemsPerPage] = useState(10);
   const [clientSearchTerm, setClientSearchTerm] = useState("");
   const [clientSortOption, setClientSortOption] = useState("");
-
-  // This state seems redundant if isRequestModalOpen is primary for task details.
-  // If it's for a different modal, ensure its usage is clear.
-  // For now, assuming isRequestModalOpen is the main one.
-  const [showRequestModal_Legacy, setShowRequestModal_Legacy] = useState(false);
 
   const [activeApprovalTab, setActiveApprovalTab] = useState("workspace");
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false); // For TaskDetailModal from TasksPage
@@ -128,7 +150,6 @@ const Dashboard = () => {
     if (!accessToken) return;
     const fetchStaffMembers = async () => {
       try {
-        // Use consistent auth (Bearer token) if that's your standard
         const response = await axios.get('http://localhost:8000/api/users/get-staff-members/', {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -159,7 +180,6 @@ const Dashboard = () => {
                 teamLead: staffToEdit.team_lead_id || "", // Assuming you have team_lead_id
                 designation: staffToEdit.designation || "",
             });
-            console.log(teamLead);
         } else {
             setFormData({ name: "", email: "", teamLead: "", designation: "" });
         }
@@ -195,23 +215,20 @@ const Dashboard = () => {
       const response = await axios({
         method: method,
         url: apiEndpoint,
-        data: { // Send data expected by backend (e.g., username, email, password, role, profile_data)
-            username: formData.name, 
-            // Assuming name is username for simplicity
+        data: { // Send data expected by backend
+            username: formData.name,
             email: formData.email,
             password: "123", // Handle password securely in a real app
-            role: "team_member", // Or derive from designation
+            role: "team_member",
             team_lead_id: formData.teamLead || null, // Send team lead ID
             designation: formData.designation
         },
-        
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
-        
       const savedStaffData = response.data; // Assuming backend returns the created/updated staff member
       const staffMemberForState = {
           id: savedStaffData.user?.id || savedStaffData.id,
@@ -251,10 +268,9 @@ const Dashboard = () => {
         return;
     }
     try {
-        // await axios.delete(`http://localhost:8000/api/users/staff/${memberToDelete.id}/delete/`, { // Placeholder for delete endpoint
-        //     headers: { Authorization: `Bearer ${accessToken}` }
-        // });
-        console.log(`Placeholder: API call to delete staff member ${memberToDelete.id}`); // Replace with actual API call
+        // TODO: Implement actual API call to delete staff member
+        console.log(`Placeholder: API call to delete staff member ${memberToDelete.id}. Replace this with actual API call.`);
+        // Example: await axios.delete(`http://localhost:8000/api/users/staff/${memberToDelete.id}/delete/`, { headers: { Authorization: `Bearer ${accessToken}` } });
 
         const updatedStaffList = staffMembers.filter((_, index) => index !== staffMemberOriginalIndex);
         setStaffMembers(updatedStaffList);
@@ -273,55 +289,37 @@ const Dashboard = () => {
 
   // Update task status via PATCH request
   const handleScopeStatusUpdate = async (taskId, newBackendStatus) => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!taskId || !accessToken) {
-      console.error("Task ID or access token is missing.");
-      alert("Could not update status: Critical information missing.");
-      return;
-    }
+  const accessToken = localStorage.getItem('accessToken');
+  if (!taskId || !accessToken) {
+    console.error("Task ID or access token is missing.");
+    alert("Could not update status: Critical information missing.");
+    return;
+  }
 
-    try {
-      const response = await axios.patch(
-        `http://localhost:8000/api/users/spoc/tasks/${taskId}/update-status/`,
-        { status: newBackendStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          }
+  try {
+    await axios.post(
+      `http://localhost:8000/api/users/spoc/tasks/${taskId}/update-status/`,
+      { status: newBackendStatus },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         }
-      );
-
-      if (response.status === 200 && response.data) {
-        const updatedTaskFromServer = response.data;
-        const updatedClientRequests = clientRequests.map((req) =>
-          req.id === taskId
-            ? {
-                ...req, // Keep existing frontend fields if any
-                id: updatedTaskFromServer.id,
-                clientName: updatedTaskFromServer.client_name || "N/A",
-                domain: updatedTaskFromServer.domain_name || "N/A",
-                raisedDate: updatedTaskFromServer.created_at ? updatedTaskFromServer.created_at.split('T')[0] : "N/A",
-                description: updatedTaskFromServer.description || "",
-                scopeStatus: updatedTaskFromServer.status, // Use the updated status from backend
-              }
-            : req
-        );
-        setClientRequests(updatedClientRequests);
-        setIsRequestModalOpen(false); // Close the task detail modal
-        alert("Task status updated successfully!");
-      } else {
-        throw new Error(`Server responded with ${response.status}`);
       }
-    } catch (error) {
-      const errorMsg = error.response?.data?.status?.[0] || // Specific validation error for status
-                       error.response?.data?.detail ||       // General DRF error
-                       error.message ||                      // Axios or network error
-                       "Failed to update task status.";
-      console.error("Error updating task status:", error.response ? error.response.data : errorMsg);
-      alert(`Error: ${errorMsg}`);
-    }
-  };
+    );
+
+    alert("Task status updated successfully!");
+    setIsRequestModalOpen(false); // Optional: Close modal
+  } catch (error) {
+    const errorMsg =
+      error.response?.data?.status?.[0] ||
+      error.response?.data?.detail ||
+      error.message ||
+      "Failed to update task status.";
+    console.error("Error updating task status:", errorMsg);
+    alert(`Error: ${errorMsg}`);
+  }
+};
 
 
   // --- Approvals Tab Logic ---
@@ -346,8 +344,8 @@ const Dashboard = () => {
   };
 
   const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
-    console.log(`${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}`);
-    // Implement API call to assign task
+    // TODO: Implement API call to assign task from approvals context
+    console.log(`Placeholder: ${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}. API call needed.`);
   };
 
 
@@ -394,7 +392,7 @@ const Dashboard = () => {
       <div className="w-full h-full bg-white rounded-xl p-6 shadow flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <div className="flex space-x-6">
-            {["Staff Member", "Client"].map((tab) => ( // "Client" tab needs its own UI if selected
+            {["Staff Member", "Client"].map((tab) => (
               <button key={tab} onClick={() => setSelectedTab(tab)}
                 className={`text-md font-medium pb-2 ${selectedTab === tab ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600 hover:text-blue-600"}`}>
                 {tab}
@@ -529,7 +527,6 @@ const Dashboard = () => {
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
-              {/* Placeholder for Filters button */}
               <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none text-sm">
                 Filters <Filter className="w-4 h-4" />
               </button>
@@ -565,9 +562,11 @@ const Dashboard = () => {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {task.scopeStatus ? (
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            task.scopeStatus.toLowerCase() === "In Scope" ? "bg-green-100 text-green-800" :
-                            task.scopeStatus.toLowerCase() === "Out Of Scope" ? "bg-blue-100 text-red-800" :
-                            task.scopeStatus.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-800" : 
+                            task.scopeStatus.toLowerCase() === "in_scope" ? "bg-green-100 text-green-800" : // Matched backend status
+                            task.scopeStatus.toLowerCase() === "out_of_scope" ? "bg-red-100 text-red-800" :   // Matched backend status
+                            task.scopeStatus.toLowerCase() === "pending" ? "bg-yellow-100 text-yellow-800" :
+                            task.scopeStatus.toLowerCase() === "in_progress" ? "bg-blue-100 text-blue-800" : // Added for in_progress
+                            task.scopeStatus.toLowerCase() === "completed" ? "bg-purple-100 text-purple-800" : // Added for completed
                             "bg-gray-100 text-gray-800" // Default for other statuses
                           }`}>
                             {task.scopeStatus.replace(/_/g, ' ')} {/* Display "in progress" from "in_progress" */}
@@ -575,9 +574,15 @@ const Dashboard = () => {
                         ) : ( <span className="text-gray-400 italic">N/A</span> )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <select className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-                          <option value="">Select Staff</option>
-                          {staffMembers.map(staff => ( <option key={staff.id} value={staff.id}>{staff.name}</option> ))}
+                        <select
+                          className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          onChange={(e) => handleAssignStaff(task.id, e.target.value)} // Corrected to e.target.value
+                          defaultValue="" // Add a defaultValue or ensure initial value is handled
+                        >
+                          <option value="" disabled>Select Staff</option>
+                          {staffMembers.map(staff => (
+                            <option key={staff.id} value={staff.id}>{staff.name}</option>
+                          ))}
                         </select>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -601,7 +606,6 @@ const Dashboard = () => {
                         </button>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {/* Placeholder for more actions */}
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
                     </tr>
@@ -642,7 +646,6 @@ const Dashboard = () => {
   const renderTaskDetailModal = () => {
     if (!isRequestModalOpen || !selectedRequest) return null;
 
-    // Determine title based on modalContentType (if used for different contexts)
     const modalTitle = modalContentType === 'request_approval_view'
         ? "Task Details (Approval View)"
         : "Task Details & Scope";
@@ -667,28 +670,22 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Scope/Status update buttons only if not in 'approval_view' or if actions allowed in approval view */}
           {modalContentType !== 'request_approval_view' && (
             <div>
               <h4 className="text-md font-semibold mb-3">Update Task Status (Scope Decision)</h4>
-              <div className="flex flex-wrap items-center gap-2"> {/* Use gap-2 and flex-wrap */}
-                <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'in_progress')}
+              <div className="flex flex-wrap items-center gap-2">
+                <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'in_scope')} // Example: "in_progress" backend status
                   className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 text-sm">
-                  In Scope
+                  In Scope 
                 </button>
-                <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'completed')}
+                <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'out_of_scope')} // Example: "completed" backend status (could be out of scope for new work)
                   className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm">
-                  Out Of Scope
+                  Out Of Scope 
                 </button>
-                {/* <button onClick={() => handleScopeStatusUpdate(selectedRequest.id, 'pending')}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 text-sm">
-                  Mark as "Pending"
-                </button> */}
-                {/* Add more status update buttons if needed, e.g., for 'out_of_scope' if it's a distinct status */}
+                {/* You might need different buttons for 'pending', 'out_of_scope' as distinct final states */}
               </div>
             </div>
           )}
-          {/* Close button for approval view */}
           {modalContentType === 'request_approval_view' && (
             <div className="mt-4 flex justify-end">
               <button onClick={() => setIsRequestModalOpen(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">
@@ -696,44 +693,6 @@ const Dashboard = () => {
               </button>
             </div>
           )}
-        </div>
-      </div>
-    );
-  };
-
-
-  // Legacy modal, if still needed for a different purpose.
-  // Ensure its state (showRequestModal_Legacy) is managed correctly.
-  const handleLegacyScopeDecision = (backendStatus) => {
-    if (!selectedRequest) return;
-    // This should ideally also call the PATCH request
-    // handleScopeStatusUpdate(selectedRequest.id, backendStatus);
-    console.log(`Legacy modal: Setting status to ${backendStatus} for task ${selectedRequest.id}. API call needed.`);
-    // For now, just updating local state if it's a different part of UI
-    const updatedRequests = clientRequests.map((req) =>
-      req.id === selectedRequest.id ? { ...req, scopeStatus: backendStatus } : req // This won't persist
-    );
-    setClientRequests(updatedRequests);
-    setShowRequestModal_Legacy(false);
-  };
-
-  const renderLegacyRequestModal = () => {
-    if (!showRequestModal_Legacy || !selectedRequest) return null;
-    return (
-      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-        <div className="bg-white rounded-lg p-6 w-[400px] max-w-full shadow-lg">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Legacy Request Description</h2>
-            <button onClick={() => setShowRequestModal_Legacy(false)} className="text-xl font-bold text-gray-600">X</button>
-          </div>
-          <p className="text-gray-700 text-sm mb-4">{selectedRequest?.description}</p>
-          <div className="mt-4">
-            <h3 className="text-md font-medium mb-2">View Scope (Legacy)</h3>
-            <div className="flex gap-4">
-              <button onClick={() => handleLegacyScopeDecision('in_progress')} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"> Within Scope </button>
-              <button onClick={() => handleLegacyScopeDecision('completed')} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"> Out of Scope </button>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -749,22 +708,21 @@ const Dashboard = () => {
           className={`px-5 py-3 text-sm font-medium focus:outline-none ${ activeApprovalTab === "workspace" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"}`}>
           Workspace Task Approvals
           <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-            {/* Placeholder for dynamic count. WorkspaceTaskApprovalsTable might need to provide this. */}
-            {/* e.g., workspaceApprovals.length */}02
+            {/* Placeholder for dynamic count. */}
+            02
           </span>
         </button>
         <button onClick={() => setActiveApprovalTab("team")}
           className={`px-5 py-3 text-sm font-medium focus:outline-none ${ activeApprovalTab === "team" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300"}`}>
           Team Task Approvals
-          {/* Add count for team approvals if available */}
         </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-6"> {/* Added p-6 for padding */}
+      <div className="flex-1 overflow-y-auto p-6">
         {activeApprovalTab === "workspace" ? (
           <WorkspaceTaskApprovalsTable
-            onViewTask={handleViewTaskApproval} // This is for generic task detail view from approvals
-            onViewClientRequest={handleViewClientRequestForApproval} // This is for specific "client request" (task) view
+            onViewTask={handleViewTaskApproval}
+            onViewClientRequest={handleViewClientRequestForApproval}
             staffMembers={staffMembers}
             onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Workspace')}
           />
@@ -772,7 +730,6 @@ const Dashboard = () => {
           <TeamTaskApprovalsTable
             staffMembers={staffMembers}
             onAssignTask={(approvalId, staffId) => handleAssignTaskInApproval(approvalId, staffId, 'Team')}
-            // Add onViewTask or similar if TeamTaskApprovalsTable needs to open a detail modal
           />
         )}
       </div>
@@ -784,15 +741,14 @@ const Dashboard = () => {
     switch (activeTab) {
       case "Dashboard": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Dashboard Content Area</div>;
       case "Create Member": return renderCreateMembersContent();
-      case "Client Requests": return renderClientRequestsTable(); // Renamed for clarity (shows tasks)
-      case "Tasks TODO": return <div className="bg-white rounded-xl shadow p-1"><TasksPage /></div>; // Added padding
+      case "Client Requests": return renderClientRequestsTable(); // Shows tasks
+      case "Tasks TODO": return <div className="bg-white rounded-xl shadow p-1"><TasksPage /></div>;
       case "Work Space": return <div className="bg-white rounded-xl shadow p-1"><WorkspaceCardTeamlead /></div>;
       case "Clients Services": return <div className="bg-white rounded-xl shadow p-1"><DomainHostingTableTeamlead /></div>;
       case "Approvals": return renderApprovalsContent();
-      case "Notifications": return <NotificationsPage />; // <<< ADDED
-      // Add cases for "Rise by Manager" and "Settings" if they have content
-      case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
-      case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
+      case "Notifications": return <NotificationsPage />;
+      case "Rise by Manager": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Rise by Manager Content Area</div>;
+      case "Settings": return <div className="text-center p-10 text-xl bg-white rounded-xl shadow">Settings Content Area</div>;
       default:
         return <div className="text-center pt-10 bg-white rounded-xl shadow">Select a menu item</div>;
     }
@@ -807,12 +763,12 @@ const Dashboard = () => {
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
             <img src={logo} alt="GA Digital Solutions" className="h-14 object-contain" />
           </div>
-          <div className="flex-1 px-4 py-4 space-y-2 overflow-y-auto"> {/* Added overflow-y-auto */}
+          <div className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
             {[
               { name: "Dashboard", icon: LayoutDashboard }, { name: "Create Member", icon: UserCheck },
               { name: "Work Space", icon: Briefcase }, { name: "Tasks TODO", icon: ClipboardList },
               { name: "Approvals", icon: BadgeCheck }, { name: "Rise by Manager", icon: Users },
-              { name: "Clients Services", icon: Briefcase }, { name: "Client Requests", icon: Clipboard }, // This tab title might need update if it's just tasks
+              { name: "Clients Services", icon: Briefcase }, { name: "Client Requests", icon: Clipboard },
               { name: "Settings", icon: Settings },
             ].map(({ name, icon: Icon }) => (
               <button key={name} onClick={() => setActiveTab(name)}
@@ -824,7 +780,7 @@ const Dashboard = () => {
         </div>
         <div className="p-4 border-t border-gray-200 space-y-3">
           <button className="w-full flex items-center gap-3 bg-blue-500 rounded-lg px-4 py-2 text-white font-semibold hover:bg-blue-600 transition">
-            <User className="w-4 h-4" /> Arjun {/* Placeholder for dynamic user name */}
+            <User className="w-4 h-4" /> Arjun
           </button>
           <button
             onClick={() => {
@@ -844,10 +800,9 @@ const Dashboard = () => {
         {/* Top Bar with Title and Icons */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">
-            {/* --- MODIFIED: Dynamic Page Title --- */}
-            {activeTab === "Notifications" ? "Notifications" : 
-             activeTab === "Dashboard" ? "welcome, Team lead" : // Example for dashboard
-             activeTab} {/* Fallback to activeTab name or set specific titles */}
+            {activeTab === "Notifications" ? "Notifications" :
+             activeTab === "Dashboard" ? "Welcome, Team Lead" :
+             activeTab}
           </h1>
           <div className="flex items-center gap-4">
             <div key="message-icon" className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
@@ -856,22 +811,21 @@ const Dashboard = () => {
                     <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">02</span>
                 </span>
             </div>
-            <div 
-              key="bell-icon" 
+            <div
+              key="bell-icon"
               className={`relative w-12 h-12 p-3 rounded-full outline outline-1 flex justify-center items-center cursor-pointer transition-colors duration-150
-                          ${activeTab === "Notifications" 
-                            ? "bg-blue-100 text-blue-600 border-blue-300 outline-blue-300" 
+                          ${activeTab === "Notifications"
+                            ? "bg-blue-100 text-blue-600 border-blue-300 outline-blue-300"
                             : "bg-white text-gray-800 border-neutral-300 outline-neutral-300 hover:bg-gray-100"
                           }`}
-              onClick={() => setActiveTab("Notifications")} 
+              onClick={() => setActiveTab("Notifications")}
             >
-                <Bell 
-                    className={`w-6 h-6 
-                                ${activeTab === "Notifications" ? "text-blue-600" : "text-gray-800"}`} 
+                <Bell
+                    className={`w-6 h-6
+                                ${activeTab === "Notifications" ? "text-blue-600" : "text-gray-800"}`}
                 />
                 <span className={`absolute top-1 right-1 flex h-5 w-5`}>
-                    <span className={`relative inline-flex rounded-full h-4 w-4 text-xs items-center justify-center
-                                    ${activeTab === "Notifications" ? "bg-blue-600 text-white" : "bg-blue-600 text-white"}`}> {/* Badge color remains blue for now */}
+                    <span className={`relative inline-flex rounded-full h-4 w-4 text-xs items-center justify-center bg-blue-600 text-white`}>
                         02
                     </span>
                 </span>
@@ -881,7 +835,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Content Area */}
         <div className="flex-1">{renderContent()}</div>
       </div>
@@ -889,7 +843,6 @@ const Dashboard = () => {
       {/* Modals Section */}
       {showModal && renderStaffModal()} {/* Staff creation/edit modal */}
       {isRequestModalOpen && renderTaskDetailModal()} {/* Main task detail/scope update modal */}
-      {showRequestModal_Legacy && renderLegacyRequestModal()} {/* Legacy modal if still needed */}
 
       {isAssignMembersModalOpen && (
         <AssignMembersModal
@@ -897,7 +850,7 @@ const Dashboard = () => {
           onClose={() => setIsAssignMembersModalOpen(false)}
           onSubmit={(assignmentsData) => {
             console.log("Assignments for task:", selectedRequest?.id, "Data:", assignmentsData);
-            // API call to save assignments
+            // TODO: API call to save assignments
             setIsAssignMembersModalOpen(false);
           }}
           staffList={staffMembers.map(member => ({ id: member.id, name: member.name }))}
@@ -914,7 +867,6 @@ const Dashboard = () => {
         staffList={staffMembers.map(member => ({ id: member.id, name: member.name }))}
         initialScreen={flowManagerInitialScreen}
         clientRequest={selectedRequest} // Pass the whole task object
-        // onSaveFlow={(flowData) => { /* API call to save flow data for selectedRequest.id */ }}
       />
 
       {/* TaskDetailModal from TasksPage (used for approvals view) */}
@@ -923,7 +875,6 @@ const Dashboard = () => {
             isOpen={showTaskDetailModal}
             onClose={() => { setShowTaskDetailModal(false); setSelectedTaskForDetail(null); }}
             task={selectedTaskForDetail} // Ensure TaskDetailModal can handle this task structure
-            // onUpdateTask={(updatedTaskData) => { /* Handle updates from this modal if needed */ }}
         />
       )}
     </div>
