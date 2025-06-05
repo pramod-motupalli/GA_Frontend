@@ -462,11 +462,11 @@ const CreateMembers = () => {
     { type: "text", placeholder: "Name", name: "name", required: true },
     { type: "email", placeholder: "Email id", name: "email", required: true },
   ], []);
-  // console.log(teamLeads);
+  console.log(teamLeads);
   const staffCreateFields = useMemo(() => [
     {
       type: "select", placeholder: "Select Team Lead",
-      options: teamLeads.map(tl => ({ value: tl.id, label: tl.username })),
+      options: teamLeads.map(tl => ({ value: tl.username, label: tl.name })),
       name: "team_lead", required: true
     },
     { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },
