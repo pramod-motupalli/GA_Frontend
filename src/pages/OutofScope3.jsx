@@ -58,20 +58,6 @@ export default function TaskTable() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold text-gray-700">Client Tasks</h1>
-        <div className="relative w-64">
-          <input
-            type="text"
-            placeholder="Search client name..."
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-        </div>
-      </div>
-
       <div className="overflow-auto rounded-lg border border-gray-200">
         <table className="min-w-full divide-y divide-gray-200 text-sm">
           <thead className="bg-gray-50">
@@ -91,7 +77,7 @@ export default function TaskTable() {
                 <td className="px-4 py-2">{item.client_name}</td>
                 <td className="px-4 py-2">{item.workspace_name}</td>
                 <td className="px-4 py-2">{item.domain_name || "N/A"}</td>
-                <td className="px-4 py-2">{item.due_date || "N/A"}</td>
+                <td className="px-4 py-2">{item.deadline || "N/A"}</td>
                 <td
                   className="px-4 py-2 text-blue-600 font-medium flex items-center gap-1 cursor-pointer"
                   onClick={() => setViewRequestModal(rowIndex)}
@@ -104,7 +90,7 @@ export default function TaskTable() {
                     style={{ padding: "6px 16px", height: "36px", minWidth: "100px" }}
                     onClick={() => setFlowStarted(rowIndex)}
                   >
-                    Create Flow
+                    View Flow
                   </button>
                 </td>
                 <td className="px-4 py-2 relative">
