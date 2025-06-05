@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react"; // Added useMemo
 import {
   LayoutDashboard,
   UserPlus,
@@ -29,13 +29,12 @@ const API_ENDPOINTS = {
   createTeamLead: "http://localhost:8000/api/users/teamlead/register/",
   createStaff: "http://localhost:8000/api/users/register-staff/",
   createAccountant: "http://localhost:8000/api/users/create-accountant/",
-  // Define UPDATE and DELETE endpoints - replace <id> with actual ID at runtime
-  updateTeamLead: (id) => `http://localhost:8000/api/users/team-lead/${id}/`, // Example
-  deleteTeamLead: (id) => `http://localhost:8000/api/users/team-lead/${id}/`, // Example
-  updateStaffMember: (id) => `http://localhost:8000/api/users/staff-member/${id}/`, // Example
-  deleteStaffMember: (id) => `http://localhost:8000/api/users/staff-member/${id}/`, // Example
-  updateAccountant: (id) => `http://localhost:8000/api/users/accountant/${id}/`, // Example
-  deleteAccountant: (id) => `http://localhost:8000/api/users/accountant/${id}/`, // Example
+  updateTeamLead: (id) => `http://localhost:8000/api/users/team-lead/${id}/`,
+  deleteTeamLead: (id) => `http://localhost:8000/api/users/team-lead/${id}/`,
+  updateStaffMember: (id) => `http://localhost:8000/api/users/staff-member/${id}/`,
+  deleteStaffMember: (id) => `http://localhost:8000/api/users/staff-member/${id}/`,
+  updateAccountant: (id) => `http://localhost:8000/api/users/accountant/${id}/`,
+  deleteAccountant: (id) => `http://localhost:8000/api/users/accountant/${id}/`,
 };
 
 const CreateMembers = () => {
@@ -52,14 +51,11 @@ const CreateMembers = () => {
   const [accountants, setAccountants] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const [activeRequestTab, setActiveRequestTab] = useState("Client Request"); // Unused
-  // const [activeSubTab, setActiveSubTab] = useState("Task Request"); // Unused
   const [requestSubTab, setRequestSubTab] = useState("customPlans");
 
-  // States for Edit/Delete
-  const [editingUser, setEditingUser] = useState(null); // { user: object, type: 'Team-leads' | 'Staff-members' | 'Accountant' }
+  const [editingUser, setEditingUser] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [cardOptionsMenuOpen, setCardOptionsMenuOpen] = useState(null); // Stores the ID of the user whose menu is open
+  const [cardOptionsMenuOpen, setCardOptionsMenuOpen] = useState(null);
 
 
   const tabs = ["Team-leads", "Staff-members", "Accountant", "Clients"];
@@ -83,9 +79,8 @@ const CreateMembers = () => {
     if (!res.ok) throw new Error(`Failed to fetch ${entityName}: ${res.statusText}`);
     const data = await res.json();
     const entities = Array.isArray(data) ? data : data.results || [];
-    // console.log(`Fetched ${entityName}:`, entities);
     setterFunction(entities);
-    return entities;
+    return entities; 
   };
 
   useEffect(() => {
@@ -123,25 +118,24 @@ const CreateMembers = () => {
     return response.json();
   };
 
-  const handleCreateSubmit = (createFn, fetchFn, setterFn, closeModalFn, entityName) => {
+  const handleCreateSubmit = (createFn, fetchFnWhichUpdatesState, closeModalFn, entityName) => {
     return async (userData) => {
       try {
         await createFn(userData);
         closeModalFn(false);
-        const updatedList = await fetchFn(); // Re-fetch the specific list
-        setterFn(updatedList); // Update state with the fresh list
+        await fetchFnWhichUpdatesState(); 
         alert(`${entityName} created successfully!`);
       } catch (error) {
         console.error(`${entityName} Creation failed:`, error);
-        alert(`Failed to create ${entityName}: ${error.message}`);
+        // alert(`Failed to create ${entityName}: ${error.message}`); // Alerting handled by modal or a generic error handler
+        throw error; 
       }
     };
   };
 
   const handleCreateTeamLeadSubmit = handleCreateSubmit(
     (data) => createEntityRequest(API_ENDPOINTS.createTeamLead, data, "Team Lead"),
-    () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads"), // Pass setter to fetchData
-    setTeamLeads,
+    () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads"),
     setShowCreateTeamLeadModal,
     "Team Lead"
   );
@@ -149,7 +143,6 @@ const CreateMembers = () => {
   const handleCreateStaffSubmit = handleCreateSubmit(
     (data) => createEntityRequest(API_ENDPOINTS.createStaff, data, "Staff Member"),
     () => fetchData(API_ENDPOINTS.fetchStaffMembers, setStaffMembers, "staff members"),
-    setStaffMembers,
     setShowCreateStaffModal,
     "Staff Member"
   );
@@ -157,29 +150,24 @@ const CreateMembers = () => {
   const handleCreateAccountantSubmit = handleCreateSubmit(
     (data) => createEntityRequest(API_ENDPOINTS.createAccountant, data, "Accountant"),
     () => fetchData(API_ENDPOINTS.fetchAccountants, setAccountants, "accountants"),
-    setAccountants,
     setShowCreateAccountantModal,
     "Accountant"
   );
 
-  // --- Edit User Logic ---
     const handleOpenEditModal = (userToEdit, userType) => {
-        // Pre-fill form data for the modal
-        // The 'name' and 'email' for TeamLead/Accountant usually come directly from user object.
-        // For Staff, 'name' and 'email' might be direct or under a 'user' sub-object.
-        // 'designation' is direct. 'team_lead' for staff needs to be the ID.
-
         let initialEditData = {
             name: userToEdit.name || userToEdit.user?.username || "",
             email: userToEdit.email || userToEdit.user?.email || "",
-            designation: userToEdit.designation || "",
         };
 
+        if (userType === "Team-leads" || userType === "Staff-members") {
+            initialEditData.designation = userToEdit.designation || "";
+        }
+        
         if (userType === "Staff-members") {
-            // For staff, team_lead should be the ID of the team lead
             initialEditData.team_lead = typeof userToEdit.team_lead === 'object' && userToEdit.team_lead !== null
                                        ? userToEdit.team_lead.id
-                                       : userToEdit.team_lead; // Assumes it's already an ID if not an object
+                                       : userToEdit.team_lead; 
         }
         
         setEditingUser({ user: { ...userToEdit, ...initialEditData }, type: userType });
@@ -187,30 +175,25 @@ const CreateMembers = () => {
         setCardOptionsMenuOpen(null);
     };
 
-
     const handleUpdateUserSubmit = async (updatedFormData) => {
         if (!editingUser) return;
 
         const { user: originalUser, type: userType } = editingUser;
         let updateUrl;
-        let fetchFn;
-        let setterFn;
+        let fetchFnToUpdateState; 
         let entityNameForAlert;
 
-        // Construct payload based on what backend expects
-        // The 'name' from form might need to be 'username' for backend user model
-        // 'email' is likely 'email'
-        // 'designation' is direct
-        // 'team_lead' for staff should be the ID
         const payload = {
-            name: updatedFormData.name, // Or username: updatedFormData.name if backend user model has username
+            name: updatedFormData.name, 
             email: updatedFormData.email,
-            designation: updatedFormData.designation,
         };
-        if (userType === "Staff-members") {
-            payload.team_lead = updatedFormData.team_lead; // Modal should provide this as ID
-        }
 
+        if (userType === "Team-leads" || userType === "Staff-members") {
+            payload.designation = updatedFormData.designation;
+        }
+        if (userType === "Staff-members") {
+            payload.team_lead = updatedFormData.team_lead; 
+        }
 
         try {
             const token = localStorage.getItem("accessToken");
@@ -218,25 +201,22 @@ const CreateMembers = () => {
 
             if (userType === "Team-leads") {
                 updateUrl = API_ENDPOINTS.updateTeamLead(originalUser.id);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads");
-                setterFn = setTeamLeads;
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads");
                 entityNameForAlert = "Team Lead";
             } else if (userType === "Staff-members") {
                 updateUrl = API_ENDPOINTS.updateStaffMember(originalUser.id);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchStaffMembers, setStaffMembers, "staff members");
-                setterFn = setStaffMembers;
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchStaffMembers, setStaffMembers, "staff members");
                 entityNameForAlert = "Staff Member";
             } else if (userType === "Accountant") {
                 updateUrl = API_ENDPOINTS.updateAccountant(originalUser.id);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchAccountants, setAccountants, "accountants");
-                setterFn = setAccountants;
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchAccountants, setAccountants, "accountants");
                 entityNameForAlert = "Accountant";
             } else {
                 throw new Error("Invalid user type for update.");
             }
             
             const response = await fetch(updateUrl, {
-                method: "PUT", // Or PATCH
+                method: "PUT", 
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify(payload),
             });
@@ -248,17 +228,16 @@ const CreateMembers = () => {
 
             setShowEditModal(false);
             setEditingUser(null);
-            const updatedList = await fetchFn();
-            setterFn(updatedList);
+            await fetchFnToUpdateState(); 
             alert(`${entityNameForAlert} updated successfully!`);
 
         } catch (error) {
             console.error("User Update failed:", error);
-            alert(`Failed to update ${entityNameForAlert || 'User'}: ${error.message}`);
+            // alert(`Failed to update ${entityNameForAlert || 'User'}: ${error.message}`); // Alerting handled by modal
+            throw error; 
         }
     };
 
-    // --- Delete User Logic ---
     const handleDeleteUser = async (userId, userType) => {
         setCardOptionsMenuOpen(null);
         if (!window.confirm(`Are you sure you want to delete this ${userType.replace('-', ' ').slice(0, -1)}? This action cannot be undone.`)) {
@@ -266,8 +245,7 @@ const CreateMembers = () => {
         }
 
         let deleteUrl;
-        let fetchFn;
-        let setterFn;
+        let fetchFnToUpdateState; 
         let entityNameForAlert;
 
         try {
@@ -276,18 +254,15 @@ const CreateMembers = () => {
 
             if (userType === "Team-leads") {
                 deleteUrl = API_ENDPOINTS.deleteTeamLead(userId);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads");
-                setterFn = setTeamLeads; // Not strictly needed if fetchFn updates state, but good for clarity
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchTeamLeads, setTeamLeads, "team leads");
                 entityNameForAlert = "Team Lead";
             } else if (userType === "Staff-members") {
                 deleteUrl = API_ENDPOINTS.deleteStaffMember(userId);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchStaffMembers, setStaffMembers, "staff members");
-                setterFn = setStaffMembers;
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchStaffMembers, setStaffMembers, "staff members");
                 entityNameForAlert = "Staff Member";
             } else if (userType === "Accountant") {
                 deleteUrl = API_ENDPOINTS.deleteAccountant(userId);
-                fetchFn = () => fetchData(API_ENDPOINTS.fetchAccountants, setAccountants, "accountants");
-                setterFn = setAccountants;
+                fetchFnToUpdateState = () => fetchData(API_ENDPOINTS.fetchAccountants, setAccountants, "accountants");
                 entityNameForAlert = "Accountant";
             } else {
                 throw new Error("Invalid user type for deletion.");
@@ -298,14 +273,12 @@ const CreateMembers = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            // APIs often return 204 No Content on successful DELETE
-            if (!response.ok && response.status !== 204) {
+            if (!response.ok && response.status !== 204) { 
                 const errorBody = await response.text().catch(() => "Unknown error body");
                 throw new Error(`Failed to delete ${entityNameForAlert}: ${response.status} ${response.statusText} - ${errorBody}`);
             }
             
-            const updatedList = await fetchFn(); // Re-fetch to update the list
-            // setterFn(updatedList); // fetchFn now handles setting state
+            await fetchFnToUpdateState(); 
             alert(`${entityNameForAlert} deleted successfully!`);
 
         } catch (error) {
@@ -314,13 +287,12 @@ const CreateMembers = () => {
         }
     };
 
-
   function getUsersByTab() {
     let users;
     if (activeTab === "Team-leads") users = teamLeads;
     else if (activeTab === "Staff-members") users = staffMembers;
     else if (activeTab === "Accountant") users = accountants;
-    else if (activeTab === "Clients") users = [];
+    else if (activeTab === "Clients") users = []; 
     else users = [];
 
     if (!searchTerm.trim()) return users;
@@ -330,12 +302,12 @@ const CreateMembers = () => {
       const name = user?.name?.toLowerCase() || user?.user?.username?.toLowerCase() || "";
       const email = user?.email?.toLowerCase() || user?.user?.email?.toLowerCase() || "";
       let staffTeamLeadNameInfo = "";
-      if (activeTab === 'Staff-members') {
-          const leadIdToFind = typeof user?.team_lead === 'object' ? user?.team_lead?.id : user?.team_lead;
+      if (activeTab === 'Staff-members' && user.team_lead) { 
+          const leadIdToFind = typeof user.team_lead === 'object' ? user.team_lead.id : user.team_lead;
           if (leadIdToFind) {
               const foundLead = teamLeads.find(lead => lead.id === leadIdToFind);
               staffTeamLeadNameInfo = foundLead?.name?.toLowerCase() || foundLead?.user?.username?.toLowerCase() || "";
-          } else if (user?.team_lead_name) {
+          } else if (user.team_lead_name) { 
             staffTeamLeadNameInfo = user.team_lead_name.toLowerCase();
           }
       }
@@ -387,7 +359,7 @@ const CreateMembers = () => {
         {usersToDisplay.map((item, index) => {
           const itemName = item?.name || item?.user?.username || "N/A";
           const itemEmail = item?.email || item?.user?.email || "N/A";
-          let itemDesignation = item?.designation || "";
+          let itemDesignation = item?.designation || ""; 
           let teamLeadDisplayInfo = null;
 
           if (activeTab === "Team-leads") {
@@ -395,30 +367,24 @@ const CreateMembers = () => {
           } else if (activeTab === "Staff-members") {
             itemDesignation = item.designation || "Staff Member";
             let leadName = "N/A";
-            if (typeof item.team_lead === 'object' && item.team_lead !== null) {
-                leadName = item.team_lead.name || item.team_lead.username || "N/A";
-            } else if (typeof item.team_lead === 'string' && item.team_lead) { 
-                const foundLead = teamLeads.find(lead => lead.id === item.team_lead);
-                leadName = foundLead?.name || foundLead?.user?.username || "N/A";
-            } else if (item.team_lead_name) { // If API returns a direct name like 'Sub: Arjun'
+            if (item.team_lead) { 
+
+                if (typeof item.team_lead === 'object' && item.team_lead !== null) {
+                    leadName = item.team_lead.name || item.team_lead.username || "N/A";
+                } else if (item.team_lead) { 
+                 
+                    const foundLead = teamLeads.find(lead => lead.id === item.team_lead);
+                    //  console.log(lead);
+                    leadName = foundLead?.name || foundLead?.user?.username || "N/A";
+                }
+            } else if (item.team_lead_name) { 
                 leadName = item.team_lead_name;
             }
-            // Check if the image shows "Sub: Arjun" or similar. If so, and your data for staff
-            // has a `sub_to` (or similar) field with the team lead's name, use that.
-            // Example: if item has item.sub_to_lead = "Arjun"
-            // leadName = item.sub_to_lead || leadName;
-            // For now, using the example from image "Sub: Arjun"
-            if(item.team_lead_name_display) { // You might need to add this field to your staff data from backend
-                teamLeadDisplayInfo = <p className="text-xs text-gray-500 mt-1">{item.team_lead_name_display}</p>;
-            } else {
-                teamLeadDisplayInfo = <p className="text-xs text-gray-500 mt-1">Team Lead: {leadName}</p>;
-            }
-
-
+            // teamLeadDisplayInfo = <p className="text-xs text-gray-500 mt-1">{item.team_lead_name_display || `Team Lead: ${leadName}`}</p>;
           } else if (activeTab === "Accountant") {
-            itemDesignation = "Accountant";
+            itemDesignation = "Accountant"; 
           } else if (activeTab === "Clients") {
-            itemDesignation = "Client";
+            itemDesignation = "Client"; 
           }
 
           return (
@@ -449,7 +415,7 @@ const CreateMembers = () => {
                     {cardOptionsMenuOpen === item.id && (
                         <div
                             className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()} 
                         >
                             <button
                                 onClick={() => handleOpenEditModal(item, activeTab)}
@@ -478,10 +444,8 @@ const CreateMembers = () => {
     );
   };
   
-  // Close options menu if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-        // A more robust check might involve checking if the click target is outside all card option menus
         if (cardOptionsMenuOpen && !event.target.closest('.relative > button > svg') && !event.target.closest('.absolute.right-0.mt-2')) {
             setCardOptionsMenuOpen(null);
         }
@@ -492,9 +456,62 @@ const CreateMembers = () => {
     };
   }, [cardOptionsMenuOpen]);
 
+  // ---- START: Memoized fields for Modals ----
+  const teamLeadCreateFields = useMemo(() => [
+    { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"], name: "designation", required: true },
+    { type: "text", placeholder: "Name", name: "name", required: true },
+    { type: "email", placeholder: "Email id", name: "email", required: true },
+  ], []);
+  // console.log(teamLeads);
+  const staffCreateFields = useMemo(() => [
+    {
+      type: "select", placeholder: "Select Team Lead",
+      options: teamLeads.map(tl => ({ value: tl.id, label: tl.username })),
+      name: "team_lead", required: true
+    },
+    { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },
+    { type: "text", placeholder: "Name", name: "name", required: true },
+    { type: "email", placeholder: "Email id", name: "email", required: true },
+  ], [teamLeads]); // Depends on teamLeads
+
+  const accountantCreateFields = useMemo(() => [
+    { type: "text", placeholder: "Name", name: "name", required: true },
+    { type: "email", placeholder: "Email id", name: "email", required: true },
+  ], []);
+
+  const editModalFields = useMemo(() => {
+    if (!editingUser) return []; 
+
+    if (editingUser.type === "Team-leads") {
+      return [
+        { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"], name: "designation", required: true },
+        { type: "text", placeholder: "Name", name: "name", required: true },
+        { type: "email", placeholder: "Email id", name: "email", required: true },
+      ];
+    } else if (editingUser.type === "Staff-members") {
+      return [
+        {
+          type: "select", placeholder: "Select Team Lead",
+          options: teamLeads.map(tl => ({ value: tl.id, label: tl.name || tl.user?.username || `Lead ID: ${tl.id}` })),
+          name: "team_lead", required: true
+        },
+        { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },
+        { type: "text", placeholder: "Name", name: "name", required: true },
+        { type: "email", placeholder: "Email id", name: "email", required: true },
+      ];
+    } else if (editingUser.type === "Accountant") { 
+      return [
+        { type: "text", placeholder: "Name", name: "name", required: true },
+        { type: "email", placeholder: "Email id", name: "email", required: true },
+      ];
+    }
+    return [];
+  }, [editingUser, teamLeads]); // Depends on editingUser (for its type) and teamLeads
+  // ---- END: Memoized fields for Modals ----
 
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden relative">
+      {/* Sidebar */}
       <aside className="w-60 bg-white rounded-2xl shadow-md outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div className="flex flex-col overflow-hidden">
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
@@ -531,6 +548,7 @@ const CreateMembers = () => {
         </div>
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         <header className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold capitalize">{selectedMenuItem}</h1>
@@ -587,7 +605,7 @@ const CreateMembers = () => {
                       ? "border-b-2 border-blue-500 font-semibold text-blue-600"
                       : "text-gray-600 hover:text-blue-500 hover:border-b-2 hover:border-gray-300"
                   }`}
-                > {tab} </button>
+                > {tab.replace('-', ' ')} </button>
               ))}
             </div>
             {renderUserList()}
@@ -624,11 +642,7 @@ const CreateMembers = () => {
       {showCreateTeamLeadModal && (
         <Modal
           title="Create Team Lead"
-          fields={[
-            { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"], name: "designation", required: true },
-            { type: "text", placeholder: "Name", name: "name", required: true },
-            { type: "email", placeholder: "Email id", name: "email", required: true },
-          ]}
+          fields={teamLeadCreateFields} 
           onClose={() => setShowCreateTeamLeadModal(false)}
           onSubmit={handleCreateTeamLeadSubmit}
           submitButtonText="Create User"
@@ -637,16 +651,7 @@ const CreateMembers = () => {
       {showCreateStaffModal && (
         <Modal
           title="Create Staff Member"
-          fields={[
-            {
-              type: "select", placeholder: "Select Team Lead",
-              options: teamLeads.map(tl => ({ value: tl.id, label: tl.name || tl.user?.username || `Lead ID: ${tl.id}` })),
-              name: "team_lead", required: true
-            },
-            { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },
-            { type: "text", placeholder: "Name", name: "name", required: true },
-            { type: "email", placeholder: "Email id", name: "email", required: true },
-          ]}
+          fields={staffCreateFields} 
           onClose={() => setShowCreateStaffModal(false)}
           onSubmit={handleCreateStaffSubmit}
           submitButtonText="Create User"
@@ -655,10 +660,7 @@ const CreateMembers = () => {
       {showCreateAccountantModal && (
         <Modal
           title="Create Accountant"
-          fields={[
-            { type: "text", placeholder: "Name", name: "name", required: true },
-            { type: "email", placeholder: "Email id", name: "email", required: true },
-          ]}
+          fields={accountantCreateFields} 
           onClose={() => setShowCreateAccountantModal(false)}
           onSubmit={handleCreateAccountantSubmit}
           submitButtonText="Create User"
@@ -669,26 +671,8 @@ const CreateMembers = () => {
       {showEditModal && editingUser && (
         <Modal
             title={`Edit ${editingUser.type.replace('-', ' ').slice(0, -1)}`}
-            initialData={editingUser.user} // Pass existing data to pre-fill
-            fields={
-                editingUser.type === "Team-leads" ? [
-                    { type: "select", placeholder: "Designation", options: ["Manager", "Senior Lead"], name: "designation", required: true },
-                    { type: "text", placeholder: "Name", name: "name", required: true },
-                    { type: "email", placeholder: "Email id", name: "email", required: true },
-                ] : editingUser.type === "Staff-members" ? [
-                    {
-                        type: "select", placeholder: "Select Team Lead",
-                        options: teamLeads.map(tl => ({ value: tl.id, label: tl.name || tl.user?.username || `Lead ID: ${tl.id}` })),
-                        name: "team_lead", required: true
-                    },
-                    { type: "select", placeholder: "Designation", options: ["Senior Staff", "Junior Staff", "UI/UX Designer"], name: "designation", required: true },
-                    { type: "text", placeholder: "Name", name: "name", required: true },
-                    { type: "email", placeholder: "Email id", name: "email", required: true },
-                ] : [ // Accountant
-                    { type: "text", placeholder: "Name", name: "name", required: true },
-                    { type: "email", placeholder: "Email id", name: "email", required: true },
-                ]
-            }
+            initialData={editingUser.user}
+            fields={editModalFields} 
             onClose={() => { setShowEditModal(false); setEditingUser(null); }}
             onSubmit={handleUpdateUserSubmit}
             submitButtonText="Update User"
@@ -698,28 +682,27 @@ const CreateMembers = () => {
   );
 };
 
+// Modal component remains the same as your last version
 const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButtonText = "Submit" }) => {
     const [formData, setFormData] = useState({});
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        // Initialize formData based on fields and initialData
         const data = fields.reduce((acc, field) => {
-            acc[field.name] = initialData[field.name] || (field.type === 'select' && field.options && field.options.length > 0 ? '' : "");
+            acc[field.name] = initialData[field.name] ?? (field.type === 'select' && field.options?.length > 0 ? '' : "");
             return acc;
         }, {});
-        setFormData(data);
-        setFormErrors({});
-        setIsSubmitting(false);
-    }, [/*fields, title, initialData*/]);
+        // setFormData(data);
+        // setFormErrors({}); 
+    }, [fields, initialData, title]);
 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (formErrors[name]) {
-      setFormErrors(prev => ({...prev, [name]: null}));
+    if (formErrors[name] || formErrors._general) { 
+      setFormErrors(prev => ({...prev, [name]: null, _general: null}));
     }
   };
 
@@ -727,8 +710,8 @@ const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButto
     const errors = {};
     let isValid = true;
     fields.forEach(field => {
-      if (field.required && !formData[field.name]) {
-        errors[field.name] = `${field.placeholder || field.name} is required.`;
+      if (field.required && !formData[field.name] && !(field.type === 'select' && formData[field.name] === '')) { 
+        errors[field.name] = `${field.placeholder || field.name.replace(/_/g, ' ')} is required.`;
         isValid = false;
       }
       if (field.type === 'email' && formData[field.name] && !/\S+@\S+\.\S+/.test(formData[field.name])) {
@@ -742,17 +725,18 @@ const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButto
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-          await onSubmit(formData);
-      } catch (submitError) {
-          console.error("Submission error in Modal:", submitError);
-           // Optionally, display a generic error message in the modal
-           setFormErrors(prev => ({ ...prev, _general: submitError.message || "An error occurred." }));
-      } finally {
-           setIsSubmitting(false);
-      }
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    setFormErrors(prev => ({ ...prev, _general: null })); 
+    try {
+        await onSubmit(formData);
+        // The calling component (CreateMembers) handles closing the modal on success.
+    } catch (submitError) {
+        console.error("Submission error in Modal:", submitError);
+        setFormErrors(prev => ({ ...prev, _general: submitError.message || "An unexpected error occurred." }));
+    } finally {
+        setIsSubmitting(false);
     }
   }
 
@@ -765,7 +749,7 @@ const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButto
         </div>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {formErrors._general && <p className="text-red-500 text-sm mb-2">{formErrors._general}</p>}
+            {formErrors._general && <p className="text-red-500 text-sm mb-3 p-2 bg-red-50 rounded-md">{formErrors._general}</p>}
             {fields.map((field) => (
               <div key={field.name}>
                 {field.type === "select" ? (
@@ -777,11 +761,11 @@ const Modal = ({ title, onClose, fields, onSubmit, initialData = {}, submitButto
                     required={field.required}
                   >
                     <option value="" disabled>{field.placeholder}</option>
-                    {field.options && field.options.map((opt, idx) => (
-                      opt ?
+                    {field.options?.map((opt, idx) => ( 
+                      opt ? 
                       (typeof opt === 'string' ?
                       <option key={idx} value={opt}>{opt}</option> :
-                      <option key={opt.value || idx} value={opt.value}>{opt.label}</option>)
+                      <option key={opt.value ?? idx} value={opt.value}>{opt.label}</option>) 
                       : null
                     ))}
                      {(!field.options || field.options.length === 0) && <option value="" disabled>No options available</option>}
