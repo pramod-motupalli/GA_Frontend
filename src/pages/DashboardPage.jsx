@@ -29,10 +29,10 @@ import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from './WorkspaceCardTeamlead';
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal";
-import FlowManager from "./FlowManager";
+// import FlowManager from "./FlowManager"; // Not used, can be removed if truly unused
 import NotificationsPage from './NotificationsPage';
 import TasksPage, {
-  TaskDetailModal as TasksPageDetailModal, // Renamed to avoid conflict if any
+  TaskDetailModal as TasksPageDetailModal, 
 } from "../pages/TasksPage";
 import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
 import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
@@ -44,7 +44,7 @@ const TaskInfoModal = ({ isOpen, onClose, clientRequest, staffMembers, onSubmitT
   const [assignedMembers, setAssignedMembers] = useState([
     { id: Date.now(), designation: '', memberName: '', timeEstimation: '', deadline: '' }
   ]);
-
+// const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // This state seems unused within TaskInfoModal itself
   useEffect(() => {
     if (isOpen) {
         setTaskPriority('Low');
@@ -290,8 +290,6 @@ const Dashboard = () => {
       });
   }, []);
 
-  // Function definition kept as per "dont remove any other remaining features"
-  // but it is no longer called from the client requests table.
   const handleAssignStaff = async (taskId, staffId) => {
     if (!staffId) {
         console.warn("No staff selected for assignment.");
@@ -309,7 +307,7 @@ const Dashboard = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        console.log('Task assigned successfully (from a different context if called):', data);
+        console.log('Task assigned successfully:', data);
       } else {
         console.error('Assignment failed:', data);
         alert(`Assignment failed: ${data.detail || JSON.stringify(data)}`);
@@ -320,7 +318,7 @@ const Dashboard = () => {
     }
   };
 
-  const [flowModalOpen, setFlowModalOpen] = useState(false);
+  // const [flowModalOpen, setFlowModalOpen] = useState(false); // Not used, can remove if FlowManager is not used
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false); 
   const [modalContentType, setModalContentType] = useState(null); 
   const [selectedRequest, setSelectedRequest] = useState(null); 
@@ -348,7 +346,7 @@ const Dashboard = () => {
   const [showTaskDetailModal, setShowTaskDetailModal] = useState(false); 
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null); 
 
-  const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default');
+  // const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default'); // Not used, can remove if FlowManager is not used
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -359,8 +357,7 @@ const Dashboard = () => {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
         setTeamLeads(response.data.map(lead => ({ id: lead.username, name: lead.username }))); 
-      } catch (error)
-{
+      } catch (error) {
         console.error("Failed to fetch team leads:", error.response ? error.response.data : error.message);
       }
     };
@@ -471,6 +468,7 @@ const Dashboard = () => {
       alert("Error: " + (error.response?.data?.detail || error.message || "Could not save staff member."));
     }
   };
+
  const openNewTaskInfoModal = (request) => {
     setSelectedRequest(request); 
     setIsTaskInfoModalOpen(true);
@@ -482,6 +480,7 @@ const Dashboard = () => {
     setIsTaskInfoModalOpen(false); 
   };
 
+  // Staff deletion - SINGLE DEFINITION
   const handleDelete = async (staffMemberOriginalIndex) => {
     if (staffMemberOriginalIndex === null || !staffMembers[staffMemberOriginalIndex]) return;
 
@@ -502,6 +501,7 @@ const Dashboard = () => {
         alert("Error deleting staff member.");
     }
   };
+  // DUPLICATE handleDelete was here - REMOVED
 
   const handleViewRequest = (request) => { 
     setSelectedRequest(request);
@@ -510,44 +510,43 @@ const Dashboard = () => {
   };
 
   const handleScopeStatusUpdate = async (taskId, newBackendStatus) => {
-  const accessToken = localStorage.getItem('accessToken');
-  if (!taskId || !accessToken) {
-    console.error("Task ID or access token is missing.");
-    alert("Could not update status: Critical information missing.");
-    return;
-  }
+    const accessToken = localStorage.getItem('accessToken');
+    if (!taskId || !accessToken) {
+      console.error("Task ID or access token is missing.");
+      alert("Could not update status: Critical information missing.");
+      return;
+    }
 
-  try {
-    await axios.post(
-      `http://localhost:8000/api/users/spoc/tasks/${taskId}/update-status/`,
-      { status: newBackendStatus },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+    try {
+      await axios.post(
+        `http://localhost:8000/api/users/spoc/tasks/${taskId}/update-status/`,
+        { status: newBackendStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          }
         }
-      }
-    );
-    
-    // Optimistically update UI or re-fetch
-    setClientRequests(prevRequests => 
-        prevRequests.map(req => 
-            req.id === taskId ? { ...req, scopeStatus: newBackendStatus } : req
-        )
-    );
+      );
+      
+      setClientRequests(prevRequests => 
+          prevRequests.map(req => 
+              req.id === taskId ? { ...req, scopeStatus: newBackendStatus } : req
+          )
+      );
 
-    alert("Task status updated successfully!");
-    setIsRequestModalOpen(false); 
-  } catch (error) {
-    const errorMsg =
-      error.response?.data?.status?.[0] ||
-      error.response?.data?.detail ||
-      error.message ||
-      "Failed to update task status.";
-    console.error("Error updating task status:", errorMsg);
-    alert(`Error: ${errorMsg}`);
-  }
-};
+      alert("Task status updated successfully!");
+      setIsRequestModalOpen(false); 
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.status?.[0] ||
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to update task status.";
+      console.error("Error updating task status:", errorMsg);
+      alert(`Error: ${errorMsg}`);
+    }
+  };
 
   const handleViewTaskApproval = (taskData) => { 
     if (taskData) {
@@ -694,7 +693,6 @@ const Dashboard = () => {
     );
   };
 
-  // Tasks Table (formerly Client Requests)
   const renderClientRequestsTable = () => {
     let processedRequests = [...clientRequests]; 
     if (clientSearchTerm) {
@@ -757,7 +755,7 @@ const Dashboard = () => {
         <div className="w-full bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">Tasks Overview</h2>
           <div className="overflow-x-auto rounded-lg border">
-            <table className="min-w-[950px] w-full table-auto"> {/* Adjusted min-width */}
+            <table className="min-w-[950px] w-full table-auto"> 
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3">Client Name</th> 
@@ -765,7 +763,6 @@ const Dashboard = () => {
                   <th className="px-4 py-3">Raised Date</th>
                   <th className="px-4 py-3">Task Details</th> 
                   <th className="px-4 py-3">Status</th> 
-                  {/* "Assigned To" header removed */}
                   <th className="px-4 py-3">Flow/Hours</th>  
                   <th className="px-4 py-3">Actions</th>
                 </tr>
@@ -795,7 +792,6 @@ const Dashboard = () => {
                           </span>
                         ) : ( <span className="text-gray-400 italic">N/A</span> )}
                       </td>
-                      {/* "Assigned To" data cell removed */}
                       <td className="px-4 py-3 whitespace-nowrap">
                          <button onClick={() => openNewTaskInfoModal(task)}
                           className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"> Create Flow </button>
@@ -804,7 +800,7 @@ const Dashboard = () => {
                         <button className="text-blue-500 underline hover:text-blue-700 text-xs"> Rise to manager </button>
                       </td>
                     </tr>
-                  )) : ( <tr> <td colSpan="7" className="text-center py-10 text-gray-500"> No tasks found. </td> </tr> )} {/* Adjusted colSpan */}
+                  )) : ( <tr> <td colSpan="7" className="text-center py-10 text-gray-500"> No tasks found. </td> </tr> )} 
               </tbody>
             </table>
           </div>
@@ -1048,7 +1044,7 @@ const Dashboard = () => {
       )}
 
       {showTaskDetailModal && selectedTaskForDetail && (
-        <TasksPageDetailModal // Using the renamed import
+        <TasksPageDetailModal 
             isOpen={showTaskDetailModal}
             onClose={() => { setShowTaskDetailModal(false); setSelectedTaskForDetail(null); }}
             task={selectedTaskForDetail}
