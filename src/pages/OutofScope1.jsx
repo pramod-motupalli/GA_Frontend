@@ -8,10 +8,13 @@ export default function ClientRequestTable() {
   const [error, setError] = useState(null);
   const [modalContent, setModalContent] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [spocDate, setSpocDate] = useState("");
+  const [dateError, setDateError] = useState("");
+
 
   useEffect(() => {
     axios
-      .get('http://localhost:8000/api/users/tasks/out-of-scope/')
+      .get("http://localhost:8000/api/users/tasks/out-of-scope/")
       .then((res) => {
         setTasks(res.data);
         setLoading(false);
@@ -25,26 +28,37 @@ export default function ClientRequestTable() {
   const openModal = (type, task) => {
     setSelectedTask(task);
     setModalContent(type);
+    setSpocDate(""); // Reset date when opening modal
   };
 
   const closeModal = () => {
     setModalContent(null);
     setSelectedTask(null);
+    setSpocDate("");
   };
 
-  const handleRaiseToSpoc = async (taskId) => {
-    try {
-      await axios.post(`http://localhost:8000/api/users/tasks/${taskId}/raise-to-spoc/`);
-      setTasks(prev =>
-        prev.map(task =>
-          task.id === taskId ? { ...task, raised_to_spoc: true } : task
-        )
-      );
-      closeModal();
-    } catch (err) {
-      console.error("Error raising to SPOC", err);
-    }
-  };
+const handleRaiseToSpoc = async (taskId) => {
+  if (!spocDate) {
+    setDateError("Please select a date.");
+    return;
+  }
+  try {
+    await axios.post(`http://localhost:8000/api/users/tasks/${taskId}/raise-to-spoc/`, {
+      deadline: spocDate,
+    });
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === taskId ? { ...task, raised_to_spoc: true } : task
+      )
+    );
+    closeModal();
+    setSpocDate("");
+    setDateError("");
+  } catch (err) {
+    console.error("Error raising to SPOC", err);
+  }
+};
+
 
   const approvalStatusDisplay = (status) => {
     switch (status) {
@@ -103,17 +117,11 @@ export default function ClientRequestTable() {
                 <td className="px-4 py-2">{task.domain_name || "N/A"}</td>
                 <td className="px-4 py-2">{new Date(task.created_at).toLocaleDateString()}</td>
 
-                <td
-                  className="px-4 py-2 text-blue-600 font-medium flex items-center gap-1 cursor-pointer"
-                  onClick={() => openModal("Request", task)}
-                >
+                <td className="px-4 py-2 text-blue-600 font-medium flex items-center gap-1 cursor-pointer" onClick={() => openModal("Request", task)}>
                   <Eye size={16} /> View Request
                 </td>
 
-                <td
-                  className="px-4 py-2 text-blue-600 font-bold cursor-pointer"
-                  onClick={() => openModal("Scope", task)}
-                >
+                <td className="px-4 py-2 text-blue-600 font-bold cursor-pointer" onClick={() => openModal("Scope", task)}>
                   View Scope
                 </td>
 
@@ -126,10 +134,7 @@ export default function ClientRequestTable() {
 
                 <td className="px-4 py-2">
                   {task.client_acceptance_status === "rejected" ? (
-                    <span
-                      className="text-blue-600 font-medium flex items-center gap-1 cursor-pointer"
-                      onClick={() => openModal("Reason", task)}
-                    >
+                    <span className="text-blue-600 font-medium flex items-center gap-1 cursor-pointer" onClick={() => openModal("Reason", task)}>
                       <Eye size={16} /> View Reason
                     </span>
                   ) : (
@@ -202,23 +207,27 @@ export default function ClientRequestTable() {
 
               {modalContent === "Reason" && (
                 <>
-                  {selectedTask.rejection_reason
-                    ? selectedTask.rejection_reason
-                    : "No rejection reason provided."}
+                  {selectedTask.rejection_reason || "No rejection reason provided."}
                 </>
               )}
 
               {modalContent === "Alert" && (
-                <>
-                  <p>This request is flagged for alert. Please take appropriate action.</p>
-                </>
+                <p>This request is flagged for alert. Please take appropriate action.</p>
               )}
 
               {modalContent === "SPOC" && (
                 <>
-                  <p>This request will be raised to SPOC for further processing.</p>
+                  <p className="mb-2">This request will be raised to SPOC for further processing.</p>
+                  <label className="block mb-2 font-medium">Select SPOC Deadline:</label>
+                  <input
+                    type="date"
+                    className="w-full mb-4 px-3 py-2 border rounded text-sm"
+                    value={spocDate}
+                    onChange={(e) => setSpocDate(e.target.value)}
+                    required
+                  />
                   <button
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     onClick={() => handleRaiseToSpoc(selectedTask.id)}
                   >
                     Confirm Raise to SPOC
