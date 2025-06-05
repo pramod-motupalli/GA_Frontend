@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Eye, ChevronDown, Search } from "lucide-react";
 import user1 from "../assets/user1.png";
 import user2 from "../assets/user2.png";
@@ -14,19 +15,25 @@ const USERS = [
   { name: "User 5", icon: user5 },
 ];
 
-const data = Array.from({ length: 12 }, (_, i) => ({
-  clientName: `Client ${i + 1}`,
-  workspace: "GADOMES",
-  domainName: "Sampledomain.com",
-  deadline: "04-05-2025",
-}));
-
 export default function TaskTable() {
-  const [assignedUsers, setAssignedUsers] = useState(data.map(() => []));
+  const [tasks, setTasks] = useState([]);
+  const [assignedUsers, setAssignedUsers] = useState([]);
   const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null);
   const [viewRequestModal, setViewRequestModal] = useState(null);
   const [flowStarted, setFlowStarted] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/users/tasks/raised-to-spoc/") // Your Django endpoint
+      .then((res) => {
+        setTasks(res.data);
+        setAssignedUsers(res.data.map(() => [])); // Initialize assignment
+      })
+      .catch((err) => {
+        console.error("Error fetching tasks:", err);
+      });
+  }, []);
 
   const toggleUser = (rowIndex, user) => {
     setAssignedUsers((prev) => {
@@ -45,8 +52,8 @@ export default function TaskTable() {
     });
   };
 
-  const filteredData = data.filter(item =>
-    item.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTasks = tasks.filter((item) =>
+    item.client_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -70,7 +77,7 @@ export default function TaskTable() {
           <thead className="bg-gray-50">
             <tr className="text-gray-700 text-left">
               <th className="px-4 py-2 font-semibold">Client Name</th>
-              <th className="px-4 py-2 font-semibold">Workspace</th>
+              <th className="px-4 py-2 font-semibold">Workspace Name</th>
               <th className="px-4 py-2 font-semibold">Domain Name</th>
               <th className="px-4 py-2 font-semibold">Deadline</th>
               <th className="px-4 py-2 font-semibold">Client Request</th>
@@ -79,12 +86,12 @@ export default function TaskTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {filteredData.map((item, rowIndex) => (
+            {filteredTasks.map((item, rowIndex) => (
               <tr key={rowIndex} className="whitespace-nowrap text-gray-700">
-                <td className="px-4 py-2">{item.clientName}</td>
-                <td className="px-4 py-2">{item.workspace}</td>
-                <td className="px-4 py-2">{item.domainName}</td>
-                <td className="px-4 py-2">{item.deadline}</td>
+                <td className="px-4 py-2">{item.client_name}</td>
+                <td className="px-4 py-2">{item.workspace_name}</td>
+                <td className="px-4 py-2">{item.domain_name || "N/A"}</td>
+                <td className="px-4 py-2">{item.due_date || "N/A"}</td>
                 <td
                   className="px-4 py-2 text-blue-600 font-medium flex items-center gap-1 cursor-pointer"
                   onClick={() => setViewRequestModal(rowIndex)}
@@ -147,9 +154,14 @@ export default function TaskTable() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-md shadow-lg w-[600px] max-w-full">
             <h2 className="text-xl font-semibold mb-4">Client Request Details</h2>
-            <p>This is a sample request from the client regarding the domain and workspace setup.</p>
+            <p>{tasks[viewRequestModal]?.description || "No description provided."}</p>
             <div className="text-right mt-4">
-              <button onClick={() => setViewRequestModal(null)} className="px-4 py-2 bg-blue-600 text-white rounded-md">Close</button>
+              <button
+                onClick={() => setViewRequestModal(null)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -160,7 +172,10 @@ export default function TaskTable() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-md shadow-lg w-[500px] text-center">
             <h2 className="text-xl font-semibold mb-2">Flow Started</h2>
-            <p className="mb-4">Workflow has been successfully started for <strong>{filteredData[flowStarted].clientName}</strong>.</p>
+            <p className="mb-4">
+              Workflow has been successfully started for{" "}
+              <strong>{filteredTasks[flowStarted].client_name}</strong>.
+            </p>
             <button
               onClick={() => setFlowStarted(null)}
               className="bg-blue-600 text-white px-4 py-2 rounded-md"
