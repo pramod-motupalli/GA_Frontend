@@ -1,23 +1,23 @@
-import React, { useState, useRef, useCallback } from 'react'; 
+import React, { useState, useRef, useCallback } from 'react';
 import {
-  Search, 
-  ChevronDown, 
-  Filter, 
-  MoreHorizontal, 
-  Plus, 
+  Search,
+  ChevronDown,
+  Filter,
+  MoreHorizontal,
+  Plus,
   MoreVertical,
-  MessageSquare, 
-  Paperclip, 
-  Flag, 
-  Clock, 
-  ArrowLeft, 
-  Link as LinkIcon, 
-  MessageSquarePlus, 
-  FileText, 
-  CalendarDays, 
+  MessageSquare,
+  Paperclip,
+  Flag,
+  Clock,
+  ArrowLeft,
+  Link as LinkIcon,
+  MessageSquarePlus,
+  FileText,
+  CalendarDays,
   X,
-  UploadCloud, 
-  Trash2,      
+  UploadCloud,
+  Trash2,
 } from 'lucide-react';
 
 export const TASK_IMAGE_URL = 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGRhdGElMjBmbG93fGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=600&q=60';
@@ -38,57 +38,78 @@ export const initialDummyTasks = [ // Renamed to initialDummyTasks
   },
   {
     id: 'b2', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
+    title: 'Setup project environment', description: 'Configure the development, staging, and production environments.',
+    image: null, // No image for this one
     assignees: ['#FF5733', '#FFC300', '#C70039'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
+    dateInfo: '25/03/22', timeInfo: '10:00 AM', daysLeft: 'D-5',
+    comments: 5, files: 2, tags: ['Development', 'Infrastructure']
+  },
+  // ... (other tasks from your original list)
+    // TO-DO
+  {
+    id: 't1', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'High',
+    title: 'Design new homepage', description: 'Create mockups and prototypes for the new homepage design.',
+    image: TASK_IMAGE_URL,
+    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
+    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
+    comments: 12, files: 0, tags: ['Designing', 'UX']
   },
   {
+    id: 't2', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Low',
+    title: 'Write API documentation', description: 'Document all endpoints for the new user authentication API.',
+    image: null,
+    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F'],
+    dateInfo: '28/03/22', timeInfo: '02:30 PM', daysLeft: 'D-8',
+    comments: 8, files: 1, tags: ['Development', 'Documentation']
+  },
+  // Processing
+  {
+    id: 'p1', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'High',
+    title: 'Develop login feature', description: 'Implement the user login functionality with email and password.',
+    image: TASK_IMAGE_URL,
+    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
+    dateInfo: '22/03/22', timeInfo: '11:15 AM', daysLeft: 'D-2',
+    comments: 15, files: 3, tags: ['Development', 'Backend']
+  },
+  // ... other tasks
+  // Review
+  {
+    id: 'r1', column: 'Review', workspaceName: 'Workspace_Name', priority: 'High',
+    title: 'Review homepage design', description: 'Provide feedback on the new homepage mockups.',
+    image: TASK_IMAGE_URL,
+    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
+    dateInfo: '23/03/22', timeInfo: '03:00 PM', daysLeft: 'D-3',
+    comments: 10, files: 0, tags: ['Designing', 'Feedback']
+  },
+  // Done
+  {
+    id: 'd1', column: 'Done', workspaceName: 'Workspace_Name', priority: 'High',
+    title: 'Deploy v1.0 to production', description: 'Release the first version of the application.',
+    image: TASK_IMAGE_URL,
+    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
+    dateInfo: '20/03/22', timeInfo: '05:00 PM', daysLeft: 'Done',
+    comments: 20, files: 5, tags: ['Deployment', 'Release']
+  },
+  // Adding more tasks for better testing, ensuring all original tasks are present
+  {
     id: 'b3', column: 'Backlog', workspaceName: 'Workspace_Name', priority: 'Medium', escalation: true,
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Improve API performance', description: 'Optimize database queries for faster API response.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Designing', 'Development']
   },
-  // TO-DO
-  {
-    id: 't1', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
-  },
-  {
-    id: 't2', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Low', 
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-18',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
-  },
   {
     id: 't3', column: 'TO-DO', workspaceName: 'Workspace_Name', priority: 'Medium',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'User testing session setup', description: 'Organize and prepare for the upcoming user testing sessions.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Designing', 'Content Writing']
   },
-  // Processing
-  {
-    id: 'p1', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
-  },
   {
     id: 'p2', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Fix bugs from QA', description: 'Address issues reported by the QA team from the last sprint.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -96,24 +117,15 @@ export const initialDummyTasks = [ // Renamed to initialDummyTasks
   },
   {
     id: 'p3', column: 'Processing', workspaceName: 'Workspace_Name', priority: 'Medium', escalation: true,
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Integrate payment gateway', description: 'Add Stripe or PayPal integration for subscriptions.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Designing', 'Development']
   },
-  // Review
-  {
-    id: 'r1', column: 'Review', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
-  },
   {
     id: 'r2', column: 'Review', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Code review for login feature', description: 'Review the pull request for the login functionality.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -121,24 +133,15 @@ export const initialDummyTasks = [ // Renamed to initialDummyTasks
   },
   {
     id: 'r3', column: 'Review', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Check API documentation accuracy', description: 'Verify the API docs are complete and correct.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
     comments: 12, files: 0, tags: ['Development', 'Content Writing']
   },
-  // Done
-  {
-    id: 'd1', column: 'Done', workspaceName: 'Workspace_Name', priority: 'High',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
-    image: TASK_IMAGE_URL,
-    assignees: ['#FF5733', '#FFC300', '#C70039', '#900C3F', '#581845'],
-    dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-1',
-    comments: 12, files: 0, tags: ['Designing', 'Development', 'Content Writing']
-  },
   {
     id: 'd2', column: 'Done', workspaceName: 'Workspace_Name', priority: 'Low',
-    title: 'Improve cards readability', description: 'As a team license owner, I want to use multiplied limits',
+    title: 'Initial project setup', description: 'Basic project structure and dependencies configured.',
     image: TASK_IMAGE_URL,
     assignees: ['#FF5733', '#FFC300'],
     dateInfo: '21/03/22', timeInfo: '06:45 PM', daysLeft: 'D-2',
@@ -146,10 +149,18 @@ export const initialDummyTasks = [ // Renamed to initialDummyTasks
   },
 ];
 
+
 export const tagStyleMapping = {
   Designing: { dot: 'bg-pink-500', text: 'text-pink-700' },
   Development: { dot: 'bg-blue-500', text: 'text-blue-700' },
   'Content Writing': { dot: 'bg-green-500', text: 'text-green-700' },
+  'Infrastructure': { dot: 'bg-purple-500', text: 'text-purple-700' },
+  'UX': { dot: 'bg-yellow-500', text: 'text-yellow-700' },
+  'Documentation': { dot: 'bg-indigo-500', text: 'text-indigo-700' },
+  'Backend': { dot: 'bg-teal-500', text: 'text-teal-700' },
+  'Feedback': { dot: 'bg-orange-500', text: 'text-orange-700' },
+  'Deployment': { dot: 'bg-lime-500', text: 'text-lime-700' },
+  'Release': { dot: 'bg-cyan-500', text: 'text-cyan-700' },
 };
 
 export const priorityStyleMapping = {
@@ -164,8 +175,8 @@ export const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSubmit) onSubmit(); 
-    onClose(); 
+    if (onSubmit) onSubmit();
+    onClose();
   };
 
   return (
@@ -182,15 +193,15 @@ export const SmallPopup = ({ isOpen, onClose, title, children, onSubmit }) => {
             {children}
           </div>
           <div className="mt-6 flex justify-end space-x-2">
-            <button 
-              type="button" 
-              onClick={onClose} 
+            <button
+              type="button"
+              onClick={onClose}
               className="px-4 py-2 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-md border border-gray-300"
             >
               cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="px-4 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
             >
               Submit
@@ -254,7 +265,7 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
     setSelectedFiles([]);
     onClose();
   };
-  
+
   const handleCancel = () => {
     setSelectedFiles([]);
     onClose();
@@ -279,7 +290,7 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={!isDragging ? handleBrowseClick : undefined}
+          onClick={!isDragging ? handleBrowseClick : undefined} // Make the whole area clickable if not dragging
         >
           <input
             type="file"
@@ -290,7 +301,7 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
           />
           <UploadCloud size={48} className="mx-auto text-gray-400 mb-2" />
           <p className="text-sm text-gray-600">
-            Drag & drop files here, or <span className="text-blue-600 font-semibold cursor-pointer" onClick={handleBrowseClick}>click to browse</span>
+            Drag & drop files here, or <span className="text-blue-600 font-semibold cursor-pointer" onClick={(e) => {e.stopPropagation(); handleBrowseClick();}}>click to browse</span>
           </p>
           <p className="text-xs text-gray-500 mt-1">Max. file size: 5MB each (Example)</p>
         </div>
@@ -314,15 +325,15 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
         )}
 
         <div className="mt-6 flex justify-end space-x-3">
-          <button 
-            type="button" 
-            onClick={handleCancel} 
+          <button
+            type="button"
+            onClick={handleCancel}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-md border border-gray-300"
           >
             Cancel
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={handleConfirm}
             disabled={selectedFiles.length === 0}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -456,20 +467,19 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
 };
 
 // --- TaskCard Component ---
-const TaskCard = ({ task, onCardClick, onDragStartItem, onDragEndItem, isBeingDragged }) => { // Added D&D props
+const TaskCard = ({ task, onCardClick, onDragStartItem, onDragEndItem, isBeingDragged }) => {
   const priorityStyles = priorityStyleMapping[task.priority] || {};
 
   return (
     <div
-      draggable="true" // Make the card draggable
-      onDragStart={onDragStartItem} // Attach drag start handler
-      onDragEnd={onDragEndItem}     // Attach drag end handler
-      className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-grab hover:shadow-md transition-shadow 
+      draggable="true"
+      onDragStart={onDragStartItem}
+      onDragEnd={onDragEndItem}
+      className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-grab hover:shadow-md transition-shadow
                   ${task.selected ? 'ring-2 ring-blue-500 shadow-lg' : 'border border-gray-200'}
-                  ${isBeingDragged ? 'opacity-50 ring-2 ring-blue-400 scale-105' : ''}`} // Style for dragged item + cursor changed to grab
+                  ${isBeingDragged ? 'opacity-50 ring-2 ring-blue-400 scale-105' : ''}`}
       onClick={() => {
-        // Prevent click if a drag operation might be starting (this is a simple check, browser often handles this)
-        if (!isBeingDragged) { // Only open modal if not currently in a drag state (might need more robust check)
+        if (!isBeingDragged) {
           onCardClick(task);
         }
       }}
@@ -541,20 +551,15 @@ const TaskCard = ({ task, onCardClick, onDragStartItem, onDragEndItem, isBeingDr
 // --- TasksPage Component (Main page component) ---
 const TasksPage = () => {
   const columns = ['Backlog', 'TO-DO', 'Processing', 'Review', 'Done'];
-  const [tasks, setTasks] = useState(initialDummyTasks); // Use state for tasks
+  const [tasks, setTasks] = useState(initialDummyTasks);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTaskForModal, setSelectedTaskForModal] = useState(null);
 
-  // State for drag and drop
-  const [draggedTask, setDraggedTask] = useState(null); // ID of the task being dragged
-  const [draggingOverColumn, setDraggingOverColumn] = useState(null); // Name of column being dragged over
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [draggingOverColumn, setDraggingOverColumn] = useState(null);
 
   const handleCardClick = (task) => {
-    // A safety check: if a drag was just completed, draggedTask might still be set briefly.
-    // However, standard D&D usually prevents click events on the source after a successful drag.
-    // This check ensures modal doesn't open if for some reason click fires during/after drag.
-    if (draggedTask === task.id) return; 
-
+    if (draggedTask === task.id) return;
     setSelectedTaskForModal(task);
     setIsModalOpen(true);
   };
@@ -564,26 +569,22 @@ const TasksPage = () => {
     setSelectedTaskForModal(null);
   };
 
-  // --- Drag and Drop Handlers ---
   const handleDragStart = (e, taskId) => {
     e.dataTransfer.setData('taskId', taskId);
     setDraggedTask(taskId);
-    // Optional: add a class to body to indicate dragging is happening
-    // document.body.classList.add('dragging');
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault();
   };
 
   const handleDragEnterColumn = (columnName) => {
-    if (draggedTask) { // Only highlight if a task is actually being dragged
+    if (draggedTask) {
         setDraggingOverColumn(columnName);
     }
   };
 
   const handleDragLeaveColumn = (e, columnName) => {
-    // Check if the mouse is truly leaving the column or just moving over a child element
     if (e.currentTarget.contains(e.relatedTarget)) {
         return;
     }
@@ -596,26 +597,29 @@ const TasksPage = () => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
     
-    // Check if the task exists and is not already in the target column (optional optimization)
     const taskToMove = tasks.find(t => t.id === taskId);
+
     if (taskToMove && taskToMove.column !== targetColumnName) {
+        const originalColumn = taskToMove.column; // Store original column before update
+
         setTasks(prevTasks =>
             prevTasks.map(task =>
             task.id === taskId ? { ...task, column: targetColumnName } : task
             )
         );
+        
+        // --- ALERT POPUP ---
+        // Use taskToMove.title for better user experience, or just taskId if preferred
+        alert(`Task '${taskToMove.title}' (ID: ${taskId}) has shifted from '${originalColumn}' to '${targetColumnName}' stage.`);
     }
-    // Cleanup
+    
     setDraggedTask(null);
     setDraggingOverColumn(null);
-    // document.body.classList.remove('dragging');
   };
   
   const handleDragEnd = () => {
-    // This event fires on the source element after the drag operation.
     setDraggedTask(null);
-    setDraggingOverColumn(null); // Ensure highlighting is cleared
-    // document.body.classList.remove('dragging');
+    setDraggingOverColumn(null);
   };
 
 
@@ -658,7 +662,7 @@ const TasksPage = () => {
             <div
               key={columnName}
               className={`rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full transition-colors duration-150
-                          ${draggingOverColumn === columnName ? 'bg-blue-100 border-2 border-blue-400' : 'bg-gray-100 border-2 border-transparent'}`} // Dynamic styling for drop zone
+                          ${draggingOverColumn === columnName ? 'bg-blue-100 border-2 border-blue-400' : 'bg-gray-100 border-2 border-transparent'}`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, columnName)}
               onDragEnter={() => handleDragEnterColumn(columnName)}
@@ -676,16 +680,16 @@ const TasksPage = () => {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-h-[calc(100vh-200px)]">
-                {tasks // Use state variable 'tasks' here
+                {tasks
                   .filter(task => task.column === columnName)
                   .map(task => (
                     <TaskCard
                         key={task.id}
                         task={task}
                         onCardClick={handleCardClick}
-                        onDragStartItem={(e) => handleDragStart(e, task.id)} // Pass handler
-                        onDragEndItem={handleDragEnd} // Pass handler
-                        isBeingDragged={draggedTask === task.id} // Pass boolean
+                        onDragStartItem={(e) => handleDragStart(e, task.id)}
+                        onDragEndItem={handleDragEnd}
+                        isBeingDragged={draggedTask === task.id}
                     />
                   ))}
                   {tasks.filter(task => task.column === columnName).length === 0 && (
