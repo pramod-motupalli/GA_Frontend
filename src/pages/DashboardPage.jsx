@@ -29,9 +29,11 @@ import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from "./WorkspaceCardTeamlead";
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal";
-import FlowManager from "./FlowManager";
+// import FlowManager from "./FlowManager"; // Not used, can be removed if truly unused
 import NotificationsPage from "./NotificationsPage";
-import TasksPage, { TaskDetailModal } from "../pages/TasksPage";
+import TasksPage, {
+    TaskDetailModal as TasksPageDetailModal,
+} from "../pages/TasksPage";
 import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
 import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
@@ -52,11 +54,10 @@ const TaskInfoModal = ({
             memberName: "",
             timeEstimation: "",
             deadline: "",
-        }, // Added unique ID for key prop
+        },
     ]);
-    const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
+    // const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // This state seems unused within TaskInfoModal itself
     useEffect(() => {
-        // Reset form when modal opens or clientRequest changes, if desired
         if (isOpen) {
             setTaskPriority("Low");
             setTaskDeadline("");
@@ -105,7 +106,6 @@ const TaskInfoModal = ({
             );
             setAssignedMembers(updatedMembers);
         } else {
-            // Clear the fields of the last row
             setAssignedMembers([
                 {
                     id: Date.now(),
@@ -127,12 +127,11 @@ const TaskInfoModal = ({
             overallDeadline: taskDeadline,
             members: assignedMembers.filter(
                 (m) => m.designation && m.memberName
-            ), // Only submit members with designation and name
+            ),
         };
         if (onSubmitTask) {
             onSubmitTask(taskData);
         }
-        // onClose(); // Parent will handle closing after submission logic
     };
 
     return (
@@ -192,7 +191,7 @@ const TaskInfoModal = ({
                 <div className="mb-8">
                     <label
                         htmlFor="taskOverallDeadline"
-                        className="block text-sm font-medium text-gray-700 sr-only"
+                        className="block text-sm font-medium text-gray-700"
                     >
                         Task Deadline
                     </label>
@@ -203,7 +202,6 @@ const TaskInfoModal = ({
                             value={taskDeadline}
                             onChange={(e) => setTaskDeadline(e.target.value)}
                             className="w-full pl-3 pr-10 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            placeholder="Task deadline: DD-MM-YYYY" // Note: placeholder might not show for type="date"
                         />
                         <Calendar
                             size={18}
@@ -350,7 +348,7 @@ const TaskInfoModal = ({
                             </div>
 
                             <div className="md:col-span-1 flex items-end justify-end md:justify-start pb-0.5">
-                                {assignedMembers.length > 0 && ( // Changed condition to always show if at least one row
+                                {assignedMembers.length > 0 && (
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -395,21 +393,20 @@ const TaskInfoModal = ({
         </div>
     );
 };
+
 const Dashboard = () => {
-    const [clientRequests, setClientRequests] = useState([]); // This state now holds tasks
+    const [clientRequests, setClientRequests] = useState([]);
     const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false);
-    // --- useEffect to fetch initial tasks ---
+
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
             console.error("Access token not found. Please login.");
-            // Optionally, redirect to login or display a message to the user
             return;
         }
 
         axios
             .get("http://localhost:8000/api/users/spoc/tasks/", {
-                // Ensure this endpoint is correct
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
@@ -417,13 +414,13 @@ const Dashboard = () => {
             .then((response) => {
                 const formattedData = response.data.map((item) => ({
                     id: item.id,
-                    clientName: item.client_name || "N/A", // From TaskDetailSerializer
-                    domain: item.domain_name || "N/A", // From TaskDetailSerializer
+                    clientName: item.client_name || "N/A",
+                    domain: item.domain_name || "N/A",
                     raisedDate: item.created_at
                         ? item.created_at.split("T")[0]
                         : "N/A",
                     description: item.description || "",
-                    scopeStatus: item.status, // This is the Task.status field from backend
+                    scopeStatus: item.status,
                 }));
                 setClientRequests(formattedData);
             })
@@ -450,13 +447,12 @@ const Dashboard = () => {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${accessToken}`,
                     },
-                    body: JSON.stringify({ assigned_to: staffId }), // Ensure staffId is the correct format expected by backend (e.g., number or string)
+                    body: JSON.stringify({ assigned_to: staffId }),
                 }
             );
             const data = await response.json();
             if (response.ok) {
                 console.log("Task assigned successfully:", data);
-                // Optionally, update local state to reflect assignment if backend doesn't auto-refresh or if needed for UI
             } else {
                 console.error("Assignment failed:", data);
                 alert(
@@ -469,32 +465,31 @@ const Dashboard = () => {
         }
     };
 
-    const [flowModalOpen, setFlowModalOpen] = useState(false);
-    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false); // Controls the main task detail/scope modal
-    const [modalContentType, setModalContentType] = useState(null); // To differentiate modal content if needed
-    const [selectedRequest, setSelectedRequest] = useState(null); // Holds the task selected for viewing/editing
+    // const [flowModalOpen, setFlowModalOpen] = useState(false); // Not used, can remove if FlowManager is not used
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [modalContentType, setModalContentType] = useState(null);
+    const [selectedRequest, setSelectedRequest] = useState(null);
 
     const [activeTab, setActiveTab] = useState("Dashboard");
-    const [selectedTab, setSelectedTab] = useState("Staff Member"); // For "Create Member" section
-    const [showDropdown, setShowDropdown] = useState(false); // For "Add User" dropdown
-    const [showModal, setShowModal] = useState(false); // Controls the staff creation/edit modal
-    const [modalUserType, setModalUserType] = useState("Client"); // For staff/client creation modal
+    const [selectedTab, setSelectedTab] = useState("Staff Member");
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalUserType, setModalUserType] = useState("Client");
     const [formData, setFormData] = useState({
         name: "",
         email: "",
         teamLead: "",
         designation: "",
-    }); // For staff form
-    const [editingIndex, setEditingIndex] = useState(null); // For editing staff
+    });
+    const [editingIndex, setEditingIndex] = useState(null);
     const [staffMembers, setStaffMembers] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1); // For staff pagination
-    const itemsPerPage = 8; // For staff pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     const [teamLeads, setTeamLeads] = useState([]);
     const [isAssignMembersModalOpen, setIsAssignMembersModalOpen] =
         useState(false);
 
-    // Pagination and filtering for the tasks table (formerly client requests)
     const [clientRequestCurrentPage, setClientRequestCurrentPage] = useState(1);
     const [clientRequestItemsPerPage, setClientRequestItemsPerPage] =
         useState(10);
@@ -502,13 +497,11 @@ const Dashboard = () => {
     const [clientSortOption, setClientSortOption] = useState("");
 
     const [activeApprovalTab, setActiveApprovalTab] = useState("workspace");
-    const [showTaskDetailModal, setShowTaskDetailModal] = useState(false); // For TaskDetailModal from TasksPage
-    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null); // For TaskDetailModal
+    const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
+    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState(null);
 
-    const [flowManagerInitialScreen, setFlowManagerInitialScreen] =
-        useState("default");
+    // const [flowManagerInitialScreen, setFlowManagerInitialScreen] = useState('default'); // Not used, can remove if FlowManager is not used
 
-    // --- Fetch Team Leads ---
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) return;
@@ -525,7 +518,7 @@ const Dashboard = () => {
                         id: lead.username,
                         name: lead.username,
                     }))
-                ); // Assuming structure
+                );
             } catch (error) {
                 console.error(
                     "Failed to fetch team leads:",
@@ -536,7 +529,6 @@ const Dashboard = () => {
         fetchTeamLeads();
     }, []);
 
-    // --- Fetch Staff Members ---
     useEffect(() => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) return;
@@ -549,12 +541,12 @@ const Dashboard = () => {
                     }
                 );
                 const formattedData = response.data.map((staff) => ({
-                    id: staff.id, // Crucial for key and selection
+                    id: staff.id,
                     name:
                         staff.name ||
-                        `${staff.first_name} ${staff.last_name}`.trim(), // Adjust based on your CustomUser fields
+                        `${staff.first_name} ${staff.last_name}`.trim(),
                     email: staff.email,
-                    designation: staff.designation || "N/A", // Access designation via profile
+                    designation: staff.designation || "N/A",
                 }));
                 setStaffMembers(formattedData);
             } catch (error) {
@@ -567,9 +559,8 @@ const Dashboard = () => {
         fetchStaffMembers();
     }, []);
 
-    // --- Staff Creation/Edit Modal Logic ---
     const openModal = (userType, staffMemberOriginalIndex = null) => {
-        setModalUserType(userType); // "Client" or "Staff Member"
+        setModalUserType(userType);
         if (userType === "Staff Member") {
             setEditingIndex(staffMemberOriginalIndex);
             if (
@@ -580,7 +571,7 @@ const Dashboard = () => {
                 setFormData({
                     name: staffToEdit.name,
                     email: staffToEdit.email,
-                    teamLead: staffToEdit.team_lead_id || "", // Assuming you have team_lead_id
+                    teamLead: staffToEdit.team_lead_id || "",
                     designation: staffToEdit.designation || "",
                 });
             } else {
@@ -591,9 +582,8 @@ const Dashboard = () => {
                     designation: "",
                 });
             }
-            setShowModal(true); // This controls the staff creation/edit modal
+            setShowModal(true);
         } else {
-            // Handle "Client" user creation if different UI/logic
             alert("Client creation UI not implemented in this modal.");
         }
     };
@@ -603,7 +593,6 @@ const Dashboard = () => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Staff creation/update submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         const accessToken = localStorage.getItem("accessToken");
@@ -611,26 +600,23 @@ const Dashboard = () => {
             alert("Authentication error. Please log in.");
             return;
         }
-        // Determine API endpoint and method based on editingIndex
-        // This is a simplified example; backend needs to handle create/update for staff
         const apiEndpoint =
             editingIndex !== null
-                ? `http://localhost:8000/api/users/staff/${staffMembers[editingIndex].id}/update/` // Placeholder for update
-                : "http://localhost:8000/api/users/register-staff/"; // For creation
+                ? `http://localhost:8000/api/users/staff/${staffMembers[editingIndex].id}/update/`
+                : "http://localhost:8000/api/users/register-staff/";
 
-        const method = editingIndex !== null ? "PUT" : "POST"; // Or PATCH for update
+        const method = editingIndex !== null ? "PUT" : "POST";
 
         try {
             const response = await axios({
                 method: method,
                 url: apiEndpoint,
                 data: {
-                    // Send data expected by backend
                     username: formData.name,
                     email: formData.email,
-                    password: "123", // Handle password securely in a real app
+                    password: "123",
                     role: "team_member",
-                    team_lead_id: formData.teamLead || null, // Send team lead ID
+                    team_lead_id: formData.teamLead || null,
                     designation: formData.designation,
                 },
                 headers: {
@@ -639,7 +625,7 @@ const Dashboard = () => {
                 },
             });
 
-            const savedStaffData = response.data; // Assuming backend returns the created/updated staff member
+            const savedStaffData = response.data;
             const staffMemberForState = {
                 id: savedStaffData.user?.id || savedStaffData.id,
                 name:
@@ -653,7 +639,7 @@ const Dashboard = () => {
                 designation:
                     savedStaffData.staff_profile?.designation ||
                     formData.designation,
-                teamLead: formData.teamLead, // Keep this for display consistency if needed
+                teamLead: formData.teamLead,
             };
 
             if (editingIndex !== null) {
@@ -666,7 +652,7 @@ const Dashboard = () => {
             }
             setShowModal(false);
             setEditingIndex(null);
-            setFormData({ name: "", email: "", teamLead: "", designation: "" }); // Reset form
+            setFormData({ name: "", email: "", teamLead: "", designation: "" });
         } catch (error) {
             console.error(
                 "Error creating/updating staff member:",
@@ -680,21 +666,21 @@ const Dashboard = () => {
             );
         }
     };
+
     const openNewTaskInfoModal = (request) => {
-        setSelectedRequest(request); // Set the context for the modal
+        setSelectedRequest(request);
         setIsTaskInfoModalOpen(true);
     };
 
-    // --- Function to handle submission from TaskInfoModal ---
     const handleCreateTaskFromInfoModal = (taskData) => {
         console.log("Task to be created from TaskInfoModal:", taskData);
-        // Add logic here to send taskData to backend / update state
         alert(
             `Task creation initiated for client: ${taskData.clientName}. Data in console.`
         );
-        setIsTaskInfoModalOpen(false); // Close modal after handling
+        setIsTaskInfoModalOpen(false);
     };
-    // Staff deletion
+
+    // Staff deletion - SINGLE DEFINITION
     const handleDelete = async (staffMemberOriginalIndex) => {
         if (
             staffMemberOriginalIndex === null ||
@@ -716,12 +702,9 @@ const Dashboard = () => {
             return;
         }
         try {
-            // TODO: Implement actual API call to delete staff member
             console.log(
                 `Placeholder: API call to delete staff member ${memberToDelete.id}. Replace this with actual API call.`
             );
-            // Example: await axios.delete(`http://localhost:8000/api/users/staff/${memberToDelete.id}/delete/`, { headers: { Authorization: `Bearer ${accessToken}` } });
-
             const updatedStaffList = staffMembers.filter(
                 (_, index) => index !== staffMemberOriginalIndex
             );
@@ -734,16 +717,14 @@ const Dashboard = () => {
             alert("Error deleting staff member.");
         }
     };
+    // DUPLICATE handleDelete was here - REMOVED
 
-    // --- Task/Request Modal & Action Logic ---
     const handleViewRequest = (request) => {
-        // 'request' here is actually a task object
         setSelectedRequest(request);
-        setModalContentType("request"); // Indicates content for the main task detail modal
+        setModalContentType("request");
         setIsRequestModalOpen(true);
     };
 
-    // Update task status via PATCH request
     const handleScopeStatusUpdate = async (taskId, newBackendStatus) => {
         const accessToken = localStorage.getItem("accessToken");
         if (!taskId || !accessToken) {
@@ -764,8 +745,16 @@ const Dashboard = () => {
                 }
             );
 
+            setClientRequests((prevRequests) =>
+                prevRequests.map((req) =>
+                    req.id === taskId
+                        ? { ...req, scopeStatus: newBackendStatus }
+                        : req
+                )
+            );
+
             alert("Task status updated successfully!");
-            setIsRequestModalOpen(false); // Optional: Close modal
+            setIsRequestModalOpen(false);
         } catch (error) {
             const errorMsg =
                 error.response?.data?.status?.[0] ||
@@ -777,23 +766,20 @@ const Dashboard = () => {
         }
     };
 
-    // --- Approvals Tab Logic ---
     const handleViewTaskApproval = (taskData) => {
-        // taskData should be the full task object
         if (taskData) {
-            setSelectedTaskForDetail(taskData); // This taskData comes from WorkspaceTaskApprovalsTable
-            setShowTaskDetailModal(true); // This opens the TaskDetailModal from TasksPage
+            setSelectedTaskForDetail(taskData);
+            setShowTaskDetailModal(true);
         } else {
             console.warn(`Task data not provided for approval view.`);
         }
     };
 
     const handleViewClientRequestForApproval = (clientRequestItem) => {
-        // clientRequestItem is a task
         if (clientRequestItem) {
-            setSelectedRequest(clientRequestItem); // Use selectedRequest for consistency if modal is similar
-            setModalContentType("request_approval_view"); // Differentiate if UI is different
-            setIsRequestModalOpen(true); // Open the main task detail modal
+            setSelectedRequest(clientRequestItem);
+            setModalContentType("request_approval_view");
+            setIsRequestModalOpen(true);
         } else {
             console.warn(
                 "Client Request (Task) not found for ID from approval"
@@ -807,15 +793,11 @@ const Dashboard = () => {
         staffId,
         approvalType
     ) => {
-        // TODO: Implement API call to assign task from approvals context
         console.log(
             `Placeholder: ${approvalType} Approval Item ID: ${approvalItemId}, Assigned to Staff ID: ${staffId}. API call needed.`
         );
     };
 
-    // --- Render Methods ---
-
-    // Staff Creation/Edit Modal
     const renderStaffModal = () => (
         <div className="fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-40">
             <div className="bg-white rounded-lg shadow-xl w-96 p-6 max-w-full">
@@ -855,7 +837,6 @@ const Dashboard = () => {
                         <option value="">Select Designation</option>
                         <option value="Developer">Developer</option>
                         <option value="Designer">Designer</option>
-                        {/* Add other dynamic designations if available */}
                     </select>
                     <input
                         required
@@ -875,7 +856,6 @@ const Dashboard = () => {
                         placeholder="Email ID"
                         className="w-full border border-gray-300 rounded-md p-2"
                     />
-                    {/* Consider password field for creation, handle securely */}
                     <div className="flex justify-end gap-3 pt-4">
                         <button
                             type="button"
@@ -898,7 +878,6 @@ const Dashboard = () => {
         </div>
     );
 
-    // "Create Member" Tab Content
     const renderCreateMembersContent = () => {
         const totalStaffPages =
             Math.ceil(staffMembers.length / itemsPerPage) || 1;
@@ -1015,7 +994,6 @@ const Dashboard = () => {
                                     );
                                 })}
                             </div>
-                            {/* Pagination for Staff Members */}
                             <div className="flex justify-between items-center mt-6">
                                 <div className="text-sm text-gray-600">
                                     Page{" "}
@@ -1095,7 +1073,6 @@ const Dashboard = () => {
                         </div>
                     )
                 ) : (
-                    // Placeholder for "Client" tab in Create Member section
                     <div className="flex-1 flex flex-col justify-center items-center text-gray-500 gap-2">
                         <img
                             src={emptyDataIcon}
@@ -1109,9 +1086,8 @@ const Dashboard = () => {
         );
     };
 
-    // Tasks Table (formerly Client Requests)
     const renderClientRequestsTable = () => {
-        let processedRequests = [...clientRequests]; // clientRequests are tasks
+        let processedRequests = [...clientRequests];
         if (clientSearchTerm) {
             const lowerSearchTerm = clientSearchTerm.toLowerCase();
             processedRequests = processedRequests.filter(
@@ -1129,7 +1105,7 @@ const Dashboard = () => {
                         req.scopeStatus
                             .replace(/_/g, " ")
                             .toLowerCase()
-                            .includes(lowerSearchTerm)) || // Search readable status
+                            .includes(lowerSearchTerm)) ||
                     (req.description || "")
                         .toLowerCase()
                         .includes(lowerSearchTerm)
@@ -1237,164 +1213,106 @@ const Dashboard = () => {
                 <div className="w-full bg-white p-6 rounded-xl shadow">
                     <h2 className="text-xl font-semibold mb-4">
                         Tasks Overview
-                    </h2>{" "}
-                    {/* Renamed title */}
+                    </h2>
                     <div className="overflow-x-auto rounded-lg border">
-                        <table className="min-w-[1100px] w-full table-auto">
+                        <table className="min-w-[950px] w-full table-auto">
                             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 <tr>
-                                    <th className="px-4 py-3">Client Name</th>{" "}
-                                    <th className="px-4 py-3">Domain Name</th>{" "}
+                                    <th className="px-4 py-3">Client Name</th>
+                                    <th className="px-4 py-3">Domain Name</th>
                                     <th className="px-4 py-3">Raised Date</th>
-                                    <th className="px-4 py-3">
-                                        Task Details
-                                    </th>{" "}
-                                    <th className="px-4 py-3">Status</th>{" "}
-                                    <th className="px-4 py-3">Assigned To</th>
-                                    <th className="px-4 py-3">
-                                        Flow/Hours
-                                    </th>{" "}
+                                    <th className="px-4 py-3">Task Details</th>
+                                    <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3">Flow/Hours</th>
                                     <th className="px-4 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                                 {paginatedClientRequests.length > 0 ? (
-                                    paginatedClientRequests.map(
-                                        (
-                                            task // 'task' instead of 'req'
-                                        ) => (
-                                            <tr
-                                                key={task.id}
-                                                className="text-sm text-gray-700 hover:bg-gray-50"
-                                            >
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    {task.clientName}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    {task.domain}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    {task.raisedDate}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <button
-                                                        onClick={() =>
-                                                            handleViewRequest(
-                                                                task
-                                                            )
-                                                        }
-                                                        className="flex items-center text-blue-600 hover:text-blue-700"
+                                    paginatedClientRequests.map((task) => (
+                                        <tr
+                                            key={task.id}
+                                            className="text-sm text-gray-700 hover:bg-gray-50"
+                                        >
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {task.clientName}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {task.domain}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {task.raisedDate}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button
+                                                    onClick={() =>
+                                                        handleViewRequest(task)
+                                                    }
+                                                    className="flex items-center text-blue-600 hover:text-blue-700"
+                                                >
+                                                    <Eye className="w-4 h-4 mr-1" />{" "}
+                                                    View Details
+                                                </button>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {task.scopeStatus ? (
+                                                    <span
+                                                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                            task.scopeStatus.toLowerCase() ===
+                                                            "in_scope"
+                                                                ? "bg-green-100 text-green-800"
+                                                                : task.scopeStatus.toLowerCase() ===
+                                                                  "out_of_scope"
+                                                                ? "bg-red-100 text-red-800"
+                                                                : task.scopeStatus.toLowerCase() ===
+                                                                  "pending"
+                                                                ? "bg-yellow-100 text-yellow-800"
+                                                                : task.scopeStatus.toLowerCase() ===
+                                                                  "in_progress"
+                                                                ? "bg-blue-100 text-blue-800"
+                                                                : task.scopeStatus.toLowerCase() ===
+                                                                  "completed"
+                                                                ? "bg-purple-100 text-purple-800"
+                                                                : "bg-gray-100 text-gray-800"
+                                                        }`}
                                                     >
-                                                        <Eye className="w-4 h-4 mr-1" />{" "}
-                                                        View Details
-                                                    </button>
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    {task.scopeStatus ? (
-                                                        <span
-                                                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                                task.scopeStatus.toLowerCase() ===
-                                                                "in_scope"
-                                                                    ? "bg-green-100 text-green-800" // Matched backend status
-                                                                    : task.scopeStatus.toLowerCase() ===
-                                                                      "out_of_scope"
-                                                                    ? "bg-red-100 text-red-800" // Matched backend status
-                                                                    : task.scopeStatus.toLowerCase() ===
-                                                                      "pending"
-                                                                    ? "bg-yellow-100 text-yellow-800"
-                                                                    : task.scopeStatus.toLowerCase() ===
-                                                                      "in_progress"
-                                                                    ? "bg-blue-100 text-blue-800" // Added for in_progress
-                                                                    : task.scopeStatus.toLowerCase() ===
-                                                                      "completed"
-                                                                    ? "bg-purple-100 text-purple-800" // Added for completed
-                                                                    : "bg-gray-100 text-gray-800" // Default for other statuses
-                                                            }`}
-                                                        >
-                                                            {task.scopeStatus.replace(
-                                                                /_/g,
-                                                                " "
-                                                            )}{" "}
-                                                            {/* Display "in progress" from "in_progress" */}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-gray-400 italic">
-                                                            N/A
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <select
-                                                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                        onChange={(e) =>
-                                                            handleAssignStaff(
-                                                                task.id,
-                                                                e.target.value
-                                                            )
-                                                        } // Corrected to e.target.value
-                                                        defaultValue="" // Add a defaultValue or ensure initial value is handled
-                                                    >
-                                                        <option
-                                                            value=""
-                                                            disabled
-                                                        >
-                                                            Select Staff
-                                                        </option>
-                                                        {staffMembers.map(
-                                                            (staff) => (
-                                                                <option
-                                                                    key={
-                                                                        staff.id
-                                                                    }
-                                                                    value={
-                                                                        staff.id
-                                                                    }
-                                                                >
-                                                                    {staff.name}
-                                                                </option>
-                                                            )
+                                                        {task.scopeStatus.replace(
+                                                            /_/g,
+                                                            " "
                                                         )}
-                                                    </select>
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <button
-                                                        onClick={() =>
-                                                            openNewTaskInfoModal(
-                                                                task
-                                                            )
-                                                        }
-                                                        className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"
-                                                    >
-                                                        {" "}
-                                                        create Flow{" "}
-                                                    </button>
-                                                </td>
-                                                {/* <td className="px-4 py-3 whitespace-nowrap">
-                        <button
-                          onClick={() => {
-                            setSelectedRequest(task);
-                            setFlowManagerInitialScreen('scopeOfHours');
-                            setFlowModalOpen(true);
-                          }}
-                          className="text-blue-600 hover:underline text-xs focus:outline-none"
-                        >
-                          Scope Hours
-                        </button>
-                      </td> */}
-                                                <td className="px-4 py-3 whitespace-nowrap">
-                                                    <button className="text-blue-500 underline hover:text-blue-700 text-xs">
-                                                        {" "}
-                                                        Rise to manager{" "}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        )
-                                    )
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400 italic">
+                                                        N/A
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button
+                                                    onClick={() =>
+                                                        openNewTaskInfoModal(
+                                                            task
+                                                        )
+                                                    }
+                                                    className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs"
+                                                >
+                                                    {" "}
+                                                    Create Flow{" "}
+                                                </button>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button className="text-blue-500 underline hover:text-blue-700 text-xs">
+                                                    {" "}
+                                                    Rise to manager{" "}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
                                 ) : (
                                     <tr>
                                         {" "}
                                         <td
-                                            colSpan="9"
+                                            colSpan="7"
                                             className="text-center py-10 text-gray-500"
                                         >
                                             {" "}
@@ -1405,7 +1323,6 @@ const Dashboard = () => {
                             </tbody>
                         </table>
                     </div>
-                    {/* Pagination for Tasks Table */}
                     {processedRequests.length > 0 && (
                         <div className="flex items-center justify-between mt-6 px-1 text-sm text-gray-600">
                             <div>
@@ -1496,7 +1413,6 @@ const Dashboard = () => {
         );
     };
 
-    // Main Task Detail & Scope Update Modal
     const renderTaskDetailModal = () => {
         if (!isRequestModalOpen || !selectedRequest) return null;
 
@@ -1543,7 +1459,8 @@ const Dashboard = () => {
                     <div className="mb-4">
                         <p className="font-semibold mb-1">Description:</p>
                         <div className="text-gray-700 whitespace-pre-wrap text-sm bg-gray-50 p-3 border rounded max-h-40 overflow-y-auto">
-                            {selectedRequest.description}
+                            {selectedRequest.description ||
+                                "No description provided."}
                         </div>
                     </div>
 
@@ -1559,7 +1476,7 @@ const Dashboard = () => {
                                             selectedRequest.id,
                                             "in_scope"
                                         )
-                                    } // Example: "in_progress" backend status
+                                    }
                                     className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 text-sm"
                                 >
                                     In Scope
@@ -1570,12 +1487,11 @@ const Dashboard = () => {
                                             selectedRequest.id,
                                             "out_of_scope"
                                         )
-                                    } // Example: "completed" backend status (could be out of scope for new work)
+                                    }
                                     className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 text-sm"
                                 >
                                     Out Of Scope
                                 </button>
-                                {/* You might need different buttons for 'pending', 'out_of_scope' as distinct final states */}
                             </div>
                         </div>
                     )}
@@ -1594,7 +1510,6 @@ const Dashboard = () => {
         );
     };
 
-    // Approvals Tab Content
     const renderApprovalsContent = () => (
         <div className="w-full h-full bg-white rounded-xl shadow flex flex-col">
             <div className="px-6 pt-6">
@@ -1612,7 +1527,6 @@ const Dashboard = () => {
                     >
                         Workspace Task Approvals
                         <span className="ml-2 inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                            {/* Placeholder for dynamic count. */}
                             02
                         </span>
                     </button>
@@ -1658,7 +1572,6 @@ const Dashboard = () => {
         </div>
     );
 
-    // Main Content Renderer
     const renderContent = () => {
         switch (activeTab) {
             case "Dashboard":
@@ -1670,7 +1583,7 @@ const Dashboard = () => {
             case "Create Member":
                 return renderCreateMembersContent();
             case "Client Requests":
-                return renderClientRequestsTable(); // Shows tasks
+                return renderClientRequestsTable();
             case "Tasks TODO":
                 return (
                     <div className="bg-white rounded-xl shadow p-1">
@@ -1714,10 +1627,8 @@ const Dashboard = () => {
         }
     };
 
-    // --- Main JSX ---
     return (
         <div className="flex h-screen py-4 bg-white overflow-hidden">
-            {/* Sidebar */}
             <div className="w-60 h-full max-h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
                 <div>
                     <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
@@ -1760,8 +1671,6 @@ const Dashboard = () => {
                     <button
                         onClick={() => {
                             localStorage.removeItem("accessToken");
-                            // Implement actual navigation to login page, e.g., using useNavigate from react-router-dom
-                            // navigate('/login');
                             alert(
                                 "Logged out. Please implement navigation to login page."
                             );
@@ -1772,9 +1681,8 @@ const Dashboard = () => {
                     </button>
                 </div>
             </div>
-            {/* Main Content Area */}
+
             <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
-                {/* Top Bar with Title and Icons */}
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-semibold text-gray-800">
                         {activeTab === "Notifications"
@@ -1832,13 +1740,12 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Content Area */}
                 <div className="flex-1">{renderContent()}</div>
             </div>
-            {/* Modals Section */}
-            {showModal && renderStaffModal()} {/* Staff creation/edit modal */}
-            {isRequestModalOpen && renderTaskDetailModal()}{" "}
-            {/* Main task detail/scope update modal */}
+
+            {showModal && renderStaffModal()}
+            {isRequestModalOpen && renderTaskDetailModal()}
+
             {isAssignMembersModalOpen && (
                 <AssignMembersModal
                     isOpen={isAssignMembersModalOpen}
@@ -1850,7 +1757,6 @@ const Dashboard = () => {
                             "Data:",
                             assignmentsData
                         );
-                        // TODO: API call to save assignments
                         setIsAssignMembersModalOpen(false);
                     }}
                     staffList={staffMembers.map((member) => ({
@@ -1859,6 +1765,7 @@ const Dashboard = () => {
                     }))}
                 />
             )}
+
             {isTaskInfoModalOpen && selectedRequest && (
                 <TaskInfoModal
                     isOpen={isTaskInfoModalOpen}
@@ -1868,8 +1775,9 @@ const Dashboard = () => {
                     onSubmitTask={handleCreateTaskFromInfoModal}
                 />
             )}
+
             {showTaskDetailModal && selectedTaskForDetail && (
-                <TaskDetailModal
+                <TasksPageDetailModal
                     isOpen={showTaskDetailModal}
                     onClose={() => {
                         setShowTaskDetailModal(false);
