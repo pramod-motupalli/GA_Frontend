@@ -4,6 +4,7 @@ import settingsLogo from '../assets/logos/settings.svg';
 import userLogo from '../assets/logos/user.svg';
 import dotsverticalLogo from '../assets/logos/dots-vertical.svg';
 import PlanList from './planSelectionPopup'; // Assuming this is the correct path
+import OutOfScope2 from './OutofScope2'; 
 
 // Import ReactQuill and its styles
 import ReactQuill from 'react-quill';
@@ -59,6 +60,8 @@ export default function Main() {
   const [tasksForWorkspace, setTasksForWorkspace] = useState([]);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [activeTab, setActiveTab] = useState('raised');
+
 
 
   const currentUserAvatar = 'https://i.pravatar.cc/40?img=68';
@@ -339,62 +342,100 @@ useEffect(() => {
     </>
   );
 
-  const renderTableView = () => (
-    <>
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
-        <h2 className="text-xl font-semibold">Raised Requests for: {selectedWorkspace?.workspace_name}</h2>
-        <button
-          onClick={() => { setSubmitError(''); setShowCreateRequestModal(true);}}
-          className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition"
-        >
-          + Create Request
-        </button>
+const renderTableView = () => (
+  <>
+    {/* Tabs */}
+    <div className="flex justify-between items-center mb-4">
+      <div className="text-sm text-black">
+        Workspace → <span className="text-blue-600 font-semibold">{selectedWorkspace?.workspace_name}</span>
       </div>
+      <button
+        onClick={() => { setSubmitError(''); setShowCreateRequestModal(true);} }
+        className="bg-[#4C74DA] text-white font-medium px-4 py-2 rounded-lg shadow hover:bg-[#3b5fc3] transition"
+      >
+        + Create Request
+      </button>
+    </div>
 
-      <div className="overflow-auto rounded-lg border">
-        <table className="min-w-full bg-white text-sm">
-          <thead className="bg-[#F9FAFB] text-gray-700 font-medium">
-            <tr>
-              <th className="px-6 py-3 text-left">Domain Name</th>
-              <th className="px-6 py-3 text-left">Request Raised Date</th>
-              <th className="px-6 py-3 text-left">Request (Title)</th>
-              <th className="px-6 py-3 text-left">Scope of Service</th>
-              <th className="px-6 py-3 text-left">Acceptance Status</th>
-              <th className="px-6 py-3 text-left">Scope Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoadingTasks ? (
-              <tr><td colSpan="6" className="text-center py-4">Loading requests...</td></tr>
-            ) : tasksForWorkspace.length > 0 ? (
-              tasksForWorkspace.map(task => (
-                <tr key={task.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{selectedWorkspace?.workspace_name || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{new Date(task.created_at).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">{task.title}</td>
-                  {/* The following fields depend on your Task model and serializer */}
-                  <td className="px-6 py-4">{task.scope_of_service || 'N/A'}</td>
-                  <td className="px-6 py-4">{task.acceptance_status || task.status || 'Pending'}</td>
-                  <td className="px-6 py-4">{task.scope_status || task.status || 'Pending'}</td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan="6" className="text-center py-4">No requests found for this workspace.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+    {/* Tab headers */}
+    <div className="flex space-x-6 border-b border-gray-200 mb-6">
+      <button
+        onClick={() => setActiveTab('raised')}
+        className={`pb-2 text-sm font-medium ${
+          activeTab === 'raised'
+            ? 'text-black border-b-2 border-blue-600'
+            : 'text-gray-600 hover:text-blue-600'
+        }`}
+      >
+        Raised Requests
+      </button>
+      <button
+        onClick={() => setActiveTab('organization')}
+        className={`pb-2 text-sm font-medium ${
+          activeTab === 'organization'
+            ? 'text-black border-b-2 border-blue-600'
+            : 'text-gray-600 hover:text-blue-600'
+        }`}
+      >
+        Organization Requests
+      </button>
+    </div>
 
-      <div className="mt-6 flex justify-between items-center">
-        <button
-          onClick={() => { setTableMode(false); setSelectedWorkspace(null); }}
-          className="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg shadow hover:bg-gray-200 transition"
-        >
-          ← Back to Workspaces
-        </button>
-      </div>
-    </>
-  );
+    {/* Tab content */}
+    {activeTab === 'raised' ? (
+      <>
+        <div className="overflow-auto rounded-lg border">
+          <table className="min-w-full bg-white text-sm">
+            <thead className="bg-[#F9FAFB] text-gray-700 font-medium">
+              <tr>
+                <th className="px-6 py-3 text-left">Domain Name</th>
+                <th className="px-6 py-3 text-left">Request Raised Date</th>
+                <th className="px-6 py-3 text-left">Request (Title)</th>
+                <th className="px-6 py-3 text-left">Scope of Service</th>
+                <th className="px-6 py-3 text-left">Acceptance Status</th>
+                <th className="px-6 py-3 text-left">Scope Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoadingTasks ? (
+                <tr><td colSpan="6" className="text-center py-4">Loading requests...</td></tr>
+              ) : tasksForWorkspace.length > 0 ? (
+                tasksForWorkspace.map(task => (
+                  <tr key={task.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{selectedWorkspace?.workspace_name || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(task.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-4">{task.title}</td>
+                    <td className="px-6 py-4">{task.scope_of_service || 'N/A'}</td>
+                    <td className="px-6 py-4">{task.acceptance_status || task.status || 'Pending'}</td>
+                    <td className="px-6 py-4">{task.scope_status || task.status || 'Pending'}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan="6" className="text-center py-4">No requests found for this workspace.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </>
+    ) : (
+      <OutOfScope2 />
+    )}
+
+    <div className="mt-6 flex justify-between items-center">
+      <button
+        onClick={() => {
+          setTableMode(false);
+          setSelectedWorkspace(null);
+          setActiveTab('raised'); // Reset tab on exit
+        }}
+        className="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg shadow hover:bg-gray-200 transition"
+      >
+        ← Back to Workspaces
+      </button>
+    </div>
+  </>
+);
+
 
   const handleCloseCreateRequestModal = () => {
     setShowCreateRequestModal(false);

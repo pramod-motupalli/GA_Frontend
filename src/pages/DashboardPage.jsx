@@ -28,6 +28,7 @@ import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from './WorkspaceCardTeamlead';
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal";
+import OutOfScope3 from "../pages/OutofScope3"
 // FlowManager is being replaced for "Create Flow" button, but might be used elsewhere
 // If not, it can be removed. For now, I'll keep the import but comment out its direct usage
 // for the "Create Flow" button.
@@ -790,7 +791,7 @@ const handleAssignTaskInApproval = (approvalItemId, staffId, approvalType) => {
       case "Clients Services": return <DomainHostingTableTeamlead />;
       case "Approvals": return renderApprovalsContent();
       case "Notifications": return <NotificationsPage />;
-      case "Rise by Manager": return <div className="text-center p-10 text-xl">Rise by Manager Content Area</div>;
+      case "Rise by Manager": return <OutOfScope3 />;
       case "Settings": return <div className="text-center p-10 text-xl">Settings Content Area</div>;
       default:
         return <div className="text-center pt-10">Select a menu item</div>;
