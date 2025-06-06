@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/GA.png";
 import WorkspaceCardStaff from './WorkspaveCardStaff'
+import TasksPage from "./TasksPage"
 import {
   LayoutDashboard,
   Briefcase,
@@ -29,7 +30,7 @@ const Dashboard = () => {
       case "Work Space":
         return <div><WorkspaceCardStaff /></div>;
       case "tasks":
-        return <div>View and manage tasks.</div>;
+        return <div><TasksPage /></div>;
       case "Settings":
         return <div>Settings panel</div>;
       default:

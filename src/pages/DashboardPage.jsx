@@ -29,8 +29,14 @@ import emptyDataIcon from "../assets/empty-data-icon.png";
 import WorkspaceCardTeamlead from "./WorkspaceCardTeamlead";
 import DomainHostingTableTeamlead from "./DomainHostingTableTeamlead";
 import AssignMembersModal from "../pages/AssignMembersModal";
+import OutOfScope3 from "../pages/OutofScope3"
+// FlowManager is being replaced for "Create Flow" button, but might be used elsewhere
+// If not, it can be removed. For now, I'll keep the import but comment out its direct usage
+// for the "Create Flow" button.
+import FlowManager from "./FlowManager";
+import NotificationsPage from './NotificationsPage';
 // import FlowManager from "./FlowManager"; // Not used, can be removed if truly unused
-import NotificationsPage from "./NotificationsPage";
+// import NotificationsPage from "./NotificationsPage";
 import TasksPage, {
     TaskDetailModal as TasksPageDetailModal,
 } from "../pages/TasksPage";
@@ -1639,7 +1645,7 @@ const Dashboard = () => {
             case "Rise by Manager":
                 return (
                     <div className="text-center p-10 text-xl bg-white rounded-xl shadow">
-                        Rise by Manager Content Area
+                        <OutOfScope3 />
                     </div>
                 );
             case "Settings":

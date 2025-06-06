@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import OutOfScope1 from './OutOfScope1'; // ✅ Import your component here
 
 const ActivatedPayments = () => {
   const [requests, setRequests] = useState([]);
@@ -16,21 +17,18 @@ const ActivatedPayments = () => {
   const [activeTab, setActiveTab] = useState('new');
 
   const token = localStorage.getItem('accessToken');
-  useEffect(() => {
-  console.log(staffList);
-}, [staffList]);
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/users/submissions/', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(res => {
         if (Array.isArray(res.data)) {
           const approved = res.data.filter(
             plan =>
               (plan.payment_is_approved === true ||
-               plan.payment_is_approved === 'Yes' ||
-               plan.payment_is_approved === 1) &&
+                plan.payment_is_approved === 'Yes' ||
+                plan.payment_is_approved === 1) &&
               plan.is_workspace_activated !== true
           );
           setRequests(approved);
@@ -38,47 +36,26 @@ const ActivatedPayments = () => {
           setRequests([]);
         }
       })
-      .catch(() => setRequests([])
-    );
+      .catch(() => setRequests([]));
 
     if (token) {
       axios.get('http://localhost:8000/api/users/team-leads', {
         headers: { Authorization: `Token ${token}` }
       })
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setTeamLeads(res.data);
-        } else {
-          setTeamLeads([]);
-        }
-      })
-      .catch(() => setTeamLeads([]));
+        .then(res => setTeamLeads(Array.isArray(res.data) ? res.data : []))
+        .catch(() => setTeamLeads([]));
 
       axios.get('http://localhost:8000/api/users/team-leads/', {
         headers: { Authorization: `Token ${token}` }
       })
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setHdLeads(res.data);
-        } else {
-          setHdLeads([]);
-        }
-      })
-      .catch(() => setHdLeads([]));
+        .then(res => setHdLeads(Array.isArray(res.data) ? res.data : []))
+        .catch(() => setHdLeads([]));
 
       axios.get('http://localhost:8000/api/users/staff-members/', {
         headers: { Authorization: `Token ${token}` }
       })
-      .then(res => {
-        if (Array.isArray(res.data)) {
-          setStaffList(res.data);
-          console.log(staffList)
-        } else {
-          setStaffList([]);
-        }
-      })
-      .catch(() => setStaffList([]));
-
+        .then(res => setStaffList(Array.isArray(res.data) ? res.data : []))
+        .catch(() => setStaffList([]));
     }
   }, []);
 
@@ -104,8 +81,8 @@ const ActivatedPayments = () => {
     }
 
     try {
-      await axios.post('http://localhost:8000/api/users/assign-spoc/', 
-        { id: assignSpoc }, 
+      await axios.post('http://localhost:8000/api/users/assign-spoc/',
+        { id: assignSpoc },
         { headers: { Authorization: `Token ${token}` } }
       );
 
@@ -113,7 +90,7 @@ const ActivatedPayments = () => {
         client: typeof selectedRequest.client === 'object' ? selectedRequest.client.id : selectedRequest.client,
         workspace_name: workspaceName,
         description,
-        assign_spoc: assignSpoc,  
+        assign_spoc: assignSpoc,
         assign_staff: assignStaff,
         hd_maintenance: hdMaintenance,
         is_workspace_activated: true,
@@ -139,7 +116,7 @@ const ActivatedPayments = () => {
 
   return (
     <div className="p-4">
-    <div className="flex gap-6 mb-4">
+      <div className="flex gap-6 mb-4">
         {['new', 'out', 'monthly'].map((tab) => (
           <button
             key={tab}
@@ -155,7 +132,9 @@ const ActivatedPayments = () => {
         ))}
       </div>
 
-      {activeTab === 'new' && (
+      {activeTab === 'out' ? (
+        <OutOfScope1 />
+      ) : activeTab === 'new' ? (
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-gray-100 text-gray-700 uppercase">
@@ -210,7 +189,7 @@ const ActivatedPayments = () => {
             </tbody>
           </table>
         </div>
-      )}
+      ) : null}
 
       {showModal && selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -225,6 +204,7 @@ const ActivatedPayments = () => {
             <h2 className="text-xl font-semibold mb-6">Creation of workspace for {selectedRequest.client_name}</h2>
 
             <div className="space-y-4">
+              {/* Workspace Name */}
               <div>
                 <label htmlFor="workspaceName" className="block font-medium mb-1">
                   Workspace Name <span className="text-red-600">*</span>
@@ -234,11 +214,12 @@ const ActivatedPayments = () => {
                   type="text"
                   placeholder="Workspace Name"
                   className="w-full border rounded px-4 py-2"
-                  required
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
                 />
               </div>
+
+              {/* Description */}
               <div>
                 <label htmlFor="description" className="block font-medium mb-1">
                   Description <span className="text-red-600">*</span>
@@ -247,11 +228,12 @@ const ActivatedPayments = () => {
                   id="description"
                   placeholder="Description"
                   className="w-full border rounded px-4 py-2 h-24"
-                  required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
+
+              {/* Assign SPOC */}
               <div>
                 <label htmlFor="assignSpoc" className="block font-medium mb-1">
                   Assign SPOC <span className="text-red-600">*</span>
@@ -264,13 +246,12 @@ const ActivatedPayments = () => {
                 >
                   <option value="" disabled>Select SPOC</option>
                   {teamLeads.map((spoc) => (
-                    <option key={spoc.id} value={spoc.id}>
-                      {spoc.username}
-                    </option>
+                    <option key={spoc.id} value={spoc.id}>{spoc.username}</option>
                   ))}
                 </select>
               </div>
 
+              {/* H&D Maintenance */}
               <div>
                 <label htmlFor="hdMaintenance" className="block font-medium mb-1">
                   H&D Maintenance <span className="text-red-600">*</span>
@@ -283,13 +264,12 @@ const ActivatedPayments = () => {
                 >
                   <option value="" disabled>Select Developer Team Lead</option>
                   {hdLeads.map((lead) => (
-                    <option key={lead.id} value={lead.id}>
-                      {lead.username}
-                    </option>
+                    <option key={lead.id} value={lead.id}>{lead.username}</option>
                   ))}
                 </select>
               </div>
 
+              {/* Assign Staff */}
               <div>
                 <label htmlFor="assignStaff" className="block font-medium mb-1">
                   Assign Staff <span className="text-red-600">*</span>
@@ -302,9 +282,7 @@ const ActivatedPayments = () => {
                 >
                   <option value="" disabled>Select Staff</option>
                   {staffList.map((staff) => (
-                    <option key={staff.id} value={staff.id}>
-                      {staff.username}
-                    </option>
+                    <option key={staff.id} value={staff.id}>{staff.username}</option>
                   ))}
                 </select>
               </div>
