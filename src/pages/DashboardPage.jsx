@@ -38,6 +38,10 @@ import WorkspaceTaskApprovalsTable from "./WorkspaceTaskApprovalsTable";
 import TeamTaskApprovalsTable from "./TeamTaskApprovalsTable";
 
 // --------------- TaskInfoModal Component (Embedded) ---------------
+// import { useEffect, useState } from "react";
+// import { X, Calendar, Clock, Plus } from "lucide-react";
+// import axios from "axios";
+
 const TaskInfoModal = ({
     isOpen,
     onClose,
@@ -56,7 +60,7 @@ const TaskInfoModal = ({
             deadline: "",
         },
     ]);
-    // const [isTaskInfoModalOpen, setIsTaskInfoModalOpen] = useState(false); // This state seems unused within TaskInfoModal itself
+
     useEffect(() => {
         if (isOpen) {
             setTaskPriority("Low");
@@ -118,20 +122,46 @@ const TaskInfoModal = ({
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const taskData = {
-            clientRequestId: clientRequest?.id,
-            clientName: clientRequest?.clientName,
-            domain: clientRequest?.domain,
-            priority: taskPriority,
-            overallDeadline: taskDeadline,
-            members: assignedMembers.filter(
-                (m) => m.designation && m.memberName
-            ),
-        };
-        if (onSubmitTask) {
-            onSubmitTask(taskData);
-        }
+    client_request_id: clientRequest?.id,
+    priority: taskPriority,
+    overall_deadline: taskDeadline,
+    assignments: assignedMembers
+        .filter((m) => m.designation && m.memberName)
+        .map((m) => ({
+            staff_member_id: m.memberName,
+            designation_at_assignment: m.designation,
+            time_estimation: m.timeEstimation,
+            member_deadline: m.deadline,
+        })),
+};
+
+        try {
+    const token = localStorage.getItem('accessToken'); // change this to your actual token storage
+
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.post(
+        `http://localhost:8000/api/users/tasks/${clientRequest?.id}/assign-staff/`,
+        taskData,
+        config
+    );
+    console.log(taskData);
+    console.log("✅ Task submitted:", response.data);
+    if (onSubmitTask) {
+        onSubmitTask(response.data);
+    }
+    onClose();
+} catch (error) {
+  console.log(taskData);
+    console.error("❌ Failed to submit task:", error.response?.data || error.message);
+}
+
     };
 
     return (
@@ -149,6 +179,7 @@ const TaskInfoModal = ({
                     </button>
                 </div>
 
+                {/* Priority */}
                 <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Task Priority
@@ -159,28 +190,26 @@ const TaskInfoModal = ({
                                 key={priority}
                                 type="button"
                                 onClick={() => handlePriorityChange(priority)}
-                                className={`flex-1 py-1.5 px-3 text-sm rounded-md transition-colors
-                  ${
-                      taskPriority === priority
-                          ? "bg-blue-600 text-white shadow"
-                          : "bg-white text-gray-700 hover:bg-gray-100"
-                  }`}
+                                className={`flex-1 py-1.5 px-3 text-sm rounded-md transition-colors ${
+                                    taskPriority === priority
+                                        ? "bg-blue-600 text-white shadow"
+                                        : "bg-white text-gray-700 hover:bg-gray-100"
+                                }`}
                             >
                                 <span
-                                    className={`inline-block w-2 h-2 rounded-full mr-2 
-                  ${
-                      priority === "Low" && taskPriority === "Low"
-                          ? "bg-white"
-                          : priority === "Low"
-                          ? "bg-blue-500"
-                          : priority === "Medium" && taskPriority === "Medium"
-                          ? "bg-white"
-                          : priority === "Medium"
-                          ? "bg-yellow-500"
-                          : priority === "High" && taskPriority === "High"
-                          ? "bg-white"
-                          : "bg-red-500"
-                  }`}
+                                    className={`inline-block w-2 h-2 rounded-full mr-2 ${
+                                        priority === "Low"
+                                            ? taskPriority === "Low"
+                                                ? "bg-white"
+                                                : "bg-blue-500"
+                                            : priority === "Medium"
+                                            ? taskPriority === "Medium"
+                                                ? "bg-white"
+                                                : "bg-yellow-500"
+                                            : taskPriority === "High"
+                                            ? "bg-white"
+                                            : "bg-red-500"
+                                    }`}
                                 ></span>
                                 {priority}
                             </button>
@@ -188,6 +217,7 @@ const TaskInfoModal = ({
                     </div>
                 </div>
 
+                {/* Task Deadline */}
                 <div className="mb-8">
                     <label
                         htmlFor="taskOverallDeadline"
@@ -210,6 +240,7 @@ const TaskInfoModal = ({
                     </div>
                 </div>
 
+                {/* Assigned Members */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-3">
                         <h3 className="text-lg font-medium text-gray-800">
@@ -244,10 +275,7 @@ const TaskInfoModal = ({
                                     <option value="">Select</option>
                                     <option value="Designer">Designer</option>
                                     <option value="Developer">Developer</option>
-                                    <option value="QA">QA</option>
-                                    <option value="Project Manager">
-                                        Project Manager
-                                    </option>
+                                    <option value="Content Writer">Content Writer</option>
                                 </select>
                             </div>
 
@@ -393,6 +421,8 @@ const TaskInfoModal = ({
         </div>
     );
 };
+
+// export default TaskInfoModal;
 
 const Dashboard = () => {
     const [clientRequests, setClientRequests] = useState([]);
