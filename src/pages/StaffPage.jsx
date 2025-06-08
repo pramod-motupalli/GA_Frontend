@@ -30,7 +30,7 @@ const Dashboard = () => {
       case "Work Space":
         return <div><WorkspaceCardStaff /></div>;
       case "tasks":
-        return <div>View and manage tasks.</div>;
+        return <div><Tasks /></div>;
       case "Settings":
         return <div>Settings panel</div>;
       // 2. Add a case to render the NotificationsPage

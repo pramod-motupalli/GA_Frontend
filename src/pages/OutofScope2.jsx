@@ -21,19 +21,31 @@ const TableComponent = () => {
   const [rejectedRows, setRejectedRows] = useState([]);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showProceedButton, setShowProceedButton] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get('http://localhost:8000/api/users/tasks/out-of-scope/');
-        const raisedTasks = response.data.filter(task => task.raised_to_client === true);
-        setData(raisedTasks);
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-      }
-    };
-    fetchTasks();
-  }, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+
+  axios
+    .get("http://localhost:8000/api/users/clients/tasks/", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      setData(res.data); // includes workspace ID/name with each task
+      setLoading(false);
+    })
+    .catch((err) => {
+      setError("Failed to fetch your tasks.");
+      setLoading(false);
+    });
+}, []);
+
+
+
 
   const totalPrice = chargesData.reduce((sum, item) => sum + item.hours * item.rate, 0);
 
@@ -41,12 +53,10 @@ const TableComponent = () => {
     try {
       const task = data[rowIndex];
       await axios.post(`http://localhost:8000/api/users/tasks/${task.id}/accept/`);
-
       const updatedTask = { ...task, client_acceptance_status: "accepted" };
       const newData = [...data];
       newData[rowIndex] = updatedTask;
       setData(newData);
-
       setShowAcceptPopup(true);
       setCurrentRowIndex(rowIndex);
     } catch (error) {
@@ -101,8 +111,8 @@ const TableComponent = () => {
   };
 
   return (
-    <div className="p-4 overflow-x-auto relative">
-      <table className="min-w-full text-sm text-left">
+    <div className="p-4 overflow-x-auto">
+      <table className="min-w-max text-sm text-left">
         <thead className="bg-gray-100 text-gray-600">
           <tr>
             <th className="px-4 py-2">Domain Name</th>
@@ -116,7 +126,20 @@ const TableComponent = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, idx) => (
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="text-center py-4 text-gray-500">Loading...</td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan="8" className="text-center py-4 text-red-500">{error}</td>
+              </tr>
+            ) : data.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="text-center py-4 text-gray-500">No tasks found.</td>
+              </tr>
+            ) : (
+              data.map((item, idx) => (
             <tr key={item.id} className="border-t border-gray-200 hover:bg-gray-50">
               <td className="px-4 py-2 text-gray-700">{item.domain_name || "N/A"}</td>
               <td className="px-4 py-2 text-gray-700">{item.workspace_name || "N/A"}</td>
@@ -139,59 +162,50 @@ const TableComponent = () => {
                 onClick={() => setShowChargesPopup(true)}>
                 View Charges
               </td>
-<td className="px-4 py-2">
-  {item.payment_status === "done" ? (
-    <span className="text-green-600 font-semibold text-sm">Payment Done</span>
-  ) : item.client_acceptance_status === "pending" ? (
-    showProceedButton[idx] ? (
-      <button
-        className="bg-green-100 text-green-600 px-3 py-1 rounded-md text-sm font-medium"
-        onClick={() => {
-          setCurrentRowIndex(idx);
-          setShowAcceptPopup(true);
-        }}
-      >
-        Proceed to Pay
-      </button>
-    ) : (
-      <div className="flex gap-2">
-        <button
-          className="bg-blue-100 text-blue-600 px-3 py-1 rounded-md text-sm font-medium"
-          onClick={() => handleAccept(idx)}
-        >
-          Accept
-        </button>
-        <button
-          className="bg-red-100 text-red-500 px-3 py-1 rounded-md text-sm font-medium"
-          onClick={() => {
-            setShowRejectModal(true);
-            setCurrentRowIndex(idx);
-          }}
-        >
-          Reject
-        </button>
-      </div>
-    )
-  ) : item.client_acceptance_status === "accepted" ? (
-    <button
-      className="bg-green-100 text-green-600 px-3 py-1 rounded-md text-sm font-medium"
-      onClick={() => {
-        setCurrentRowIndex(idx);
-        setShowAcceptPopup(true);
-      }}
-    >
-      Proceed to Pay
-    </button>
-  ) : (
-    <span className="text-red-500 text-sm font-medium">Rejected</span>
-  )}
-</td>
+              <td className="px-4 py-2">
+                {item.client_acceptance_status === "pending" ? (
+                  <div className="flex gap-2">
+                    <button
+                      className="bg-blue-100 text-blue-600 px-3 py-1 rounded-md text-sm font-medium"
+                      onClick={() => handleAccept(idx)}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="bg-red-100 text-red-500 px-3 py-1 rounded-md text-sm font-medium"
+                      onClick={() => {
+                        setShowRejectModal(true);
+                        setCurrentRowIndex(idx);
+                      }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                ) : item.client_acceptance_status === "accepted" ? (
+                  item.payment_status === "done" ? (
+                    <span className="text-green-600 font-semibold text-sm">Payment Done</span>
+                  ) : (
+                    <button
+                      className="bg-green-100 text-green-600 px-3 py-1 rounded-md text-sm font-medium"
+                      onClick={() => {
+                        setCurrentRowIndex(idx);
+                        setShowAcceptPopup(true);
+                      }}
+                    >
+                      Proceed to Pay
+                    </button>
+                  )
+                ) : (
+                  <span className="text-red-500 text-sm font-medium">Rejected</span>
+                )}
+              </td>
             </tr>
-          ))}
+          ))
+        )}
         </tbody>
       </table>
 
-      {/* View Request Modal */}
+      {/* Modals (Request, Scope, Accept, Reject) and Success Toast */}
       {showRequestPopup && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center">
           <div className="bg-white w-[400px] rounded-xl p-6 shadow-xl relative">
@@ -204,7 +218,6 @@ const TableComponent = () => {
         </div>
       )}
 
-      {/* Scope of Service Modal */}
       {showScopePopup && selectedTask && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center">
           <div className="bg-white w-[400px] rounded-xl p-6 shadow-xl relative">
@@ -215,7 +228,6 @@ const TableComponent = () => {
         </div>
       )}
 
-      {/* Accept Modal */}
       {showAcceptPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center">
           <div className="bg-white w-[400px] rounded-xl p-6 shadow-xl relative">
@@ -236,7 +248,6 @@ const TableComponent = () => {
         </div>
       )}
 
-      {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center">
           <div className="bg-white w-[450px] rounded-xl p-6 shadow-xl relative">
