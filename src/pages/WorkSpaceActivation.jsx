@@ -39,7 +39,7 @@ const ActivatedPayments = () => {
       .catch(() => setRequests([]));
 
     if (token) {
-      axios.get('http://localhost:8000/api/users/team-leads/no-spoc/', {
+      axios.get('http://localhost:8000/api/users/team-leads', {
         headers: { Authorization: `Token ${token}` }
       })
         .then(res => setTeamLeads(Array.isArray(res.data) ? res.data : []))

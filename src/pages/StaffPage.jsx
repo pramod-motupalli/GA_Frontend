@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../assets/GA.png";
-import WorkspaceCardStaff from './WorkspaveCardStaff'
+import WorkspaceCardStaff from './WorkspaveCardStaff';
+import NotificationsPage from "./NotificationsPage"; // 1. Import the NotificationsPage component
 import {
   LayoutDashboard,
   Briefcase,
@@ -29,9 +30,12 @@ const Dashboard = () => {
       case "Work Space":
         return <div><WorkspaceCardStaff /></div>;
       case "tasks":
-        return <div>View and manage tasks.</div>;
+        return <div><Tasks /></div>;
       case "Settings":
         return <div>Settings panel</div>;
+      // 2. Add a case to render the NotificationsPage
+      case "Notifications":
+        return <NotificationsPage />;
       default:
         return <div>Select an option</div>;
     }
@@ -40,7 +44,7 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen py-4 bg-white overflow-hidden">
       {/* Sidebar */}
-      <div className="w-60 h-11/12 bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
+      <div className="w-60 h-full max-h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-[0_0_10px_rgba(64,108,140,0.2)] outline outline-1 outline-zinc-200 flex flex-col justify-between">
         <div className="flex flex-col overflow-hidden">
           {/* Logo */}
           <div className="h-20 p-4 border-b border-zinc-300 flex items-center justify-center">
@@ -48,7 +52,7 @@ const Dashboard = () => {
           </div>
 
           {/* Menu */}
-          <div className="flex-1 px-4 py-4 space-y-2 overflow-auto">
+          <div className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
             {menuItems.map(({ name, icon: Icon, badge }) => (
               <button
                 key={name}
@@ -65,8 +69,8 @@ const Dashboard = () => {
                 </div>
                 {badge && (
                   <span
-                    className={`bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full ${
-                      activeTab === name ? "bg-blue-500 text-white font-semibold shadow" : "text-gray-600 hover:bg-gray-100"
+                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      activeTab === name ? "bg-white text-blue-600" : "bg-blue-100 text-blue-700"
                     }`}
                   >
                     {badge}
@@ -94,21 +98,43 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col p-6 bg-gray-50 overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Welcome, Aravind</h1>
+           {/* 3. Make the header title dynamic */}
+          <h1 className="text-2xl font-semibold text-gray-800">
+            {activeTab === 'Notifications' ? 'Notifications' : 'Welcome, Aravind'}
+          </h1>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
+            <div className="relative w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
               <MessageCircle className="w-6 h-6 text-gray-800" />
+              <span className="absolute top-1 right-1 flex h-5 w-5">
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">
+                      02
+                  </span>
+              </span>
             </div>
-            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
-              <Bell className="w-6 h-6 text-gray-800" />
+             {/* 4. Make the Bell icon interactive and dynamic */}
+            <div
+                onClick={() => setActiveTab("Notifications")}
+                className={`relative w-12 h-12 p-3 rounded-full outline outline-1 flex justify-center items-center cursor-pointer transition-colors duration-150
+                  ${
+                      activeTab === "Notifications"
+                          ? "bg-blue-100 text-blue-600 outline-blue-300"
+                          : "bg-white text-gray-800 outline-neutral-300 hover:bg-gray-100"
+                  }`}
+            >
+              <Bell className={`w-6 h-6 ${activeTab === "Notifications" ? "text-blue-600" : "text-gray-800"}`}/>
+              <span className="absolute top-1 right-1 flex h-5 w-5">
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-600 text-white text-xs items-center justify-center">
+                      05 
+                  </span>
+              </span>
             </div>
-            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center">
+            <div className="w-12 h-12 p-3 bg-white rounded-full outline outline-1 outline-neutral-300 flex justify-center items-center cursor-pointer hover:bg-gray-100">
               <User className="w-6 h-6 text-gray-800" />
             </div>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content: Render the active component */}
         <div className="flex-1 bg-white rounded-xl shadow p-6">{renderContent()}</div>
       </div>
     </div>
