@@ -32,6 +32,7 @@ import OutOfScope from './pages/outOfScope';
 import OutOfScope1 from './pages/OutofScope1';
 import OutOfScope2 from './pages/OutofScope2';
 import OutOfScope3 from './pages/OutofScope3';
+import Chat from './pages/ChatModule';
 
 
 function App() {
@@ -69,6 +70,7 @@ function App() {
         <Route path="/OutOfScope1" element={<OutOfScope1 />} />
         <Route path="/OutOfScope2" element={<OutOfScope2 />} />
         <Route path="/OutOfScope3" element={<OutOfScope3 />} />
+        <Route path="/Chat" element={<Chat />} />
       </Routes>
     </Router>
   );
