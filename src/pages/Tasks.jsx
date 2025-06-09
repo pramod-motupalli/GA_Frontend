@@ -33,7 +33,7 @@ export const attachmentImage3 =
 export const avatarPlaceholder =
     "https://via.placeholder.com/40/78909C/FFFFFF?Text=U";
 
-export const initialDummyTasks = [];
+export const initialDummyTasks = []; // Tasks will be populated from API
 
 export const tagStyleMapping = {
     Designing: { dot: "bg-pink-500", text: "text-pink-700" },
@@ -122,7 +122,7 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
         setIsDragging(false);
     }, []);
 
-    const handleDropEvent = useCallback((e) => { 
+    const handleDropEvent = useCallback((e) => {
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
@@ -155,7 +155,7 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
             );
             return [...prevFiles, ...newFiles];
         });
-        e.target.value = null; 
+        e.target.value = null;
     };
 
     const removeFile = (fileNameToRemove) => {
@@ -200,15 +200,14 @@ export const FileUploadDialog = ({ isOpen, onClose, onFilesConfirm }) => {
 
                 <div
                     className={`border-2 border-dashed rounded-md p-6 text-center mb-4
-            ${
-                isDragging
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300 hover:border-gray-400"
-            }
+            ${isDragging
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-300 hover:border-gray-400"
+                        }
             transition-colors duration-200`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    onDrop={handleDropEvent} 
+                    onDrop={handleDropEvent}
                     onClick={!isDragging ? handleBrowseClick : undefined}
                 >
                     <input
@@ -313,43 +312,32 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
 
     if (!isOpen || !task) return null;
 
-    const priorityStyles = priorityStyleMapping[task.priority] || {};
-    // Dummy data for modal display - in a real app, this would come from the task object or related API calls
-    const dummyComments = (task && task.commentsData) ? task.commentsData : [ // Check if task.commentsData exists
+    const priorityStyles = priorityStyleMapping[task.priority] || priorityStyleMapping["Medium"]; // Default to medium if not found
+
+    // Dummy data for modal display - API for my-task-assignments doesn't provide these details
+    const dummyComments = (task && task.commentsData && task.commentsData.length > 0) ? task.commentsData : [
         {
             id: 1,
-            user: "Range",
+            user: "System Note",
             avatar: avatarPlaceholder,
-            text: "Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa. Pulvinar pellentesque ut tellus et donec laoreet ut. Ornare risus sed aliquam ut eget aenean venenatis eu. Elementum natoque ac odio vulputate pellentesque in. Praesent congue etiam ultricies enim erat turpis.",
-            repliesCount: "02",
-        },
-        {
-            id: 2,
-            user: "Range",
-            avatar: avatarPlaceholder,
-            text: "Lorem ipsum dolor sit amet consectetur. Sed rutrum non condimentum eu ultricies sit massa.",
+            text: "This task was assigned to you. Detailed comments and replies are managed elsewhere.",
+            repliesCount: "0",
         },
     ];
-    const attachments = (task && task.attachmentsData) ? task.attachmentsData : [
-        { type: "image", url: attachmentImage1, name: "Wisteria Design.png" },
-        { type: "image", url: attachmentImage2, name: "Purple Flower.jpg" },
-        { type: "image", url: attachmentImage3, name: "Tulip Inspiration.png" },
-        { type: "image", url: attachmentImage1, name: "Wisteria Alt.png" },
-        { type: "image", url: attachmentImage2, name: "Anemone Detail.jpg" },
-        { type: "image", url: attachmentImage3, name: "Tulip Sketch.png" },
-    ];
-    const links = (task && task.linksData) ? task.linksData : [
-        { id: "l1", name: "Link 1", url: "#" },
-        { id: "f1", name: "Filename.exe", url: "#" },
-    ];
+    const attachments = (task && task.attachmentsData && task.attachmentsData.length > 0) ? task.attachmentsData : [];
+    const links = (task && task.linksData && task.linksData.length > 0) ? task.linksData : [];
+
 
     const handleAttachLinkSubmit = () => {
         console.log("Attach Link:", { linkName, linkUrl, taskId: task.id });
+        // Here you would typically make an API call to attach the link
+        // For now, we'll just log and close the popup
         setLinkName("");
         setLinkUrl("");
     };
     const handleAddCommentSubmit = () => {
         console.log("Add Comment:", { commentText, taskId: task.id });
+        // API call to add comment
         setCommentText("");
     };
     const handleAddReplySubmit = () => {
@@ -358,6 +346,7 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
             commentId: replyingToCommentId,
             taskId: task.id,
         });
+        // API call to add reply
         setReplyText("");
         setReplyingToCommentId(null);
     };
@@ -367,8 +356,9 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
             files.map((f) => ({ name: f.name, size: f.size }))
         );
         alert(
-            `${files.length} file(s) selected for attachment. Check console.`
+            `${files.length} file(s) selected for attachment. Check console for details. (Frontend demo only)`
         );
+        // API call to upload/attach files
     };
 
     return (
@@ -384,7 +374,7 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                                 <ArrowLeft size={20} />
                             </button>
                             <span className="font-semibold text-gray-800">
-                                {task.daysLeft || "D-X"}
+                                {task.daysLeft || "N/A"}
                             </span>
                             <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-md font-medium">
                                 {task.workspaceName}
@@ -410,13 +400,27 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                         {task.title}
                     </h2>
                     <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                        {task.description} 
-                        {/* Optional static text removed as task.description should be primary */}
+                        {task.description}
                     </p>
+
+                    {/* Displaying original API data for reference if needed */}
+                    {task.original_api_data && (
+                        <div className="mb-6 p-3 bg-gray-50 rounded-md border border-gray-200 text-xs">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-1">Assignment Details (from API):</h4>
+                            <p><strong>Designation:</strong> {task.original_api_data.designation_at_assignment || 'N/A'}</p>
+                            <p><strong>Deadline:</strong> {task.original_api_data.deadline ? new Date(task.original_api_data.deadline).toLocaleString() : 'N/A'}</p>
+                            <p><strong>Status:</strong> {task.original_api_data.status || 'N/A'}</p>
+                            <p><strong>Review Status:</strong> {task.original_api_data.review_status || 'N/A'}</p>
+                            <p><strong>Order:</strong> {task.original_api_data.order === null || task.original_api_data.order === undefined ? 'N/A' : task.original_api_data.order}</p>
+                            <p><strong>Time Estimation:</strong> {task.original_api_data.time_estimation || 'N/A'}</p>
+                        </div>
+                    )}
+
+
                     {attachments.length > 0 && (
                         <div className="mb-6">
                             <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                                Attachments
+                                Attachments (Demo)
                             </h4>
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                                 {attachments.map((att, index) => (
@@ -440,7 +444,7 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                     {links.length > 0 && (
                         <div className="mb-6">
                             <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                                Links
+                                Links (Demo)
                             </h4>
                             <div className="flex flex-wrap gap-3">
                                 {links.map((link) => (
@@ -491,7 +495,7 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                     </div>
                     <div>
                         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                            Comments
+                            Comments (Demo)
                         </h3>
                         <div className="space-y-5">
                             {dummyComments.map((comment) => (
@@ -526,7 +530,7 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                                                 >
                                                     Reply
                                                 </button>
-                                                {comment.repliesCount && (
+                                                {comment.repliesCount && comment.repliesCount !== "0" && (
                                                     <div className="relative flex items-center">
                                                         <span className="text-xs text-blue-600 mr-2 cursor-pointer hover:underline">
                                                             View replies
@@ -563,8 +567,8 @@ export const TaskDetailModal = ({ isOpen, onClose, task }) => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                         <input
-                            type="text" // Should be type="url" for better validation/UX
-                            placeholder="Paste the link"
+                            type="url" // Changed to type="url"
+                            placeholder="Paste the link (e.g., https://example.com)"
                             value={linkUrl}
                             onChange={(e) => setLinkUrl(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -623,7 +627,7 @@ const TaskCard = ({
     onDragEndItem,
     isBeingDragged,
 }) => {
-    const priorityStyles = priorityStyleMapping[task.priority] || {};
+    const priorityStyles = priorityStyleMapping[task.priority] || priorityStyleMapping["Medium"]; // Default to medium
 
     return (
         <div
@@ -631,16 +635,14 @@ const TaskCard = ({
             onDragStart={onDragStartItem}
             onDragEnd={onDragEndItem}
             className={`bg-white rounded-lg shadow p-3.5 mb-4 cursor-grab hover:shadow-md transition-shadow
-                  ${
-                      task.selected
-                          ? "ring-2 ring-blue-500 shadow-lg"
-                          : "border border-gray-200"
-                  }
-                  ${
-                      isBeingDragged
-                          ? "opacity-50 ring-2 ring-blue-400 scale-105"
-                          : ""
-                  }`}
+                  ${task.selected
+                    ? "ring-2 ring-blue-500 shadow-lg"
+                    : "border border-gray-200"
+                }
+                  ${isBeingDragged
+                    ? "opacity-50 ring-2 ring-blue-400 scale-105"
+                    : ""
+                }`}
             onClick={() => {
                 if (!isBeingDragged) {
                     onCardClick(task);
@@ -678,7 +680,7 @@ const TaskCard = ({
             </p>
             {task.image && (
                 <img
-                    src={task.image} // This will use either API image or local fallback GA.png
+                    src={task.image}
                     alt={task.title}
                     className="w-full h-32 object-cover rounded-md mb-3"
                 />
@@ -700,10 +702,7 @@ const TaskCard = ({
             </div>
             <div className="flex justify-between items-center mb-3">
                 <div className="flex -space-x-2">
-                    {/* task.assignees is now guaranteed to be an array by useEffect */}
                     {task.assignees.slice(0, 5).map((assignee, index) => (
-                         // Assuming assignee is a color string, or an object {color: '...', name: '...'}
-                         // If it's an object, adjust accordingly e.g. style={{ backgroundColor: assignee.color }}
                         <div
                             key={index}
                             className="w-6 h-6 rounded-full border-2 border-white"
@@ -716,19 +715,23 @@ const TaskCard = ({
                             +{task.assignees.length - 5}
                         </div>
                     )}
+                     {task.assignees.length === 0 && ( // Show placeholder if no assignees
+                        <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs text-gray-500" title="No assignees">
+                            ?
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center text-xs text-gray-500 space-x-3">
                     <span className="flex items-center">
                         <MessageSquare size={14} className="mr-1" />
-                        {task.comments} {/* Guaranteed to be a number by useEffect */}
+                        {task.comments}
                     </span>
                     <span className="flex items-center">
-                        <Paperclip size={14} className="mr-1" /> {task.files} {/* Guaranteed to be a number */}
+                        <Paperclip size={14} className="mr-1" /> {task.files}
                     </span>
                 </div>
             </div>
             <div className="border-t border-gray-200 pt-2 flex flex-wrap gap-y-1">
-                 {/* task.tags is now guaranteed to be an array by useEffect */}
                 {task.tags.map((tag) => {
                     const style = tagStyleMapping[tag] || {
                         dot: "bg-gray-400",
@@ -746,23 +749,30 @@ const TaskCard = ({
                         </span>
                     );
                 })}
+                 {task.tags.length === 0 && ( // Show placeholder if no tags
+                    <span className="text-xs text-gray-400 italic">No tags</span>
+                )}
             </div>
         </div>
     );
 };
 
 // --- Mappings ---
-// Maps backend status values (e.g., "backlog") to frontend column names (e.g., "Backlog")
 const backendStatusToFrontendColumn = {
     "backlog": "Backlog",
     "todo": "TO-DO",
+    "to-do": "TO-DO", // common variations
+    "pending": "TO-DO",
     "processing": "Processing",
+    "in_progress": "Processing", // common variations
+    "inprogress": "Processing",
     "review": "Review",
-    "done": "Done"
+    "in_review": "Review", // common variations
+    "inreview": "Review",
+    "done": "Done",
+    "completed": "Done" // common variations
 };
 
-// Maps frontend column names (e.g., "Backlog") to backend status values (e.g., "backlog")
-// This was already defined by you and is used in handleDrop
 const frontendColumnToBackendStatus = {
     "Backlog": "backlog",
     "TO-DO": "todo",
@@ -770,6 +780,26 @@ const frontendColumnToBackendStatus = {
     "Review": "review",
     "Done": "done"
 };
+
+// Helper function to calculate days left
+function calculateDaysLeft(deadline) {
+    if (!deadline) return "N/A";
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    today.setHours(0, 0, 0, 0); 
+    deadlineDate.setHours(0, 0, 0, 0);
+
+    const diffTime = deadlineDate.getTime() - today.getTime(); // Use getTime() for reliable comparison
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return `Overdue ${Math.abs(diffDays)}d`;
+    } else if (diffDays === 0) {
+        return "Due Today";
+    } else {
+        return `D-${diffDays}`;
+    }
+}
 
 
 const TasksPage = () => {
@@ -779,74 +809,81 @@ const TasksPage = () => {
     const [selectedTaskForModal, setSelectedTaskForModal] = useState(null);
     const [draggedTask, setDraggedTask] = useState(null);
     const [draggingOverColumn, setDraggingOverColumn] = useState(null);
-    // const statusMapping = { ... } // This is now frontendColumnToBackendStatus, defined above
-
+    
     useEffect(() => {
         const yourAccessToken = localStorage.getItem("accessToken");
         if (!yourAccessToken) {
             console.warn("Access token not found. Tasks will not be fetched.");
-            setTasks([]);
+            setTasks([]); // Or set to some demo tasks if preferred for logged-out state
             return;
         }
-        
+
         const fetchTasks = async () => {
-          try {
-            const response = await axios.get('http://localhost:8000/api/users/staff/tasks/cards/', {
-              headers: {
-                'Authorization': `Bearer ${yourAccessToken}`,
-              },
-            });
+            try {
+                // Use the new API path for fetching user's task assignments
+                const response = await axios.get('http://localhost:8000/api/users/my-task-assignments/', {
+                    headers: {
+                        'Authorization': `Bearer ${yourAccessToken}`,
+                    },
+                });
 
-            const rawTasks = Array.isArray(response.data) ? response.data : response.data.results;
-            console.log(rawTasks)
-            if (!rawTasks || !Array.isArray(rawTasks)) { // Check if rawTasks is an array
-                console.error("Tasks data is not in the expected array format:", response.data);
-                setTasks([]);
-                return;
+                // The API returns a direct array of assignments
+                const rawTasks = Array.isArray(response.data) ? response.data : [];
+                
+                if (!rawTasks) {
+                    console.error("Tasks data is not in the expected array format or is null:", response.data);
+                    setTasks([]);
+                    return;
+                }
+
+                const processedTasks = rawTasks.map(apiTask => {
+                    const backendTaskStatus = (apiTask.status || 'todo').toLowerCase(); // Default to 'todo' if status is null/undefined
+                    const frontendColumn = backendStatusToFrontendColumn[backendTaskStatus] || "TO-DO"; // Default to TO-DO if no mapping
+
+                    const descriptionParts = [];
+                    if (apiTask.designation_at_assignment) descriptionParts.push(`Designation: ${apiTask.designation_at_assignment}`);
+                    if (apiTask.review_status) descriptionParts.push(`Review Status: ${apiTask.review_status}`);
+                    if (apiTask.order !== null && apiTask.order !== undefined) descriptionParts.push(`Order: ${apiTask.order}`);
+                    const description = descriptionParts.length > 0 ? descriptionParts.join('. ') : "No additional details provided for this assignment.";
+
+                    return {
+                        id: apiTask.task_id.toString(), // Using task_id as the unique ID for the card
+                        title: apiTask.task_title || "Untitled Task",
+                        description: description,
+                        column: frontendColumn, // Mapped from apiTask.status
+                        priority: "Medium", // Default value
+                        workspaceName: apiTask.workspace || "Default Workspace", // From apiTask.task.workspace.workspace_name
+                        escalation: false, // Default value, not in API response
+                        
+                        image: TASK_IMAGE_URL, // Default image
+                        dateInfo: apiTask.deadline ? new Date(apiTask.deadline).toLocaleDateString() : "No Deadline",
+                        timeInfo: apiTask.time_estimation || "N/A", // From apiTask.time_estimation
+                        daysLeft: apiTask.deadline ? calculateDaysLeft(apiTask.deadline) : "N/A", // Calculated or default
+
+                        assignees: [], // Default, as this API focuses on "my" assignments, not all assignees of a task
+                        comments: 0, // Default, not directly in this API response
+                        files: 0, // Default, not directly in this API response
+                        tags: apiTask.designation_at_assignment ? [apiTask.designation_at_assignment] : [], // Use designation as a tag
+
+                        original_api_data: apiTask, // Store the raw assignment data for detailed view
+
+                        // For TaskDetailModal's dummy sections - not provided by this specific API
+                        commentsData: [], 
+                        attachmentsData: [], 
+                        linksData: [], 
+                    };
+                });
+                
+                setTasks(processedTasks);
+
+            } catch (error) {
+                console.error('Failed to fetch tasks:', error.response ? error.response.data : error.message);
+                setTasks([]); // Set to empty on error to avoid breaking the UI
             }
-            
-            const processedTasks = rawTasks.map(apiTask => ({
-    id: apiTask.id.toString(),
-    title: apiTask.title || "Untitled Task",
-    description: apiTask.description || "",
-    
-    // Convert backend task_status to frontend column if mapping exists
-    column: apiTask.column || "TO-DO", 
-    
-    priority: apiTask.priority || "Medium",
-    workspaceName: apiTask.workspace_name || "Default Workspace",
-    escalation: apiTask.escalation ?? false,
-    
-    image: TASK_IMAGE_URL,
-    dateInfo: apiTask.dateInfo || "N/A",
-    timeInfo: apiTask.timeInfo || "N/A",
-    daysLeft: apiTask.daysLeft || "N/A",
-    
-    assignees: Array.isArray(apiTask.assignees) ? apiTask.assignees : [],
-    comments: typeof apiTask.comments_count === 'number' 
-              ? apiTask.comments_count 
-              : (apiTask.comments || 0),
-    files: typeof apiTask.files_count === 'number' 
-           ? apiTask.files_count 
-           : (apiTask.files || 0),
-    tags: Array.isArray(apiTask.tags) ? apiTask.tags : [],
-    
-    // Optionally store the raw backend status
-    original_task_status: apiTask.task_status
-}));
-
-            
-            setTasks(processedTasks);
-            // console.log(rawTasks.column)
-
-          } catch (error) {
-            console.error('Failed to fetch tasks:', error.response ? error.response.data : error.message);
-            setTasks([]); // Set to empty on error
-          }
         };
-    
+
         fetchTasks();
-      }, []);
+    }, []);
 
 
     const handleCardClick = (task) => {
@@ -861,7 +898,7 @@ const TasksPage = () => {
     };
 
     const handleDragStart = (e, taskId) => {
-        e.dataTransfer.setData("taskId", taskId); 
+        e.dataTransfer.setData("taskId", taskId);
         setDraggedTask(taskId);
     };
 
@@ -876,17 +913,18 @@ const TasksPage = () => {
     };
 
     const handleDragLeaveColumn = (e, columnName) => {
+        // Check if the mouse is leaving the column div for a child element or outside entirely
         if (e.currentTarget.contains(e.relatedTarget)) {
-            return;
+            return; // Do not remove highlight if moving to a child
         }
         if (draggingOverColumn === columnName) {
             setDraggingOverColumn(null);
         }
     };
 
-    const handleDrop = async (e, targetColumnName) => { // targetColumnName is "Backlog", "TO-DO", etc.
+    const handleDrop = async (e, targetColumnName) => {
         e.preventDefault();
-        const taskId = e.dataTransfer.getData("taskId"); 
+        const taskId = e.dataTransfer.getData("taskId"); // This is task.id (originally task_id from API)
         const yourAccessToken = localStorage.getItem("accessToken");
 
         if (!yourAccessToken) {
@@ -897,56 +935,70 @@ const TasksPage = () => {
             return;
         }
 
-        const taskToMove = tasks.find((t) => t.id === taskId); 
+        const taskToMove = tasks.find((t) => t.id === taskId);
 
         if (taskToMove && taskToMove.column !== targetColumnName) {
             const originalColumn = taskToMove.column;
-            const originalTasksState = JSON.parse(JSON.stringify(tasks)); // Deep copy for revert
+            const originalTasksState = JSON.parse(JSON.stringify(tasks)); 
 
             setTasks((prevTasks) =>
                 prevTasks.map((task) =>
                     task.id === taskId
-                        ? { ...task, column: targetColumnName } // Optimistic UI update
+                        ? { ...task, column: targetColumnName } 
                         : task
                 )
             );
 
             try {
-                // Get the backend status value (e.g., "backlog") using the targetColumnName ("Backlog")
                 const backendStatus = frontendColumnToBackendStatus[targetColumnName];
                 if (!backendStatus) {
                     console.error(`No backend status mapping found for column: ${targetColumnName}`);
-                    // Revert UI change
                     setTasks(originalTasksState);
                     alert(`Error: Could not map column "${targetColumnName}" to a backend status.`);
                     setDraggedTask(null);
                     setDraggingOverColumn(null);
                     return;
                 }
+                
+                // IMPORTANT: This PATCH request goes to a different endpoint than the GET request.
+                // This endpoint (`.../tasks/cards/${taskId}/`) is assumed to handle status updates
+                // for a task (or the user's assignment to it).
+                // The payload field is changed to "status" to align with TaskAssignment.status.
+                // If your backend expects "task_status", change it back.
+            //    const loggedInUserId = currentUser.id; // get logged-in user's ID from auth state/context
+// const taskId = someTaskId;
 
-                await axios.patch(
-                    `http://localhost:8000/api/users/staff/tasks/cards/${taskId}/`, 
-                    { task_status: targetColumnName }, // Send the mapped backend status
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${yourAccessToken}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
+await axios.patch(
+  `http://localhost:8000/api/users/task-assignment/${taskId}/status/`,
+  { status: backendStatus },
+  {
+    headers: { Authorization: `Bearer ${yourAccessToken}` }
+  }
+);
+
+                // Update the original_api_data as well for consistency if modal is reopened
+                setTasks((prevTasks) =>
+                    prevTasks.map((task) =>
+                        task.id === taskId
+                            ? { ...task, original_api_data: {...task.original_api_data, status: backendStatus} } 
+                            : task
+                    )
                 );
 
-                alert(
-                    `Task '${taskToMove.title}' (ID: ${taskId}) successfully shifted from '${originalColumn}' to '${targetColumnName}'. Status updated on the server.`
-                );
+                // console.log(`Task '${taskToMove.title}' status updated to '${backendStatus}' on server.`);
+                // alert(
+                //     `Task '${taskToMove.title}' (ID: ${taskId}) shifted from '${originalColumn}' to '${targetColumnName}'. Status updated on the server.`
+                // );
+
 
             } catch (error) {
                 console.error('Failed to update task status on backend:', error.response ? error.response.data : error.message);
-                setTasks(originalTasksState); // Revert UI change on API error
-                const errorMessage = error.response?.data?.detail || 
-                                   (typeof error.response?.data === 'object' ? JSON.stringify(error.response.data) : error.response?.data) ||
-                                   error.message;
+                setTasks(originalTasksState); 
+                const errorMessage = error.response?.data?.detail ||
+                    (typeof error.response?.data === 'object' ? JSON.stringify(error.response.data) : error.response?.data) ||
+                    error.message;
                 alert(
-                    `Failed to update task '${taskToMove.title}' status on the server. Reverting change.\nError: ${errorMessage}`
+                    `Failed to update task '${taskToMove.title}' status. Reverting change.\nError: ${errorMessage}`
                 );
             }
         }
@@ -965,7 +1017,7 @@ const TasksPage = () => {
         <div className="bg-slate-50 min-h-screen p-4 sm:p-6 flex flex-col">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h1 className="text-2xl font-semibold text-gray-800">
-                    Work Flow
+                    My Task Assignments
                 </h1>
                 <div className="flex flex-grow sm:flex-grow-0 w-full sm:w-auto items-center gap-3">
                     <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
@@ -979,8 +1031,8 @@ const TasksPage = () => {
                     <div className="relative">
                         <select className="appearance-none bg-white border border-gray-300 text-gray-600 py-2.5 px-4 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-gray-400 text-sm">
                             <option>Sort by</option>
-                            <option>Priority</option>
-                            <option>Due Date</option>
+                            <option>Deadline</option>
+                            <option>Priority (N/A for this view)</option>
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                     </div>
@@ -1000,11 +1052,10 @@ const TasksPage = () => {
                         <div
                             key={columnName}
                             className={`rounded-lg p-3 pt-4 flex flex-col w-[330px] sm:w-[340px] md:w-[350px] flex-shrink-0 h-full transition-colors duration-150
-                          ${
-                              draggingOverColumn === columnName && draggedTask // Highlight only if dragging over this column
-                                  ? "bg-blue-100 border-2 border-blue-400"
-                                  : "bg-gray-100 border-2 border-transparent"
-                          }`}
+                          ${draggingOverColumn === columnName && draggedTask
+                                    ? "bg-blue-100 border-2 border-blue-400"
+                                    : "bg-gray-100 border-2 border-transparent"
+                                }`}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, columnName)}
                             onDragEnter={() =>
@@ -1017,7 +1068,6 @@ const TasksPage = () => {
                             <div className="flex justify-between items-center mb-3 px-1">
                                 <h2 className="text-sm font-semibold text-gray-700">
                                     {columnName.toUpperCase()} (
-                                    {/* Filters tasks based on the 'column' property set in useEffect */}
                                     {
                                         tasks.filter(
                                             (t) => t.column === columnName
@@ -1026,26 +1076,26 @@ const TasksPage = () => {
                                     )
                                 </h2>
                                 <div className="flex items-center space-x-1.5">
-                                    <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200">
+                                    <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200" title="Add new task (disabled)">
                                         <Plus size={18} />
                                     </button>
-                                    <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200">
+                                    <button className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200" title="More options (disabled)">
                                         <MoreVertical size={18} />
                                     </button>
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto pr-1 space-y-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 min-h-[calc(100vh-200px)]">
                                 {tasks
-                                    .filter( // Filter tasks for the current column
+                                    .filter(
                                         (task) => task.column === columnName
                                     )
                                     .map((task) => (
                                         <TaskCard
-                                            key={task.id} 
-                                            task={task} // Pass the processed task object
+                                            key={task.id}
+                                            task={task}
                                             onCardClick={handleCardClick}
                                             onDragStartItem={(e) =>
-                                                handleDragStart(e, task.id) 
+                                                handleDragStart(e, task.id)
                                             }
                                             onDragEndItem={handleDragEnd}
                                             isBeingDragged={
@@ -1056,10 +1106,10 @@ const TasksPage = () => {
                                 {tasks.filter(
                                     (task) => task.column === columnName
                                 ).length === 0 && (
-                                    <div className="text-center text-sm text-gray-500 py-4">
-                                        No tasks in this column.
-                                    </div>
-                                )}
+                                        <div className="text-center text-sm text-gray-500 py-4">
+                                            No tasks in {columnName}.
+                                        </div>
+                                    )}
                             </div>
                         </div>
                     ))}
@@ -1070,11 +1120,11 @@ const TasksPage = () => {
                 <TaskDetailModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
-                    task={selectedTaskForModal} // Pass the processed task object
+                    task={selectedTaskForModal}
                 />
             )}
         </div>
     );
 };
 
-export default TasksPage;
+export default TasksPage;       
