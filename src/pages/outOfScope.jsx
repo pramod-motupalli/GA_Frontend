@@ -203,7 +203,7 @@ export default function RequestTable() {
             ) : (
               <div>
                 <h3 className="text-md font-medium mb-2 text-gray-800">Scope Status:</h3>
-                <p className="text-gray-700">{selectedItem.status || 'No status available'}</p>
+                <p className="text-gray-700">{selectedItem.status ? selectedItem.status.replace(/_/g, " ") : "No status available."}</p>
               </div>
             )}
           </div>
